@@ -7,6 +7,7 @@ tags: [Kernel, Debug]
 
 ----------
 ## Linux 内核和模块调试方法简介
+
 目前调试 Linux 内核与模块主要有 printk, /proc 和 kgdb等方法，其中最常用的的 printk。
 
 ### printk
@@ -48,6 +49,7 @@ oops 显示发生错误时处理器的状态，包括 CPU 寄存器的内容、�
 下面讲述如何使用 gdb 在 KVM 虚拟机上调试内核和模块。本文采用的是 RedHat Enterprise Linux 7.0，在其他 Linux 创建 KVM 虚拟机的方法基本相似。
 
 ## 安装 Linux 系统并重新编译内核
+
 使用 gdb 调试需要系统内核中包含调试信息，所以我们从头开始编译内核。本文以内核版本 3.18.2 为例。
 
 首先要下载内核源码。内核源码的下载地址为：http://www.kernel.org
@@ -140,6 +142,7 @@ reboot
 至此，安装内核的工作告一段落。
 
 ## 创建支持 gdb 调试的 KVM 虚拟机
+
 本节介绍如何在 Linux RedHat/CentOS 上创建 KVM 虚拟机，并配置虚机使其运行 gdbserver 以支持 gdb 调试。
 
 如果 KVM 没有安装，首先安装 KVM 及相关软件。安装步骤如下：
@@ -213,6 +216,7 @@ reboot
 如果创建好的虚拟机不能访问，可以使用 ping, brctl show, ps 等命令进行诊断，不再一一详述。
 
 ## 使用 gdb 调试 KVM 虚拟机的内核与模块
+
 本节介绍如何调试 KVM 虚拟机内核和模块。并说明在调试过程中如何加载模块并链接符号表。
 
 首先将虚拟机更新至编译好的内核。可将 vmlinux , System.map, initramfs, /lib/modules/<kernel version> 这些文件拷贝至虚拟机，或者在虚拟机上重新编译内核。
@@ -294,6 +298,7 @@ add-symbol-file /home/dawei/nzuta/nzuta.ko <text addr> -s .data <data addr> -s .
 如果要退出 gdb，需要先使用 delete 命令清理所有断点，并 detach。
 
 ## 总结
+
 本节总结 GDB 调试 KVM 虚机内核和模块的方法，并指出其优点和不足。
 
 使用 GDB+KVM 调试内核和模块有几个优势。一是可以进行源码级单步调试，二是对硬件环境的要求比较简单，只需要一台主机即可。 第三是当内核或模块有问题时可以快速重启虚拟机，这一点对内核模块的开发相当重要。这种方法的局限之处在于，当需要调试硬件驱动的时候，如果这种硬件还没有被 KVM 虚拟化支持，则不能调试与此硬件有关的功能，而只能调试仅与内核操作有关的代码。
