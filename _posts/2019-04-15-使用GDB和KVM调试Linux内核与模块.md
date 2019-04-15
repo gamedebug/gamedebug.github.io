@@ -81,29 +81,41 @@ oops 显示发生错误时处理器的状态，包括 CPU 寄存器的内容、�
 ```
 make mrproper
 ```
+
 配置内核：
+
 ```
 make menuconfig  .config(kgdb(kernel haking), module load)
 ```
+
 编译内核：
+
 ```
 make
 ```
+
 编译模块：
+
 ```
 make modules
 ```
+
 注：所谓内核模块，是指可以在 Linux 内核中动态加载 / 卸载的模块，常以“.ko”为后缀名。
 
 安装模块：
+
 ```
 make modules_install(/lib/modules/3.18.2/)
 ```
+
 安装：
+
 ```
 make install
 ```
+
 注：运行此命令，会在 /boot 目录下生成 3 个文件，并在 /boot 下生成 2 个链接文件。
+
 ```
 (/boot/System.map -> /boot/System.map-3.18.2) 
 (/boot/vmlinuz -> /boot/vmlinuz-3.18.2) 
@@ -112,10 +124,13 @@ make install
 (/boot/vmlinuz -> /boot/vmlinuz-3.18.2) 
 (/boot/initramfs-3.18.2.img)
 ```
+
 重启 Linux：
+
 ```
 reboot
 ```
+
 重新启动以后，检查内核版本，为 3.18.2。
 
 图 5. 检查内核版本
@@ -130,23 +145,29 @@ reboot
 如果 KVM 没有安装，首先安装 KVM 及相关软件。安装步骤如下：
 
 - KVM 需要有 CPU 的支持（Intel vmx 或 AMD svm），在安装 KVM 之前检查一下 CPU 是否提供了虚拟技术的支持：
+
 ```
 [root@myKVM ~]# egrep '^flags.*(vmx|svm)' /proc/cpuinfo
 ```
+
 若有显示，则说明处理器具有 VT 功能。
 
 - 在主板 BIOS 中开启 CPU 的 Virtual Technolege(VT，虚化技术 )；
 
 - 安装 kvm 及其需要的软件包。
+
 ```
 [root@myKVM ~]# yum install kvm kmod-kvm qemu kvm-qemu-img virt-viewer virt-manager libvirt libvirt-python python-virtinst
 ```
+
 或
+
 ```
 [root@myKVM ~]# yum groupinstall KVM
 ```
 
 - 检查 kvm 模块是否安装，使用以下命令显示两个模块则表示安装完成：
+
 ```
 [root@myKVM ~]# lsmod | grep kvm 
  
@@ -160,6 +181,7 @@ reboot
 - 客户端：使用 VNC 连接到服务器端，因为需要用服务器的图形界面。
 
 - 服务器端：启动 libvirtd 服务，并保证下次自动启动：
+
 ```
 [root@myKVM ~]# service libvirtd start 
  Starting libvirtd daemon:                                  [ 确定 ] 
@@ -173,11 +195,13 @@ reboot
 使用“virsh list”可以查看虚拟机是否已经创建，然后通过“virsh edit <vm_name>”可以修改 VM 配置。
 
 根据本文的测试结果，domain type 必须改为 .../qemu/1.0 才能支持 gdb 调试。
+
 ```
 <domain type='kvm' xmlns:qemu='<a href="http://libvirt.org/schemas/domain/qemu/1.0"><code>http://libvirt.org/schemas/domain/qemu/1.0</code></a>'>
 ```
 
 然后添加下面的配置使得虚拟机支持 gdb 调试：
+
 ```
 <qemu:commandline> 
     <qemu:arg value='-S'/> 
@@ -194,6 +218,7 @@ reboot
 首先将虚拟机更新至编译好的内核。可将 vmlinux , System.map, initramfs, /lib/modules/<kernel version> 这些文件拷贝至虚拟机，或者在虚拟机上重新编译内核。
 
 然后在主机端创建一个目录，拷贝 vmlinux 文件并进入 gdb 调试：
+
 ```
 gdb vmlinux-3.18.2
 ```
@@ -203,6 +228,7 @@ gdb vmlinux-3.18.2
 ![图 6. 打开 gdb][6]
 
 连接虚拟机：
+
 ```
 target remote 127.0.0.1:1234
 ```
@@ -220,6 +246,7 @@ target remote 127.0.0.1:1234
 ![图 8. 添加断点并执行][8]
 
 在虚拟机上插入需要调试的模块：
+
 ```
 insmod nzuta.ko
 ```
@@ -237,6 +264,7 @@ insmod nzuta.ko
 下面是关键的部分。
 
 打印 text section，data section 和 bss section 的名称和地址：
+
 ```
 print mod->sect_attrs->attrs[1]->name 
 print mod->sect_attrs->attrs[7]->name 
@@ -247,6 +275,7 @@ print /x mod->sect_attrs->attrs[9]->address
 ```
 
 根据上面打印的地址导入编译好的内核模块（注意编译此模块需要使用与虚拟机相同的内核源码编译，也需要使用 -O1 选项）：
+
 ```
 add-symbol-file /home/dawei/nzuta/nzuta.ko <text addr> -s .data <data addr> -s .bss 
  <bss addr>
