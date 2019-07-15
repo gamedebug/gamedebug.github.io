@@ -188,7 +188,9 @@ auditctl -a exit,always -F arch=x86_64 -S open -F auid=80
 ```
 
 **-F arch=x86_64** 定义使用什么体系结构(uname -m)来监视正确的系统调用(一些系统调用在主结构之间是不明确的)。
+
 **-S open** 选择“open”系统调用
+
 **-F auid=80** 相关用户ID
 
 这类信息对于入侵检测非常有用，而且在Linux系统上执行取证时也非常有用。
