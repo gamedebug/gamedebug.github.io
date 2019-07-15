@@ -61,8 +61,9 @@ Linux audit守护进程是一个框架，它允许审计Linux系统上的事件�
 
 ### 安装
 
-Debian/Ubuntu: apt-get install auditd aud -plugins
-Red Hat/CentOS/Fedora:通常已经安装(包:audit和audit-libs)
+**Debian/Ubuntu:** apt-get install auditd aud -plugins
+
+**Red Hat/CentOS/Fedora:** 通常已经安装(包:audit和audit-libs)
 
 
 ----------
