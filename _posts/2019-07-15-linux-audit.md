@@ -2,7 +2,7 @@
 layout: post
 title: Linux系统审计
 category: Linux
-tags: [Linux, 系统管理]
+tags: [计算机, 软件]
 ---
 
 
