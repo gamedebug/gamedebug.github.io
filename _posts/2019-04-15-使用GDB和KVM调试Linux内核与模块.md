@@ -2,7 +2,7 @@
 layout: post
 title: 使用GDB和KVM调试Linux内核与模块
 category: Linux
-tags: [Kernel, Debug]
+tags: [计算机, 软件]
 ---
 
 ----------
