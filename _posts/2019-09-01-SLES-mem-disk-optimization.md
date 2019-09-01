@@ -96,21 +96,21 @@ echo 70 > /proc/sys/vm/overcommit_ratio
 ```
 
 **drop_caches：**对系统有大量的内存,当服务器最终利用大量的内存和交换开始,它可能,虽然您的应用程序可能不使用这些内存但Linux是积极向它的内存缓存,即使应用程序需要的内存不会免费的一些缓存但是宁愿开始交换。
-处理这样的随机问题,内核2.6.16后来发布时提供了一个非破坏性内核将页面缓存的机制,通过drop_caches inode和dentry缓存参数,这可以消除吨仍未使用的内存,但因某种原因不是由内核释放服务器重新启动。
+处理这样的随机问题,内核2.6.16后来发布时提供了一个非破坏性内核将页面缓存的机制,通过drop_caches inode和dentry缓存参数,这可以释放大量仍未使用但因某种原因不是由内核释放服务器重新启动的内存。
 
-To free pagecache:
+释放页面缓存：
 
 ```
 echo 1 > /proc/sys/vm/drop_caches
 ```
 
-To free dentries and inodes:
+释放目录项（dentries）和索引节点（inodes）：
 
 ```
 echo 2 > /proc/sys/vm/drop_caches
 ```
 
-To free pagecache, dentries and inodes:
+释放页面缓存、目录项和索引节点
 
 ```
 echo 3 > /proc/sys/vm/drop_caches
