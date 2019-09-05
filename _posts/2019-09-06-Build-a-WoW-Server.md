@@ -149,7 +149,7 @@ passwd: password updated successfully
 
 如果是通过Debian官方的云镜像启动的系统，这一步默认也可以省略，因为云镜像默认就创建了一个名为debian的用户，并默认给予了sudo的授权。
 
-### 第四步：重启系统并以新用户登录
+### 第四步：重启系统并用新用户登录
 
 ```
 # reboot
@@ -200,14 +200,37 @@ $ tree ~/azerothcore-server
 
 简单介绍一下服务器目录下两个二级目录的内容：
 
-- **bin：**这个目录包含了6个二进制可执行文件，其中authserver是验证服务，worldserver是世界服务也就是游戏的核心服务，其余4个是接下来用于倒入游戏地图数据的工具；
+- **bin：**这个目录包含了6个二进制可执行文件，其中authserver是验证服务，worldserver是世界服务也就是游戏的核心服务，其余4个是接下来导入游戏地图和路径数据要用到的工具；
 - **etc：**这个目录下是authserver和worldserver的相关配置文件。
 
-在后续的操作中，可能还需要在这个目录下手动创建一些其他的目录，用于存放游戏地图数据，日志文件等内容。
+然后我们需要手动创建一些目录及文件：
+
+```
+$ mkdir -p azerothcore-server/data/dbc \
+azerothcore-server/data/maps \
+azerothcore-server/data/mmaps \
+azerothcore-server/data/vmaps \
+azerothcore-server/logs \
+azerothcore-server/pids
+
+$ touch azerothcore-server/logs/Auth.log \
+azerothcore-server/logs/Char.log \
+azerothcore-server/logs/Chat.log \
+azerothcore-server/logs/DBErrors.log \
+azerothcore-server/logs/GM.log \
+azerothcore-server/logs/Misc.log \
+azerothcore-server/logs/RA.log \
+azerothcore-server/logs/Server.log
+
+$ touch azerothcore-server/pids/authserver.pid \
+azerothcore-server/pids/worldserver.pid
+```
+
+在后续的操作中，我们将这些目录用于存放游戏地图数据、路径数据、日志文件等内容。
 
 ## 配置服务器参数
 
-服务器参数主要就是通过修改etc目录下那4个配置文件来实现，下面展示一下笔者环境下的四个配置文件内容并加以说明。
+服务器参数主要就是通过修改etc目录下那4个配置文件来实现，下面展示一下笔者环境下的四个配置文件内容并简单加以说明。
 
 ### 验证服务器配置
 
@@ -243,7 +266,10 @@ LoginDatabase.WorkerThreads = 1
 LoginDatabase.SynchThreads = 1
 ```
 
+这个配置文件中大多数参数我们暂时可以不需要去修改，只需根据我们的环境修改一下***LogsDir***，***PidFile***，***LogFile***以及***LoginDatabaseInfo***这几个字段的值，涉及到路径的请使用绝对路径描述，***LoginDatabaseInfo***的值由分号隔开的四个字段组成，他们分别是***数据库服务器IP地址;数据库服务端口;数据库账户账号;数据库账户密码;库名称***。（此处信息笔者进行了脱敏处理:)，大家根据自己的数据库实际情况修改）
+
 创建验证服务启动脚本
+
 ```
 $ egrep -v '^#|^$' ~/azeroth-server/etc/authserver.service
 [Unit]
@@ -257,6 +283,8 @@ Restart=on-abort
 [Install]
 WantedBy=multi-user.target
 ```
+
+
 
 ### 世界服务配置
 
