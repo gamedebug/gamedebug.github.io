@@ -236,9 +236,9 @@ azerothcore-server/pids/worldserver.pid
 
 服务器参数主要就是通过修改etc目录下那4个配置文件来实现，下面展示一下笔者环境下的四个配置文件内容并简单加以说明。
 
-### 验证服务器配置
+### 认证服务配置
 
-编辑验证服务配置文件
+编辑认证服务配置文件
 
 ```
 $ egrep -v '^#|^$' ~/azeroth-server/etc/authserver.conf
@@ -272,7 +272,7 @@ LoginDatabase.SynchThreads = 1
 
 这个配置文件中大多数参数我们暂时可以不需要去修改，只需根据我们的环境修改一下***LogsDir***，***PidFile***，***LogFile***以及***LoginDatabaseInfo***这几个字段的值，涉及到路径的请使用绝对路径描述，***LoginDatabaseInfo***的值由分号隔开的四个字段组成，他们分别是***数据库服务器IP地址;数据库服务端口;数据库账户账号;数据库账户密码;库名称***。（此处信息笔者进行了脱敏处理:)，大家根据自己的数据库实际情况修改）
 
-创建验证服务启动文件
+创建认证服务启动文件
 
 ```
 $ egrep -v '^#|^$' ~/azeroth-server/etc/authserver.service
