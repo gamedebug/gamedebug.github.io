@@ -107,7 +107,7 @@ AzerothCore的主要优势是它的社区。用户可以通过改进代码库或
 安装命令：
 
 ```
-apt-get install -y git \
+# apt-get install -y git \
 cmake \
 make \
 gcc \
