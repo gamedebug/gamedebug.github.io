@@ -142,9 +142,9 @@ build-essential
 New password:
 Retype new password:
 passwd: password updated successfully
-# 
+# usermod -aG sudo wow
 ```
-如果是通过Debian官方的云镜像启动的系统，这一步默认也可以省略，因为云镜像默认就创建了一个名为debian的用户，并给予了sudo的授权。
+如果是通过Debian官方的云镜像启动的系统，这一步默认也可以省略，因为云镜像默认就创建了一个名为debian的用户，并默认给予了sudo的授权。
 
 ### 第四步：重启系统并以新建的用户登录
 
