@@ -30,7 +30,7 @@ AzerothCore经过多年的发展，拥有雄厚的基础:以芒果、triitycore�
 ### 开放源代码
 AzerothCore模块是在GNU AGPL 3.0和GNU GPL 2.0下发布的，这两个许可证都是完全免费和开源的。我们相信自由软件，我们热爱合作。
 
-### 经过测试、可执行且持续更新
+### 经过测试，稳定可靠，持续更新
 AzerothCore的前身SunwellCore，在数千名玩家陪伴下运行了数年。AzerothCore的目标是保持这个游戏应用程序的更新，继续它的开发。
 
 ### 社区驱动
