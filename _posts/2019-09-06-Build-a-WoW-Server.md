@@ -268,7 +268,7 @@ LoginDatabase.SynchThreads = 1
 
 这个配置文件中大多数参数我们暂时可以不需要去修改，只需根据我们的环境修改一下***LogsDir***，***PidFile***，***LogFile***以及***LoginDatabaseInfo***这几个字段的值，涉及到路径的请使用绝对路径描述，***LoginDatabaseInfo***的值由分号隔开的四个字段组成，他们分别是***数据库服务器IP地址;数据库服务端口;数据库账户账号;数据库账户密码;库名称***。（此处信息笔者进行了脱敏处理:)，大家根据自己的数据库实际情况修改）
 
-创建验证服务启动脚本
+创建验证服务启动文件
 
 ```
 $ egrep -v '^#|^$' ~/azeroth-server/etc/authserver.service
@@ -284,7 +284,7 @@ Restart=on-abort
 WantedBy=multi-user.target
 ```
 
-
+这个服务启动文件中，暂时只需修改**[Service]**区段下的***ExecStart***字段的值即可，这个字段的值由空格符分割的三段组成，他们分别是**服务执行程序文件绝对路径 启动参数 服务程序配置文件绝对路径**。
 
 ### 世界服务配置
 
@@ -692,7 +692,7 @@ Calculate.Gameoject.Zone.Area.Data = 0
 LFG.Location.All = 0
 ```
 
-创建世界服务启动脚本
+创建世界服务启动文件
 
 ```
 $ egrep -v '^#|^$' ~/azeroth-server/etc/worldserver.service
