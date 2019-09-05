@@ -137,13 +137,16 @@ build-essential
 ### 第三步：创建一个普通用户并授权
 
 ```
-# useradd wow
+# useradd -m -d /home/wow wow
 # passwd wow
 New password:
 Retype new password:
 passwd: password updated successfully
 # usermod -aG sudo wow
 ```
+
+其中***passwd***命令之后需要输入两次新建的密码，原因不用多解释了吧。
+
 如果是通过Debian官方的云镜像启动的系统，这一步默认也可以省略，因为云镜像默认就创建了一个名为debian的用户，并默认给予了sudo的授权。
 
 ### 第四步：重启系统并以新建的用户登录
