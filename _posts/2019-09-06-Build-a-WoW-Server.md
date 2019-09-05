@@ -281,14 +281,14 @@ Description=AZeroThCore Auth service
 After=network.target mysql.service
 [Service]
 Type=simple
-User=debian
+User=wow
 ExecStart=/home/debian/azeroth-server/bin/authserver -c /home/debian/azeroth-server/etc/authserver.conf
 Restart=on-abort
 [Install]
 WantedBy=multi-user.target
 ```
 
-这个服务启动文件中，暂时只需修改**[Service]**区段下的***ExecStart***字段的值即可，这个字段的值由空格符分割的三段组成，他们分别是***服务执行程序文件绝对路径 启动参数 服务程序配置文件绝对路径***。
+这个服务启动文件中，暂时只需修改**[Service]**区段下的***User***和***ExecStart***两个字段的值即可，***User***的值请填写刚才创建的操作系统普通用户，***ExecStart***字段的值由空格符分割的三段组成，他们分别是***服务执行程序文件绝对路径 启动参数 服务程序配置文件绝对路径***。
 
 ### 世界服务配置
 
@@ -712,13 +712,62 @@ ExecStart=/home/debian/azeroth-server/bin/worldserver -c /home/debian/azeroth-se
 Restart=on-abort
 ```
 
-这个文件的处理方式请参考验证服务启动文件的处理方式。
+这个文件的处理方式请参考验证服务启动文件的处理方式，**User**选项这个核心服务请使用***root***。
 
 另外，authserver.conf.dist和worldserver.conf.dist这两个文件我们可以理解为配置文件模版，因为这里面有大量的注释信息用于解释每一个配置项的含义，我们可以基于这两个配置模版编辑修改并另存一份配置文件作为服务启动时加载使用。
 
 ## 准备游戏数据
 
 ### 数据库
+
+首先执行一下数据库的安全初始化：
+
+```
+$ sudo systemctl start mariadb
+$ sudo mysql_secure_installation
+```
+
+安全初始化命令第一次执行时数据库的**root**用户时没有密码的，然后会提示我们创建一个**root**用户的密码，这个root和操作系统的root是两码事，然后接下来会有几个关键安全选项的选择，根据提示操作即可，不再赘述。
+
+然后为游戏数据库创建管理用户：
+
+```
+$ sudo mysql -uroot -p123456 -e create user test identified by '123456'
+$ sudo mysql -uroot -p123446 -e grant all privileges on *.* to 'test'@'%' identified by '123456'
+$ sudo mysql -uroot -p123456 -e flush privileges
+```
+
+**"-p"**后面的***"123456"***就是我们刚才初始化的时候为数据库**root**用户创建的密码，**"identified by"**后面的***"123456"***是创建数据库的**test**用户的同时为该用户创建的密码。
+
+接下来创建游戏数据库，输入以下命令，创建三个空数据库：
+
+```
+$ sudo mysql -uroot -p123456 -e create database acore_auth
+$ sudo mysql -uroot -p123456 -e create database acore_characters
+$ sudo mysql -uroot -p123456 -e create database acore_world
+```
+
+数据库命名可以按自己喜好来，但强烈建议按我这个来，因为接下来导入数据的脚本是按这个命名来进行导入的，如果我们用来自定义的库名称，就还得去修改源码目录下的数据导入脚本，太麻烦了。
+
+最后开始导入数据：
+
+```
+$ sudo ~/azerothcore/apps/db_assembler/db_assembler.sh
+```
+
+这个脚本会输出一个简单的交互界面，并提供一系列选项，等待用户输入选项序号然后回车继续执行，这里我们输入**“5”**，回车继续，然后又会弹出提示让我们输入数据库用户名，我们输入刚才创建的用户**test**，回车继续，这时候脚本开始进行数据导入的工作，我们需要稍事等待，当看到再次输出**“DONE”**字样并返回第一步菜单的时候，表示导入工作已经完成，只需输入**“9”**并回车，就退出脚本了。
+
+我们可以在创建完数据库和数据导入完毕的时候，用以下命令分别验证操作的结果：
+
+```
+$ sudo mysql -uroot -p123456 -e show tables from acore_auth
+$ sudo mysql -uroot -p123456 -e show tables from acore_character
+$ sudo mysql -uroot -p123456 -e show tables from acore_world
+```
+
+倒入数据之前，三个数据库里都没有表，导入完成后**acore_auth**里有14张表，**acore_character**里有94张表，**acore_world**里有168张表。
+
+
 
 ### 地图、路径数据
 
