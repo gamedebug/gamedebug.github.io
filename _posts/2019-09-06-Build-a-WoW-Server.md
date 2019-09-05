@@ -767,7 +767,7 @@ $ sudo mysql -uroot -p123456 -e show tables from acore_world
 
 倒入数据之前，三个数据库里都没有表，导入完成后**acore_auth**里有14张表，**acore_character**里有94张表，**acore_world**里有168张表。
 
-
+至此，游戏数据库就准备妥当了，可以喝个咖啡抽根烟休息一下。:)
 
 ### 地图、路径数据
 
