@@ -692,6 +692,8 @@ Calculate.Gameoject.Zone.Area.Data = 0
 LFG.Location.All = 0
 ```
 
+这个配置文件内容略多。。。。我们还是捡重点说，必须要修改的配置项有***DataDir***，***LogsDir***，***LoginDatabaseInfo***，***WorldDatabaseInfo***，***CharacterDatabaseInfo***。这些配置项的含义可以参考验证服务器配置文件的说明。此外，其他非必须修改的配置也会为我们的服务器性能、网络安全、游戏初始规则……等带来不同程度的影响，请谨慎修改每一项的具体含义我们也可以在配置文件本身的注释中去阅读和理解。
+
 创建世界服务启动文件
 
 ```
@@ -705,6 +707,10 @@ User=root
 ExecStart=/home/debian/azeroth-server/bin/worldserver -c /home/debian/azeroth-server/etc/worldserver.conf
 Restart=on-abort
 ```
+
+这个文件的处理方式请参考验证服务启动文件的处理方式。
+
+另外，authserver.conf.dist和worldserver.conf.dist这两个文件我们可以理解为配置文件模版，因为这里面有大量的注释信息用于解释每一个配置项的含义，我们可以基于这两个配置模版编辑修改并另存一份配置文件作为服务启动时加载使用。
 
 ## 准备数据库
 
