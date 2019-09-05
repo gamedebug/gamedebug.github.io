@@ -771,6 +771,86 @@ $ sudo mysql -uroot -p123456 -e show tables from acore_world
 
 ### 地图、路径数据
 
+这部分的数据来源是游戏客户端我们需要将客户端考到服务器上，目录随意，放在好找的位置即可，然后我们需要请出刚才编译出来的4个可执行程序（当前这个服务器版本支持的客户端版本是巫妖王之怒资料片v3.3.5，请核对你的客户端版本，否则地图和路径数据导入的时候会出错）：
+
+```
+$ ls -l ~/azeroth-server/bin/*map*
+-rwxr-xr-x 1 debian debian  439400 Aug  6 15:19 /home/debian/azeroth-server/bin/mapextractor
+-rwxr-xr-x 1 debian debian 1714120 Aug  6 15:19 /home/debian/azeroth-server/bin/mmaps_generator
+-rwxr-xr-x 1 debian debian 1219832 Aug  6 15:19 /home/debian/azeroth-server/bin/vmap4assembler
+-rwxr-xr-x 1 debian debian  122528 Aug  6 15:18 /home/debian/azeroth-server/bin/vmap4extractor
+```
+
+就是这4个文件，我们需要将他们复制到游戏客户端的一级目录下去依次执行。
+
+假设我把游戏客户端考在了/home/wow/WoW目录下：
+
+```
+$ cp ~/azerothcore-server/bin/*map* ~/WoW
+$ .~/WoW/mapextractor
+$ .~/WoW/vmap4extractor
+$ .~/WoW/vmap4assembler Buildings vmaps
+$ .~/WoW/mmaps_generator
+```
+
+这几步耗时会比较长，因为数据量巨大，最终会在服务器目录***~/azerothcore-server/data/***里生成大约3GB的数据。这一步完成之后，刚才考过来的客户端可以删掉了，如果磁盘空间比较紧张的话。:)
+
+## 启动你的魔兽世界吧
+
+经过漫长的安装、配置和等待，终于完成了我们的魔兽世界服务器搭建，最后一步就是启动整个世界：
+
+```
+$ sudo systemctl start authserver.service
+$ sudo systemctl start worldserver.service
+```
+
+执行无误后，可以检查一下服务状态是否正常：
+
+```
+$ systemctl status  authserver.service worldserver.service
+● authserver.service - AZeroThCore Auth service
+   Loaded: loaded (/etc/systemd/system/authserver.service; disabled; vendor preset: enabled)
+   Active: active (running) since Sat 2019-08-24 02:08:17 CST; 1 weeks 6 days ago
+ Main PID: 5344 (authserver)
+    Tasks: 2 (limit: 4915)
+   Memory: 5.3M
+   CGroup: /system.slice/authserver.service
+           └─5344 /home/debian/azeroth-server/bin/authserver -c /home/debian/azeroth-server/etc/authserver.conf
+
+Sep 05 20:14:21 wow authserver[5344]: Updating Realm List...
+Sep 05 20:27:59 wow authserver[5344]: Updating Realm List...
+Sep 05 20:52:49 wow authserver[5344]: Updating Realm List...
+Sep 05 20:54:39 wow authserver[5344]: Updating Realm List...
+Sep 05 21:51:31 wow authserver[5344]: Updating Realm List...
+Sep 05 21:56:59 wow authserver[5344]: Updating Realm List...
+Sep 05 22:16:35 wow authserver[5344]: Updating Realm List...
+Sep 05 22:34:21 wow authserver[5344]: Updating Realm List...
+Sep 05 22:41:22 wow authserver[5344]: Updating Realm List...
+Sep 05 23:12:00 wow authserver[5344]: Updating Realm List...
+
+● worldserver.service - AZeroThcore World service
+   Loaded: loaded (/etc/systemd/system/worldserver.service; static; vendor preset: enabled)
+   Active: active (running) since Mon 2019-08-26 17:55:47 CST; 1 weeks 3 days ago
+ Main PID: 8514 (worldserver)
+    Tasks: 9 (limit: 4915)
+   Memory: 7.4G
+   CGroup: /system.slice/worldserver.service
+           └─8514 /home/debian/azeroth-server/bin/worldserver -c /home/debian/azeroth-server/etc/worldserver.conf
+
+Sep 06 03:03:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:04:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:05:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:06:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:07:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:08:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:09:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:10:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:11:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+Sep 06 03:12:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
+```
+
+如果你看到跟这个差不多的输出内容，恭喜，你的世界已经上线，还等什么呢？赶紧邀上三五个好基友，打开客户端去找寻年轻时像风一眼自由的感觉吧！！！
+
 
   [1]: http://www.azerothcore.org/
   [2]: https://github.com/azerothcore/
