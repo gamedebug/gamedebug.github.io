@@ -716,7 +716,11 @@ Restart=on-abort
 
 另外，authserver.conf.dist和worldserver.conf.dist这两个文件我们可以理解为配置文件模版，因为这里面有大量的注释信息用于解释每一个配置项的含义，我们可以基于这两个配置模版编辑修改并另存一份配置文件作为服务启动时加载使用。
 
-## 准备数据库
+## 准备游戏数据
+
+### 数据库
+
+### 地图、路径数据
 
 
   [1]: http://www.azerothcore.org/
