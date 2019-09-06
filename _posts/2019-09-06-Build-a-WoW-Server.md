@@ -711,7 +711,7 @@ ExecStart=/home/debian/azeroth-server/bin/worldserver -c /home/debian/azeroth-se
 Restart=on-abort
 ```
 
-这个文件的处理方式请参考验证服务启动文件的处理方式，**User**选项这个核心服务请使用***root***。
+这个文件的处理方式请参考验证服务启动文件的处理方式，核心服务的启动用户**User**选项请使用***root***。
 
 另外，authserver.conf.dist和worldserver.conf.dist这两个文件我们可以理解为配置文件模版，因为这里面有大量的注释信息用于解释每一个配置项的含义，我们可以基于这两个配置模版编辑修改并另存一份配置文件作为服务启动时加载使用。
 
