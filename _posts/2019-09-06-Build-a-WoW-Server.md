@@ -172,7 +172,6 @@ $ git clone https://github.com/azerothcore/azerothcore-wotlk.git --branch master
 ```
 $ cd ~/azerothcore
 $ mkdir build
-$ mkdir build
 $ cd build
 $ cmake ../ -DCMAKE_INSTALL_PREFIX=$HOME/azeroth-server/ \
 -DCMAKE_C_COMPILER=/usr/bin/clang \
