@@ -695,7 +695,7 @@ Calculate.Gameoject.Zone.Area.Data = 0
 LFG.Location.All = 0
 ```
 
-这个配置文件内容略多。。。。我们还是捡重点说，必须要修改的配置项有***DataDir***，***LogsDir***，***LoginDatabaseInfo***，***WorldDatabaseInfo***，***CharacterDatabaseInfo***。这些配置项的含义可以参考验证服务器配置文件的说明。此外，其他非必须修改的配置也会为我们的服务器性能、网络安全、游戏初始规则……等带来不同程度的影响，请谨慎修改每一项的具体含义我们也可以在配置文件本身的注释中去阅读和理解。
+这个配置文件内容略多。。。。我们还是捡重点说，必须要修改的配置项有***DataDir***，***LogsDir***，***LoginDatabaseInfo***，***WorldDatabaseInfo***，***CharacterDatabaseInfo***。这些配置项的含义可以参考验证服务器配置文件的说明。此外，其他非必须修改的配置也会对服务器性能、网络安全、游戏初始规则……等带来不同程度的影响，请谨慎修改每一项的具体含义我们也可以在配置文件本身的注释中去阅读和理解。
 
 创建世界服务启动文件
 
