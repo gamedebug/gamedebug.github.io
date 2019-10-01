@@ -848,7 +848,7 @@ Sep 06 03:11:19 wow worldserver[8514]: Average update time diff: 10. Players onl
 Sep 06 03:12:19 wow worldserver[8514]: Average update time diff: 10. Players online: 0.
 ```
 
-如果你看到跟这个差不多的输出内容，恭喜，你的世界已经上线，还等什么呢？赶紧邀上三五个好基友，打开客户端去找寻年轻时像风一眼自由的感觉吧！！！
+如果你看到跟这个差不多的输出内容，恭喜，你的世界已经上线，还等什么呢？赶紧邀上三五个好基友，打开客户端去找寻年轻时像风一样自由的感觉吧！！！
 
 ## 特别感谢
 
