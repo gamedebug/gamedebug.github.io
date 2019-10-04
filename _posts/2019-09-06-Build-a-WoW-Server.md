@@ -123,7 +123,7 @@ mariadb-client \
 libace-6.4.5 \
 libace-dev \
 autoconf \
-automakt \
+automake \
 gettext \
 unzip \
 zip \
