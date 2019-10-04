@@ -113,7 +113,7 @@ make \
 gcc \
 g++ \
 clang \
-default-libmysqclient-dev \
+default-libmysqlclient-dev \
 libssl-dev \
 libbz2-dev \
 libreadline-dev \
