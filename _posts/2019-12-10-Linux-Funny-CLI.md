@@ -241,8 +241,7 @@ SEE ALSO
 那到底有多少可以供我们调用的字符卡通形象呢？可以通过查看cowsay这个软件包里的文件来确认（这里以openSUSE为例）：
 
 ```
-# rpm -ql cowsay | grep share/cows
-/usr/share/cows
+# rpm -ql cowsay | grep share/cows/
 /usr/share/cows/beavis.zen.cow
 /usr/share/cows/bong.cow
 /usr/share/cows/bud-frogs.cow
