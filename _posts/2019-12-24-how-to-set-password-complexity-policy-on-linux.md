@@ -1,15 +1,15 @@
 ---
 layout: post
-title: 如何设置Linux密码复杂度？
+title: 如何设置Linux密码复杂度策略？
 category: 计算机
 tags: [计算机, 软件]
 ---
 
 
 ----------
-用户管理是Linux系统管理的重要任务之一。这涉及到很多方面，实现强密码策略就是其中之一。关于如何生成强密码，可以点击这里。它将限制对系统的未授权访问。
+用户管理是Linux系统管理的重要任务之一。这涉及到很多方面，实现强密码策略就是其中之一。关于如何生成强密码，可以[点击这里][1]。它将限制对系统的未授权访问。
 
-默认情况下，大家都知道Linux是安全的。但是，我们需要对此进行必要的调整，以使其更加安全。不安全的密码会导致安全漏洞。所以，要格外小心。如果您想查看生成的强密码的密码强度和得分，请点击这里。
+默认情况下，大家都知道Linux是安全的。但是，我们需要对此进行必要的调整，以使其更加安全。不安全的密码会导致安全漏洞。所以，要格外小心。如果您想查看生成的强密码的密码强度和得分，请[点击这里][2]。
 
 在本文中，我们将向您展示如何在Linux上实现最佳安全策略。我们可以使用PAM(“可插拔的身份验证模块”)在大多数Linux系统上实施密码策略。
 
@@ -170,3 +170,7 @@ account required pam_tally2.so
 ```
 
 原文链接： https://www.2daygeek.com/how-to-set-password-complexity-policy-on-linux/
+
+
+  [1]: https://gamedebug.github.io/5-ways-to-generate-a-random-strong-password-in-linux-terminal/
+  [2]: https://gamedebug.github.io/how-to-check-password-complexity-strength-and-score-in-linux/
