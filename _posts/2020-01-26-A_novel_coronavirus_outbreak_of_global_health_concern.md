@@ -35,7 +35,9 @@ tags: [生物, 病毒]
 
 我们必须意识到2019-nCoV给我们社区带来的挑战和担忧。应该尽一切努力了解和控制这种疾病，现在是采取行动的时候了。
 
+>本文援引柳叶刀，翻译：Louis，文章ID：[PIIS0140673620301859][3]
 
 
   [1]: http://static.zybuluo.com/gamedebug/0688xpwhngdf7zcc2z5l0ca4/WX20200126-205344@2x.png
   [2]: http://static.zybuluo.com/gamedebug/ewrj6ru2pct2ryxaox13t28e/WX20200126-210219@2x.png
+  [3]: https://www.thelancet.com/pdfs/journals/lancet/PIIS0140-6736%2820%2930185-9.pdf
