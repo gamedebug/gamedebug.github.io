@@ -2,7 +2,7 @@
 layout: post
 title: 有关新型冠状病毒的FAQ
 category: 健康
-tags: [生物, 病毒]
+tags: [卫生与健康, 病毒]
 ---
 
 
