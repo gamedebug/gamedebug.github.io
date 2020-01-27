@@ -2,7 +2,7 @@
 layout: post
 title: 对2019-nCoV的新理解
 category: 健康
-tags: [生物, 病毒]
+tags: [卫生与健康, 病毒]
 ---
 
 
