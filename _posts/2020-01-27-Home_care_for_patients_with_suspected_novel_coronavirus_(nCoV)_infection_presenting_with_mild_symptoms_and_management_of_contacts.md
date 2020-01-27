@@ -2,7 +2,7 @@
 layout: post
 title: 疑似新型冠状病毒患者的家庭护理
 category: 健康
-tags: [生物, 病毒]
+tags: [卫生与健康, 病毒]
 ---
 
 
