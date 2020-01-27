@@ -2,7 +2,7 @@
 layout: post
 title: 全球健康关注的新型冠状病毒爆发
 category: 健康
-tags: [生物, 病毒]
+tags: [卫生与健康, 病毒]
 ---
 
 
