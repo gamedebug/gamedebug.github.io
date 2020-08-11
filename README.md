@@ -1,6 +1,6 @@
 # gamedebug.github.io
 
-![网站二维码][1]
+![qr-code.png-0.4kB][1]
 
 
-  [1]: https://github.com/gamedebug/gamedebug.github.io/blob/master/qr-code.png
+  [1]: http://static.zybuluo.com/gamedebug/y87p13jft4msjqihqsfuewqe/qr-code.png
