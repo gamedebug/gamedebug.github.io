@@ -242,6 +242,7 @@ SUBSYSTEM=="cpu", DRIVERS=="processor", DEVPATH=="/devices/system/cpu/*", RUN+="
 将收到所有事件。一个脚本：
 
 ```
+#!/bin/sh
 
 if [ "${ACTION}" = "offline" ]
 then
