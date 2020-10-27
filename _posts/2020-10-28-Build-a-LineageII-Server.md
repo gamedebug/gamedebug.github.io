@@ -544,6 +544,7 @@ Thanks for using MariaDB!
 ### 第四步：获取和编辑服务端代码
 
 - 获取服务端代码：
+
 ```
 [root@lineage2 ~]# mkdir -p /opt/l2j/git && cd /opt/l2j/git
 [root@lineage2 git]# git clone https://bitbucket.org/l2jserver/l2j-server-login.git
