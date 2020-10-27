@@ -62,7 +62,7 @@ Upgrade  204 Packages
 Total download size: 280 M
 Is this ok [y/N]: y
 Downloading Packages:
-CentOS-8 - Base                                                      195% [======================================================================================================(1/217): elfutils-debuginfod-client-0.178-7.el8.x86_64.rpm                                                                                       2.5 MB/s |  62 kB     00:00    
+(1/217): elfutils-debuginfod-client-0.178-7.el8.x86_64.rpm                                                                                       2.5 MB/s |  62 kB     00:00    
 (2/217): PackageKit-glib-1.1.12-4.el8.x86_64.rpm                                                                                                 3.4 MB/s | 141 kB     00:00    
 (3/217): PackageKit-1.1.12-4.el8.x86_64.rpm                                                                                                      7.5 MB/s | 601 kB     00:00    
 (4/217): gdk-pixbuf2-2.36.12-5.el8.x86_64.rpm                                                                                                    324 kB/s | 467 kB     00:01    
