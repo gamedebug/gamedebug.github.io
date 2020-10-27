@@ -533,7 +533,7 @@ installation should now be secure.
 Thanks for using MariaDB!
 ```
 
-- 用户授权初始化
+- 用户创建与授权
 
 ```
 [root@lineage2 ~]# mariadb -uroot -p123456 -e "CREATE OR REPLACE USER 'test'@'%' IDENTIFIED BY '123456'"
