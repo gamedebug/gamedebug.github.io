@@ -1184,7 +1184,7 @@ Archive:  /opt/l2j/git/l2j-server-datapack/target/l2j-server-datapack-2.6.2.0-SN
   inflating: /opt/l2j/server/game/sql/updates/2020-09-20_conquerable_clan_hall_typo_fix.sql
 ```
 
-### 第七步：倒入数据库
+### 第七步：导入数据库
 
 ```
 [root@lineage2 cli]# ./l2jcli.sh
