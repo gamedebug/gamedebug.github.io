@@ -243,7 +243,7 @@ Installed:
 Complete!
 ```
 
-- 安装OpenJDK
+- 安装OpenJDK（Version: 14+）
 
 ```
 [root@lineage2 ~]# cat <<'EOF' > /etc/yum.repos.d/adoptopenjdk.repo
@@ -310,7 +310,7 @@ Installed:
 Complete!
 ```
 
-- 安装数据库
+- 安装数据库（Version: 10.4+）
 
 ```
 [root@lineage2 ~]# cat <<'EOF' > /etc/yum.repos.d/MariaDB.repo
