@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 建造自己的魔兽世界
+title: 建造自己的魔兽世界（巫妖王之怒）
 category: 计算机
 tags: [计算机, 软件]
 ---
