@@ -51,9 +51,8 @@ tags: [宇宙, 恒星]
 
 
 ----------
-如你所见，恒星有许多不同的质量、大小和颜色。通过更多地了解恒星的演化，我们可以更多地了解我们的宇宙。你知道在我们的宇宙中有超过1000亿颗恒星吗？在[Cosmonova][3]你可以说出所有最聪明的人的名字。现在我们来命名一颗恒星，这样我们就能成为宇宙的一部分只要这颗恒星存在，我们现在知道，这颗恒星存在的时间基本上是无限的。
+如你所见，恒星有许多不同的质量、大小和颜色。通过更多地了解恒星的演化，我们可以更多地了解我们的宇宙。你知道在我们的宇宙中有超过1000亿颗恒星吗？
 
 
   [1]: http://static.zybuluo.com/gamedebug/xcu5k4hpzq8tug8eff7tgnix/robson-hatsukami-morgan-wEFdRCG4IU-unsplash-1.webp
   [2]: http://static.zybuluo.com/gamedebug/4c331dipevnk78m3skn13svt/lubo-minar-jUiNBSfWZPw-unsplash-1.webp
-  [3]: https://cosmonova.org/
