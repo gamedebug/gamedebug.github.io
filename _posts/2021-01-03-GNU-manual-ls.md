@@ -2,7 +2,7 @@
 layout: post
 title: Linux命令手册--ls
 category: 计算机
-tags: [计算机, 软件，GNU手册]
+tags: [计算机, 软件, GNU手册]
 ---
 
 
