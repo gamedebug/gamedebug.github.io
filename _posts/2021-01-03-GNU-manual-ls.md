@@ -193,8 +193,11 @@ SIZE是整数和可选单位（例如：10M是10 * 1024 * 1024）。单位为K�
 使用颜色来区分文件类型在默认情况下和使用--color=never时都是禁用的。使用--color=auto, ls只在连接到标准输出时发出颜色代码到一个终端。LS_COLORS环境变量可以更改设置。使用dircolors命令设置它。
 
 退出状态：
+
 0  执行正确，正常退出，
+
 1  执行过程中出现小问题(例如，无法访问子目录)，
+
 2  执行过程中出现问题严重(例如，无法访问命令行参数)。
 
 GNU coreutils联机帮助:<http://www.gnu.org/software/coreutils/>报告ls翻译错误到<http://translationproject.org/team/>
