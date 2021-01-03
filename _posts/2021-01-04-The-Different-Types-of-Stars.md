@@ -2,7 +2,7 @@
 layout: post
 title: 恒星的类型
 category: 天文学
-tags: [恒星]
+tags: [宇宙, 恒星]
 ---
 
 
