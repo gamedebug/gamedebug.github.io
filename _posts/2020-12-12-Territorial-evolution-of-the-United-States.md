@@ -1,8 +1,8 @@
 ---
 layout: post
 title: 美国领土变迁
-category: 地理
-tags: [美国]
+category: 社会学
+tags: [美国, 地理/历史]
 ---
 
 
