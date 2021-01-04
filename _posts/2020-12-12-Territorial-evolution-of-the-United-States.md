@@ -469,6 +469,10 @@ Adams-Onís条约生效，该条约规定出了美国和新西班牙之间的边
 ### 1970年
 根据1970年国境条约，德克萨斯州Rio Rico市让渡给墨西哥。在1977年正式移交。Rio Rico市加入墨西哥的塔毛利帕斯州。
 
+----------
+最后看看动态演变图
+![US.gif-758.4kB][99]
+
 
   [1]: http://static.zybuluo.com/gamedebug/h6cnriy71z2o3al3eohcxnli/United_States_1789-03-1789-08.png
   [2]: http://static.zybuluo.com/gamedebug/36rknnnallvtc82o37pr6fa0/United_States_1789-08-1790-04.png
@@ -568,3 +572,4 @@ Adams-Onís条约生效，该条约规定出了美国和新西班牙之间的边
   [96]: http://static.zybuluo.com/gamedebug/a88r2ku4uu9gokuttu436swa/800px-Delaware-wedge.svg.png
   [97]: http://static.zybuluo.com/gamedebug/54akfef3hcfvfwew28tzoj18/United_States_1959-01-1959-08.png
   [98]: http://static.zybuluo.com/gamedebug/5au467d99ykftcoa595lzu6r/United_States_1959-08-present.png
+  [99]: http://static.zybuluo.com/gamedebug/ut7zy6jz7i0vb6tksu7bla4n/US.gif
