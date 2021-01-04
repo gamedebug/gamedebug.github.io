@@ -11,7 +11,7 @@ tags: [宇宙, 恒星]
 
 就像我们还没有对宇宙有太多的发现一样，科学家们也一直在发现关于不同类型恒星的新东西。这意味着我们必须拓宽对恒星的理解，并随时接受新的发现。所以，让我们来看看目前为止已经发现的所有不同类型的恒星。
 
-![robson-hatsukami-morgan-wEFdRCG4IU-unsplash-1.webp-98.2kB][1]
+![robson-hatsukami-morgan-wEFdRCG4IU-unsplash-1.jpg-695.1kB][1]
 
 ## 原恒星（Protostar）
 
@@ -35,7 +35,7 @@ tags: [宇宙, 恒星]
 
 当一颗恒星消耗了其核心的所有氦层并耗尽了作为燃料的其他元素时，它就变成了白矮星。当聚变反应产生的向外光压力停止时，恒星就会因自身引力而向内坍缩。然而，即使核聚变反应已经停止，恒星仍然因其巨大的热量而发光。白矮星需要几千亿年的时间才能完全冷却下来，这意味着我们仍然不知道这一阶段结束后恒星会发生什么。
 
-![lubo-minar-jUiNBSfWZPw-unsplash-1.webp-43.7kB][2]
+![lubo-minar-jUiNBSfWZPw-unsplash-1.jpg-320.6kB][2]
 
 ## 红矮星（Red Dwarf Stars）
 
@@ -54,5 +54,5 @@ tags: [宇宙, 恒星]
 如你所见，恒星有许多不同的质量、大小和颜色。通过更多地了解恒星的演化，我们可以更多地了解我们的宇宙。你知道在我们的宇宙中有超过1000亿颗恒星吗？
 
 
-  [1]: http://static.zybuluo.com/gamedebug/xcu5k4hpzq8tug8eff7tgnix/robson-hatsukami-morgan-wEFdRCG4IU-unsplash-1.webp
-  [2]: http://static.zybuluo.com/gamedebug/4c331dipevnk78m3skn13svt/lubo-minar-jUiNBSfWZPw-unsplash-1.webp
+  [1]: http://static.zybuluo.com/gamedebug/1nfjgnq3rz442cxz6yooswwo/robson-hatsukami-morgan-wEFdRCG4IU-unsplash-1.jpg
+  [2]: http://static.zybuluo.com/gamedebug/o00bt1twhpu5348aqbgb3t50/lubo-minar-jUiNBSfWZPw-unsplash-1.jpg
