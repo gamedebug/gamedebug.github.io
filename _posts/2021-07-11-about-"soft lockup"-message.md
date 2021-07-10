@@ -1,6 +1,6 @@
 ---
 layout: post
-title: “Bug: soft lockup”消息的含义？
+title: "Bug: soft lockup"消息的含义？
 category: 计算机
 tags: [计算机, 软件]
 ---
