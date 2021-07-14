@@ -1,7 +1,7 @@
 ---
 layout: post
 title: 什么是黑洞
-category: 计算机
+category: 天文学
 tags: [宇宙, 恒星]
 ---
 
