@@ -1,6 +1,6 @@
 ---
 layout: post
-title: 使用多个gpu和服务器构建分布式TensorFlow
+title: 使用多个GPU和服务器构建分布式TensorFlow
 category: 计算机
 tags: [计算机, 软件]
 ---
