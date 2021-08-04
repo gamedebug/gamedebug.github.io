@@ -15,7 +15,7 @@ tags: [计算机, 软件]
 
 ### 准备工作
 
-第一步是安装一个支持GPU的TensorFlow版本。你可以从[官方的TensorFlow安装说明][1]开始。记住，你需要有一个通过CUDA或CuDNN支持GPU的环境。
+第一步是安装一个支持GPU的TensorFlow版本。你可以从[官方的TensorFlow安装说明][1]开始。记住，并且需要有一个通过CUDA或CuDNN支持GPU的环境。
 
 ### 怎么做...
 
