@@ -15,7 +15,7 @@ tags: [计算机, 软件]
 
 ### 准备工作
 
-第一步是安装一个支持GPU的TensorFlow版本。你可以从官方的TensorFlow安装说明开始。记住，你需要有一个通过CUDA或CuDNN支持GPU的环境。
+第一步是安装一个支持GPU的TensorFlow版本。你可以从[官方的TensorFlow安装说明][1]开始。记住，你需要有一个通过CUDA或CuDNN支持GPU的环境。
 
 ### 怎么做...
 
@@ -64,7 +64,7 @@ print("Shape:", shape, "Device:", device_name) print("Time taken:", datetime.now
 
 ### 准备工作
 
-这个步骤的灵感来自Neil Tenenholtz写的一个很好的博客，可以在网上找到：[https://clindatsci.com/blog/2017/5/31/distributed-tensorflow][1]
+这个步骤的灵感来自Neil Tenenholtz写的一个很好的博客，可以在网上找到：[https://clindatsci.com/blog/2017/5/31/distributed-tensorflow][2]
 
 ### 怎么做...
 
@@ -121,7 +121,7 @@ sess.run(tf.global_variables_initializer()) print sess.run(output)
 
 ### 准备工作
 
-同样，这个步骤的灵感还是来自Neil Tenenholtz的那个博文：[https://clindatsci.com/blog/2017/5/31/distributed-tensorflow][2]
+同样，这个步骤的灵感还是来自Neil Tenenholtz的那个博文：[https://clindatsci.com/blog/2017/5/31/distributed-tensorflow][3]
 
 ### 怎么做...
 
@@ -182,7 +182,7 @@ with tf.Session(server.target):
 
 ### 还有更多...
 
-网上有[MNIST分散式训练][3]的一个例子。此外，出于效率考虑，您可以决定使用多个PS。使用PS可以提供更好的网络利用率，并且允许将模型扩展到更多的并行机器。可以分配多个PS。有兴趣的读者可以在[这里][4]看看。
+网上有[MNIST分散式训练][4]的一个例子。此外，出于效率考虑，您可以决定使用多个PS。使用PS可以提供更好的网络利用率，并且允许将模型扩展到更多的并行机器。可以分配多个PS。有兴趣的读者可以在[这里][5]看看。
 
 ## 训练分布式TensorFlow的MNIST分类器
 
@@ -313,7 +313,8 @@ print("done")
 本步骤描述了一个分布式MNIST分类器的示例。在本例中，TensorFlow允许我们定义三台机器的集群。一台作为PS，另外两台作为worker处理不同批次的训练数据。
 
 
-  [1]: https://clindatsci.com/blog/2017/5/31/distributed-tensorflow
+  [1]: https://www.tensorflow.org/
   [2]: https://clindatsci.com/blog/2017/5/31/distributed-tensorflow
-  [3]: https://github.com/%20ischlag/distributed-tensorflow-example/blob/master/example.py
-  [4]: https://www.tensorflow.org/deploy/%20distributed
+  [3]: https://clindatsci.com/blog/2017/5/31/distributed-tensorflow
+  [4]: https://github.com/%20ischlag/distributed-tensorflow-example/blob/master/example.py
+  [5]: https://www.tensorflow.org/deploy/%20distributed
