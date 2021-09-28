@@ -7,7 +7,7 @@ tags: [计算机, 软件]
 
 
 ----------
-有些神经网络模型太大了，无法放入单个设备(GPU)的内存中。这样的模型需要在许多设备上分离，在设备上并行地进行培训。这意味着任何人现在都可以使用TensorFlow将分布式培训扩展到100个GPU。但这并不是分布式TensorFlow的唯一优势，您还可以通过在许多GPU和服务器上并行运行许多实验来大量减少实验时间。而现在，我们将讨论分布式TensorFlow，并展示一些使用TensorFlow、GPU和多个服务器的方法。
+有些神经网络模型太大了，无法放入单个设备(GPU)的内存中。这样的模型需要在许多设备上分离，在设备上并行地进行训练。这意味着任何人现在都可以使用TensorFlow将分布式训练扩展到100个GPU。但这并不是分布式TensorFlow的唯一优势，您还可以通过在许多GPU和服务器上并行运行许多实验来大量减少实验时间。而现在，我们将讨论分布式TensorFlow，并展示一些使用TensorFlow、GPU和多个服务器的方法。
 
 ## 使用TensorFlow和GPUs
 
@@ -152,7 +152,7 @@ job_type = sys.argv[1] # job type: "worker" or "ps" task_idx = sys.argv[2] # ind
 # as defined in the ClusterSpec
 ```
 
-- 运行给定集群的培训服务器，我们为每个计算者提供一个角色(worker或ps)和一个id
+- 运行给定集群的训练服务器，我们为每个计算者提供一个角色(worker或ps)和一个id
 
 ```
 # create TensorFlow Server. This is how the machines communicate.
