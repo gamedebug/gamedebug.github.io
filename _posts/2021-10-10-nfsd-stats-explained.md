@@ -76,8 +76,8 @@ proc4ops 59 0 0 0 104291 0 0 0 0 0 218574 3 0 0 0 0 3 0 0 0 0 0 0 548712 0 1 0 3
 16         0         0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000 0.000
 ```
 
-- threads：NFS 守护进程使用的线程数量。（这可以在 /etc/sysconfig/nfs 中增加，选项 RPCNFSDCOUNT）
-- fullcnt：使用的所有 NFS 线程的次数。（很可能已弃用）
+- threads：NFS 守护进程使用的线程数量。（这可以在 /etc/sysconfig/nfs中增加，选项 RPCNFSDCOUNT）
+- fullcnt：使用的所有NFS线程的次数。（很可能已弃用）
 
 要调整需要多少线程，可以查看：/proc/fs/nfsd/pool_stats
 
