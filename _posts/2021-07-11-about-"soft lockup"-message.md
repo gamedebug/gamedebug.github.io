@@ -8,7 +8,6 @@ tags: [计算机, 软件]
 
 ----------
 ## 概况
-
 在系统日志(/var/log/messages或journalctl)中打印了大量以下消息：
 
 ```
