@@ -7,7 +7,8 @@ tags: [计算机, 软件]
 
 
 ----------
- SUSE® Linux Enterprise (SLE) 允许将现有系统升级到新版本。不需新安装。主目录和数据目录以及系统配置等现有数据将保持不变。您可以从本地 CD 或 DVD 驱动器或从中央网络安装源进行更新。
+## 概述
+ SUSE® Linux Enterprise(SLE)允许将现有系统升级到新版本。不需新安装。主目录和数据目录以及系统配置等现有数据将保持不变。您可以从本地CD或DVD驱动器或从中央网络安装源进行更新。
 
 本文介绍如何通过 DVD、网络、自动化过程或 SUSE Manager 手动升级 SUSE Linux Enterprise 系统。 
 
