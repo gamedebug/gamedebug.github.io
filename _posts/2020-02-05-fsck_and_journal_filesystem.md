@@ -7,6 +7,7 @@ tags: [计算机, 软件]
 
 
 ----------
+## 概述
 日志文件系统(Journal File System)解决了掉电或系统崩溃造成元数据不一致的问题，细节参见旧文《日志文件系统是怎样工作的》，它的原理是在进行写操作之前，把即将进行的各个步骤（称为transaction）事先记录下来，包括：从data block bitmap中分配一个数据块、在inode中添加指向数据块的指针、把用户数据写入数据块等，这些transaction保存在文件系统单独开辟的一块空间上，称为日志(journal)，日志保存成功之后才进行真正的写操作–把文件系统的元数据和用户数据写进硬盘（称为checkpoint），万一写操作的过程中掉电，下次挂载文件系统之前把保存好的日志重新执行一遍就行了（术语叫做replay），保证文件系统的一致性。
 
 Journal replay所需的时间很短，可以通过fsck或者mount命令完成。既然mount命令就可以做journal replay，那还要fsck干什么呢？fsck(file system check)所做的事情可不仅仅是journal replay这么简单，它可以对文件系统进行彻底的检查，扫描所有的inode、目录、superblock、allocation bitmap等等，称为full check。fsck进行full check所需的时间很长，而且文件系统越大，所需的时间也越长。
