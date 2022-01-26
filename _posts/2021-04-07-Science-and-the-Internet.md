@@ -72,9 +72,7 @@ root@louis-ssr-obfs:~# cat /etc/shadowsocks-libev/config-obfs.json
 启动服务；
 
 ```
-root@louis-ssr-obfs:~# systemctl start shadowsocks
-root@louis-ssr-obfs:~# systemctl status shadowsocks
-Unit shadowsocks.service could not be found.
+root@louis-ssr-obfs:~# systemctl start shadowsocks-libev
 root@louis-ssr-obfs:~# systemctl status shadowsocks-libev
 ● shadowsocks-libev.service - Shadowsocks-libev Default Server Service
    Loaded: loaded (/lib/systemd/system/shadowsocks-libev.service; enabled; vendor preset: enabled)
