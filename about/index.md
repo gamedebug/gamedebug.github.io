@@ -15,7 +15,7 @@ comments: true
 - Linux training company founder for 2 years
 - Linux cloud computing delivery engineer in [Huawei][4] for 1 year
 - Linux support engineer in [SUSE][5] for 3 years
-- Cloud support engineer in [Amazon AWS][6] now
+- Cloud support engineer in [Amazon AWS][6] for now
 
 ## 联系方式
 - 电子邮件1：[luyisi1982@gmail.com][7]
