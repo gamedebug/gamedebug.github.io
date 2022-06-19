@@ -11,9 +11,9 @@ comments: false
 ## 个人履历
 - Linux QA engineer in [HP][1] for 6 years
 - Linux R&D engineer in [HP][2] for 2 years
-- Linux R&D engineer in [Lenovo][3] for 1 years
+- Linux R&D engineer in [Lenovo][3] for 1 year
 - Linux training company founder for 2 years
-- Linux cloud computing delivery engineer in [Huawei][4] for 1 years
+- Linux cloud computing delivery engineer in [Huawei][4] for 1 year
 - Linux support engineer in [SUSE][5] for 3 years
 - Cloud support engineer in [Amazon AWS][6] now
 
