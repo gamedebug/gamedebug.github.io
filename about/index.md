@@ -3,7 +3,7 @@ layout: page
 title: 关于
 tags: [about]
 date: 2018-11-15
-comments: true
+comments: false
 ---
 
 
@@ -15,10 +15,11 @@ comments: true
 - Linux training company founder for 2 years
 - Linux cloud computing delivery engineer in [Huawei][4] for 1 years
 - Linux support engineer in [SUSE][5] for 3 years
+- Cloud support engineer in [Amazon AWS][6] now
 
 ## 联系方式
-- 电子邮件1：[luyisi1982@gmail.com][6]
-- 电子邮件2：[luyisi_82@hotmail.com][7]
+- 电子邮件1：[luyisi1982@gmail.com][7]
+- 电子邮件2：[luyisi_82@hotmail.com][8]
 
 
   [1]: https://www.hpe.com/
@@ -26,5 +27,6 @@ comments: true
   [3]: https://www.lenovo.com/
   [4]: https://www.huawei.com/
   [5]: https://www.suse.com/
-  [6]: mailto:luyisi1982@gmail.com
-  [7]: mailto:luyisi_82@hotmail.com
+  [6]: https://aws.amazon.com/
+  [7]: mailto:luyisi1982@gmail.com
+  [8]: mailto:luyisi_82@hotmail.com
