@@ -46,7 +46,7 @@ Neutron缩放被证明是暴雪的第三大障碍。由于将某些OpenStack服�
 
 展望未来，暴雪将继续查明并应对挑战，以尽可能地大规模消除复杂性。 如果您有兴趣寻找应对这些挑战的解决方案，暴雪正在他们位于加利福尼亚州尔湾的办公室招聘。
 
-> 注：内容援引OpenStack，原文链接：[https://superuser.openstack.org/articles/for-blizzard-entertainment-its-game-over-on-scaling-complexity/][2]
+> 注：内容援引OpenStack开源社区，原文链接：[https://superuser.openstack.org/articles/for-blizzard-entertainment-its-game-over-on-scaling-complexity/][2]
 
 
   [1]: http://static.zybuluo.com/gamedebug/p4jjyljtg0sh75lr3rnar5nw/Screen-Shot-2020-08-03-at-2.21.48-PM-1500x1110.png
