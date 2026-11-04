@@ -29,7 +29,7 @@ const nav = [
 const current = (href: string) => decodeURI(path).startsWith(href) ? 'page' : undefined;
 ---
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-goatcounter-code={GOATCOUNTER_CODE || undefined}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -103,6 +103,23 @@ const current = (href: string) => decodeURI(path).startsWith(href) ? 'page' : un
           setTimeout(() => (btn.textContent = '复制'), 1500);
         });
         pre.append(btn);
+      }
+
+      // Public visit counts from GoatCounter: <… data-visits="TOTAL|page"><span></span></…>.
+      // Hidden until a count arrives; stays hidden if the API is unreachable or has no data.
+      const gc = root.dataset.goatcounterCode;
+      if (gc) {
+        for (const el of document.querySelectorAll<HTMLElement>('[data-visits]')) {
+          const path = el.dataset.visits === 'TOTAL' ? 'TOTAL' : encodeURIComponent(location.pathname);
+          fetch(`https://${gc}.goatcounter.com/counter/${path}.json`)
+            .then((r) => (r.ok ? r.json() : null))
+            .then((d) => {
+              if (!d || d.count === '0') return;
+              el.querySelector('span')!.textContent = d.count;
+              el.hidden = false;
+            })
+            .catch(() => {});
+        }
       }
 
       // Click an article image to view it full size.

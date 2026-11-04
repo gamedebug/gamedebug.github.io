@@ -17,6 +17,7 @@ const categories = Object.entries(CATEGORY_META).filter(([, m]) => !m.hidden)
     <Image src={logo} alt={`${SITE.title} 头像`} class="avatar" width={112} height={112} loading="eager" />
     <h1>{SITE.title}</h1>
     <p>{SITE.bio}</p>
+    <p class="visits" data-visits="TOTAL" hidden>累计访问 <span></span> 次</p>
     <ul class="social" aria-label="社交链接">
       {SOCIAL.map((s) => <li><a href={s.href} title={s.label} aria-label={s.label} rel="noopener me" target="_blank"><SocialIcon id={s.id} /></a></li>)}
     </ul>

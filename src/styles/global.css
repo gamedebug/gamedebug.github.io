@@ -99,6 +99,7 @@ img { max-width: 100%; height: auto; }
 .hero .avatar { width: 112px; height: 112px; border-radius: 50%; border: 3px solid rgb(255 255 255 / 85%); box-shadow: 0 6px 24px rgb(0 0 0 / 35%); }
 .hero h1 { margin: .8rem 0 .2rem; font-size: 2rem; letter-spacing: .08em; text-shadow: 0 2px 8px rgb(0 0 0 / 40%); }
 .hero p { margin: 0 0 1.2rem; opacity: .92; text-shadow: 0 1px 4px rgb(0 0 0 / 40%); }
+.hero p.visits { margin-top: -.8rem; font-size: .85rem; opacity: .8; font-variant-numeric: tabular-nums; }
 .page-banner { padding: 2.5rem 0 2rem; }
 .page-banner h1 { margin: 0; font-size: clamp(1.5rem, 4vw, 2.1rem); line-height: 1.35; text-shadow: 0 2px 8px rgb(0 0 0 / 40%); }
 .page-banner .meta { margin-top: .6rem; display: flex; flex-wrap: wrap; gap: .3rem 1rem; font-size: .92rem; opacity: .95; }

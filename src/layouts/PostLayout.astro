@@ -25,6 +25,7 @@ const hiddenCategory = isHidden(category);
       <div class="meta">
         <time datetime={date.toISOString()}>{formatDate(date)}</time>
         <span>约 {readingMinutes(post.body ?? '')} 分钟</span>
+        <span data-visits="page" hidden>阅读 <span></span> 次</span>
         {hiddenCategory ? <span>{category}</span> : <a href={categoryUrl(category)}>{category}</a>}
         {tags.map((t) => hiddenCategory ? <span class="tag">{t}</span> : <a class="tag" href={tagUrl(t)}>{t}</a>)}
       </div>
