@@ -6,19 +6,25 @@
     "node": ">=24"
   },
   "scripts": {
-    "dev": "astro dev",
-    "build": "astro build",
+    "dev": "node scripts/copy-katex.mjs && astro dev",
+    "build": "node scripts/copy-katex.mjs && astro build && pagefind --site dist",
     "preview": "astro preview",
     "check": "astro check",
-    "astro": "astro"
+    "astro": "astro",
+    "migrate": "node scripts/migrate-posts.mjs",
+    "verify": "python3 -I scripts/verify_content.py && python3 -I scripts/verify_urls.py"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.3.5",
     "astro": "7.4.5",
+    "rehype-katex": "7.0.1",
     "remark-cjk-friendly": "2.3.4",
+    "remark-math": "6.0.0",
     "sharp": "0.35.0"
   },
   "devDependencies": {
+    "pagefind": "1.6.0",
+    "simple-icons": "16.36.0",
     "yaml": "2.9.1"
   }
 }

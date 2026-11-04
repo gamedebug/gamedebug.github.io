@@ -1,9 +1,42 @@
 ---
-import { getCollection } from 'astro:content';
-const posts = await getCollection('posts');
+import Banner from '../components/Banner.astro';
+import SocialIcon from '../components/SocialIcon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import logo from '../assets/logo.png';
+import { CATEGORY_META, SITE, SOCIAL } from '../consts';
+import { categoryUrl, excerpt, formatDate, getPosts, postUrl, visible } from '../lib/posts';
+
+const posts = visible(await getPosts());
+const latest = posts.slice(0, 10);
+const categories = Object.entries(CATEGORY_META).filter(([, m]) => !m.hidden)
+  .map(([name, m]) => ({ name, blurb: m.blurb, count: posts.filter((p) => p.data.category === name).length }));
 ---
-<!doctype html>
-<html lang="zh-CN">
-  <head><meta charset="utf-8" /><title>北境程序猿</title></head>
-  <body><p>Astro 骨架：{posts.length} 篇文章</p></body>
-</html>
+<BaseLayout>
+  <Banner slot="banner" variant="hero">
+    <Image src={logo} alt={`${SITE.title} 头像`} class="avatar" width={112} height={112} loading="eager" />
+    <h1>{SITE.title}</h1>
+    <p>{SITE.bio}</p>
+    <ul class="social" aria-label="社交链接">
+      {SOCIAL.map((s) => <li><a href={s.href} title={s.label} aria-label={s.label} rel="noopener me" target="_blank"><SocialIcon id={s.id} /></a></li>)}
+    </ul>
+  </Banner>
+
+  <div class="section-title"><h2>分类</h2></div>
+  <div class="category-grid">
+    {categories.map((c) => (
+      <a class="card" href={categoryUrl(c.name)}><strong>{c.name} <small class="chip">{c.count}</small></strong><span>{c.blurb}</span></a>
+    ))}
+  </div>
+
+  <div class="section-title"><h2>最新文章</h2><a href="/posts/">全部文章 →</a></div>
+  <div class="cards">
+    {latest.map((p) => (
+      <a class="card" href={postUrl(p)}>
+        <h3>{p.data.title}</h3>
+        <div class="meta">{formatDate(p.data.date)} · {p.data.category}</div>
+        <p>{excerpt(p.body ?? '', 90)}</p>
+      </a>
+    ))}
+  </div>
+</BaseLayout>

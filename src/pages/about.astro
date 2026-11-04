@@ -1,0 +1,39 @@
+---
+import Banner from '../components/Banner.astro';
+import SocialIcon from '../components/SocialIcon.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SOCIAL } from '../consts';
+const career = [
+  ['Linux QA engineer', 'HP', 'https://www.hp.com/', '6 年'],
+  ['Linux R&D engineer', 'HPE', 'https://www.hpe.com/', '2 年'],
+  ['Linux R&D engineer', 'Lenovo', 'https://www.lenovo.com/', '1 年'],
+  ['Linux training company founder', '', '', '2 年'],
+  ['Linux cloud computing delivery engineer', 'Huawei', 'https://www.huawei.com/', '1 年'],
+  ['Linux support engineer', 'SUSE', 'https://www.suse.com/', '3 年'],
+  ['Cloud support engineer', 'Amazon Web Services', 'https://aws.amazon.com/', '至今'],
+];
+---
+<BaseLayout title="关于" description="个人履历与联系方式。">
+  <Banner slot="banner"><div class="measure"><h1>关于</h1></div></Banner>
+  <div class="measure prose">
+    <h2>个人履历</h2>
+    <ul>
+      {career.map(([role, org, url, span]) => (
+        <li>{role}{org && <> in <a href={url} rel="noopener">{org}</a></>}，{span}</li>
+      ))}
+    </ul>
+    <h2>联系方式</h2>
+    <ul>
+      <li>电子邮件 1：<a href="mailto:luyisi1982@gmail.com">luyisi1982@gmail.com</a></li>
+      <li>电子邮件 2：<a href="mailto:luyisi_82@hotmail.com">luyisi_82@hotmail.com</a></li>
+    </ul>
+    <ul class="about-social">
+      {SOCIAL.filter((s) => s.id !== 'email').map((s) => <li><a href={s.href} rel="noopener me" target="_blank"><SocialIcon id={s.id} /> {s.label}</a></li>)}
+    </ul>
+  </div>
+</BaseLayout>
+<style>
+  .about-social { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr)); gap: .4rem 1rem; }
+  .about-social a { display: inline-flex; align-items: center; gap: .45rem; }
+  .about-social :global(svg) { width: 18px; height: 18px; fill: currentColor; }
+</style>

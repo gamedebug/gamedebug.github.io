@@ -1,0 +1,19 @@
+---
+import Banner from '../../components/Banner.astro';
+import PostList from '../../components/PostList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts, tagCounts, tagSlug, visible } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = visible(await getPosts());
+  return tagCounts(posts).map(([tag]) => ({
+    params: { tag: tagSlug(tag) },
+    props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
+  }));
+}
+const { tag, posts } = Astro.props;
+---
+<BaseLayout title={`标签：${tag}`} description={`标签「${tag}」下的 ${posts.length} 篇文章。`}>
+  <Banner slot="banner"><div class="measure"><h1># {tag}</h1><div class="meta">{posts.length} 篇 · <a href="/tags/">所有标签</a></div></div></Banner>
+  <div class="measure"><PostList posts={posts} /></div>
+</BaseLayout>

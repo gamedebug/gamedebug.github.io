@@ -1,0 +1,12 @@
+---
+// The Northrend banner that carries the old site's look onto every page.
+import { Image } from 'astro:assets';
+import northrend from '../assets/northrend.jpg';
+
+interface Props { variant?: 'hero' | 'page' }
+const { variant = 'page' } = Astro.props;
+---
+<section class:list={['banner', variant === 'hero' ? 'hero' : 'page-banner']}>
+  <Image src={northrend} alt="" class="banner-bg" loading="eager" fetchpriority="high" widths={[800]} />
+  <div class="wrap"><slot /></div>
+</section>

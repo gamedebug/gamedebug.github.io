@@ -1,0 +1,36 @@
+---
+// GitHub Discussions comments, loaded only when scrolled near. Renders nothing
+// until GISCUS.repoId and GISCUS.categoryId are filled in (see src/consts.ts).
+import { GISCUS } from '../consts';
+const enabled = Boolean(GISCUS.repoId && GISCUS.categoryId);
+---
+{enabled && (
+  <section class="comments" aria-label="评论">
+    <div id="giscus" data-repo={GISCUS.repo} data-repo-id={GISCUS.repoId} data-category={GISCUS.category} data-category-id={GISCUS.categoryId}></div>
+  </section>
+)}
+{enabled && (
+  <script>
+    const el = document.getElementById('giscus');
+    if (el) {
+      const load = () => {
+        const dark = document.documentElement.dataset.theme
+          ? document.documentElement.dataset.theme === 'dark'
+          : matchMedia('(prefers-color-scheme: dark)').matches;
+        const s = document.createElement('script');
+        s.src = 'https://giscus.app/client.js';
+        s.async = true;
+        s.crossOrigin = 'anonymous';
+        Object.entries({
+          repo: el.dataset.repo!, repoId: el.dataset.repoId!, category: el.dataset.category!,
+          categoryId: el.dataset.categoryId!, mapping: 'pathname', strict: '1', reactionsEnabled: '1',
+          inputPosition: 'top', theme: dark ? 'dark' : 'light', lang: 'zh-CN', loading: 'lazy',
+        }).forEach(([k, v]) => s.setAttribute(`data-${k.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase())}`, v));
+        el.append(s);
+      };
+      new IntersectionObserver((entries, obs) => {
+        if (entries.some((e) => e.isIntersecting)) { obs.disconnect(); load(); }
+      }, { rootMargin: '400px' }).observe(el);
+    }
+  </script>
+)}

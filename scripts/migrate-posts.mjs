@@ -105,6 +105,7 @@ function checks(body) {
   if (fences % 2) issues.push(`代码围栏数量为奇数（${fences} 个），有未闭合的代码块`);
   if (/^>\s*```/m.test(body)) issues.push('引用块里有代码围栏 `>```');
   outsideCode(body, (t) => {
+    t = t.replace(/\$\$[\s\S]*?\$\$/g, ' '); // math is checked by KaTeX at build time
     if (/\{\{|\{%/.test(t)) issues.push('正文里有 `{{` 或 `{%`（Jekyll 的 Liquid 曾处理过它们）');
     if (/\{:|\{::/.test(t)) issues.push('有 kramdown 专有语法 `{:`');
     if (/^~~~/m.test(t)) issues.push('使用了 `~~~` 代码围栏');

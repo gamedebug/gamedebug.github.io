@@ -1,0 +1,11 @@
+---
+import Banner from '../../components/Banner.astro';
+import PostList from '../../components/PostList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts } from '../../lib/posts';
+const posts = await getPosts(); // the archive lists every post, hidden categories included
+---
+<BaseLayout title="所有文章" description={`全部 ${posts.length} 篇文章，按年份排列。`}>
+  <Banner slot="banner"><div class="measure"><h1>所有文章</h1><div class="meta">共 {posts.length} 篇</div></div></Banner>
+  <div class="measure"><PostList posts={posts} /></div>
+</BaseLayout>

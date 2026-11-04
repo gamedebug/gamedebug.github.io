@@ -27,7 +27,7 @@ tags:
 ### 1.1 熵的计算
 如果有一枚理想的硬币，其出现正面和反面的机会相等，则抛硬币事件的熵等于其能够达到的最大值。我们无法知道下一个硬币抛掷的结果是什么，因此每一次抛硬币都是不可预测的。因此，使用一枚正常硬币进行若干次抛掷，这个事件的熵是一比特，因为结果不外乎两个——正面或者反面，可以表示为0, 1编码，而且两个结果彼此之间相互独立。若进行n次独立实验，则熵为n，因为可以用长度为n的比特流表示。但是如果一枚硬币的两面完全相同，那个这个系列抛硬币事件的熵等于零，因为结果能被准确预测。现实世界里，我们收集到的数据的熵介于上面两种情况之间。
 
-另一个稍微复杂的例子是假设一个随机变量X，取三种可能值 \begin{smallmatrix}x_{1},x_{2},x_{3}\end{smallmatrix} 概率分别为 \begin{smallmatrix}{\frac {1}{2}},{\frac {1}{4}},{\frac {1}{4}}\end{smallmatrix}那么编码平均比特长度是：\begin{smallmatrix}{\frac {1}{2}}\times 1+{\frac {1}{4}}\times 2+{\frac {1}{4}}\times 2={\frac {3}{2}}\end{smallmatrix}其熵为3/2。
+另一个稍微复杂的例子是假设一个随机变量X，取三种可能值 $$x_1, x_2, x_3$$，概率分别为 $$\frac{1}{2}, \frac{1}{4}, \frac{1}{4}$$，那么编码平均比特长度是：$$\frac{1}{2}\times 1+\frac{1}{4}\times 2+\frac{1}{4}\times 2=\frac{3}{2}$$，其熵为 3/2。
 
 因此熵实际是对随机变量的比特量和顺次发生概率相乘再总和的数学期望。
 
@@ -36,18 +36,30 @@ tags:
 ## 2、定义
 依据Boltzmann's H-theorem，香农把随机变量X的熵值 Η（希腊字母Eta）定义如下，其值域为{x1, ..., xn}：
 
-{\displaystyle \mathrm {H} (X)=\mathrm {E} [\mathrm {I} (X)]=\mathrm {E} [-\ln(\mathrm {P} (X))]} \Eta(X) = \mathrm{E}[\mathrm{I}(X)] = \mathrm{E}[-\ln(\mathrm{P}(X))]。
+$$
+\mathrm{H}(X)=\mathrm{E}[\mathrm{I}(X)]=\mathrm{E}[-\ln(\mathrm{P}(X))]
+$$
+
 其中，P为X的概率质量函数（probability mass function），E为期望函数，而I(X)是X的信息量（又称为自信息）。I(X)本身是个随机变数。
 
 当取自有限的样本时，熵的公式可以表示为：
 
-{\displaystyle \mathrm {H} (X)=\sum _{i}{\mathrm {P} (x_{i})\,\mathrm {I} (x_{i})}=-\sum _{i}{\mathrm {P} (x_{i})\log _{b}\mathrm {P} (x_{i})},} \mathrm{H} (X)=\sum _{{i}}{{\mathrm  {P}}(x_{i})\,{\mathrm  {I}}(x_{i})}=-\sum _{{i}}{{\mathrm  {P}}(x_{i})\log _{b}{\mathrm  {P}}(x_{i})},
+$$
+\mathrm{H}(X)=\sum_{i}\mathrm{P}(x_i)\,\mathrm{I}(x_i)=-\sum_{i}\mathrm{P}(x_i)\log_b \mathrm{P}(x_i)
+$$
+
 在这里b是对数所使用的底，通常是2,自然常数e，或是10。当b = 2，熵的单位是bit；当b = e，熵的单位是nat；而当b = 10,熵的单位是Hart。
 
 pi = 0时，对于一些i值，对应的被加数0 logb 0的值将会是0，这与极限一致。
 
-{\displaystyle \lim _{p\to 0+}p\log p=0} \lim_{p\to0+}p\log p = 0。
+$$
+\lim_{p\to 0^+} p\log p = 0
+$$
+
 还可以定义事件 X 与 Y 分别取 xi 和 yj 时的条件熵为
 
-{\displaystyle \mathrm {H} (X|Y)=-\sum _{i,j}p(x_{i},y_{j})\log {\frac {p(x_{i},y_{j})}{p(y_{j})}}} {\displaystyle \mathrm {H} (X|Y)=-\sum _{i,j}p(x_{i},y_{j})\log {\frac {p(x_{i},y_{j})}{p(y_{j})}}}
+$$
+\mathrm{H}(X|Y)=-\sum_{i,j}p(x_i,y_j)\log\frac{p(x_i,y_j)}{p(y_j)}
+$$
+
 其中p(xi, yj)为 X = xi 且 Y = yj 时的概率。这个量应当理解为你知道Y的值前提下随机变量 X 的随机性的量。

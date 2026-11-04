@@ -1,0 +1,20 @@
+---
+import Banner from '../../components/Banner.astro';
+import PostList from '../../components/PostList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { CATEGORY_META } from '../../consts';
+import { getPosts } from '../../lib/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return Object.entries(CATEGORY_META).filter(([, m]) => !m.hidden).map(([category, meta]) => ({
+    params: { category },
+    props: { category, blurb: meta.blurb, posts: posts.filter((p) => p.data.category === category) },
+  }));
+}
+const { category, blurb, posts } = Astro.props;
+---
+<BaseLayout title={`分类：${category}`} description={`${category}：${blurb}，共 ${posts.length} 篇。`}>
+  <Banner slot="banner"><div class="measure"><h1>{category}</h1><div class="meta">{blurb} · {posts.length} 篇</div></div></Banner>
+  <div class="measure"><PostList posts={posts} /></div>
+</BaseLayout>

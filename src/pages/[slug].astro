@@ -1,16 +1,18 @@
 ---
-// Temporary post page for migration checks; the real layout comes in phase 2.
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
+import PostLayout from '../layouts/PostLayout.astro';
+import { getPosts } from '../lib/posts';
 
 export async function getStaticPaths() {
-  const posts = await getCollection('posts');
-  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+  const posts = await getPosts(); // newest first
+  return posts.map((post, i) => ({
+    params: { slug: post.id },
+    props: { post, next: posts[i - 1], prev: posts[i + 1] },
+  }));
 }
-const { post } = Astro.props;
-const { Content } = await render(post);
+const { post, prev, next } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
 ---
-<!doctype html>
-<html lang="zh-CN">
-  <head><meta charset="utf-8" /><title>{post.data.title} – 北境程序猿</title></head>
-  <body><article id="post-body"><Content /></article></body>
-</html>
+<PostLayout post={post} headings={headings} math={Boolean(remarkPluginFrontmatter.math)} prev={prev} next={next}>
+  <Content />
+</PostLayout>

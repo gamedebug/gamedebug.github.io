@@ -1,0 +1,23 @@
+---
+// Brand icons from simple-icons (CC0), resolved at build time; no icon font.
+// LinkedIn and Google+ are not in simple-icons, so they get simple letter marks.
+import { siFacebook, siGithub, siInstagram, siSinaweibo, siSoundcloud, siStackoverflow, siSteam, siX, siYcombinator } from 'simple-icons';
+
+interface Props { id: string }
+const { id } = Astro.props;
+const paths: Record<string, string> = {
+  x: siX.path, facebook: siFacebook.path, instagram: siInstagram.path, github: siGithub.path,
+  stackoverflow: siStackoverflow.path, steam: siSteam.path, soundcloud: siSoundcloud.path,
+  weibo: siSinaweibo.path, hackernews: siYcombinator.path,
+  email: 'M2 4h20a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Zm0 2v.4l10 6.3 10-6.3V6H2Zm20 2.8-9.47 5.97a1 1 0 0 1-1.06 0L2 8.8V18h20V8.8Z',
+};
+const letters: Record<string, string> = { linkedin: 'in', googleplus: 'G+' };
+---
+{paths[id] ? (
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d={paths[id]} /></svg>
+) : (
+  <svg viewBox="0 0 24 24" aria-hidden="true">
+    <rect x="1" y="1" width="22" height="22" rx="4" fill="none" stroke="currentColor" stroke-width="2" />
+    <text x="12" y="16.5" text-anchor="middle" font-size={letters[id]?.length > 1 ? 10 : 12} font-weight="700" font-family="Arial, sans-serif" fill="currentColor">{letters[id]}</text>
+  </svg>
+)}

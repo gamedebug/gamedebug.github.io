@@ -19,3 +19,6 @@ Gemfile.lock
 node_modules/
 dist/
 .astro/
+
+# Generated at build time
+public/katex/

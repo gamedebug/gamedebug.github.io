@@ -1,0 +1,20 @@
+---
+import Banner from '../../components/Banner.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+---
+<BaseLayout title="搜索" description="全文搜索站内文章。">
+  <Banner slot="banner"><div class="measure"><h1>搜索</h1></div></Banner>
+  <div class="measure search-page">
+    <div id="search"></div>
+    <noscript>搜索需要启用 JavaScript。</noscript>
+  </div>
+  <!-- Pagefind writes these files after `astro build` (see package.json). -->
+  <link rel="stylesheet" href="/pagefind/pagefind-ui.css" />
+  <script is:inline src="/pagefind/pagefind-ui.js"></script>
+  <script is:inline>
+    const q = new URLSearchParams(location.search).get('q');
+    const ui = new PagefindUI({ element: '#search', showSubResults: true, showImages: false,
+      translations: { placeholder: '搜索文章', zero_results: '没有找到与 [SEARCH_TERM] 相关的文章' } });
+    if (q) ui.triggerSearch(q);
+  </script>
+</BaseLayout>

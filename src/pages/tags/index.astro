@@ -1,0 +1,20 @@
+---
+import Banner from '../../components/Banner.astro';
+import PostList from '../../components/PostList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { getPosts, tagCounts, tagSlug, tagUrl, visible } from '../../lib/posts';
+const posts = visible(await getPosts());
+const tags = tagCounts(posts);
+---
+<BaseLayout title="所有标签" description="按标签浏览文章。">
+  <Banner slot="banner"><div class="measure"><h1>所有标签</h1><div class="meta">{tags.length} 个标签</div></div></Banner>
+  <div class="measure">
+    <div class="tag-cloud">{tags.map(([t, n]) => <a class="tag" href={tagUrl(t)}>{t}<span class="count">{n}</span></a>)}</div>
+    {tags.map(([t]) => (
+      <section id={tagSlug(t)}>
+        <h2 class="year"><a href={tagUrl(t)}>{t}</a></h2>
+        <PostList posts={posts.filter((p) => p.data.tags.includes(t))} byYear={false} />
+      </section>
+    ))}
+  </div>
+</BaseLayout>

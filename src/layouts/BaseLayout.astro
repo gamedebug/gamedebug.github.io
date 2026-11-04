@@ -1,0 +1,128 @@
+---
+import '../styles/global.css';
+import { getImage } from 'astro:assets';
+import logo from '../assets/logo.png';
+import { GOATCOUNTER_CODE, SITE } from '../consts';
+
+interface Props {
+  title?: string;          // page title; the site title is appended
+  description?: string;
+  type?: 'website' | 'article';
+  published?: Date;
+  math?: boolean;          // load KaTeX styles
+  noindex?: boolean;
+}
+const { title, description = SITE.description, type = 'website', published, math = false, noindex = false } = Astro.props;
+const fullTitle = title ? `${title} – ${SITE.title}` : SITE.title;
+const canonical = new URL(Astro.url.pathname, SITE.url).href;
+const ogImage = new URL((await getImage({ src: logo, width: 320, format: 'png' })).src, SITE.url).href;
+const avatar = await getImage({ src: logo, width: 64, format: 'webp' });
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/posts/', label: '文章' },
+  { href: '/category/技术/', label: '技术', cat: true },
+  { href: '/category/ACG/', label: 'ACG', cat: true },
+  { href: '/category/科普/', label: '科普', cat: true },
+  { href: '/tags/', label: '标签' },
+  { href: '/about/', label: '关于' },
+];
+const current = (href: string) => decodeURI(path).startsWith(href) ? 'page' : undefined;
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <meta property="og:site_name" content={SITE.title} />
+    <meta property="og:locale" content={SITE.locale} />
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={title ?? SITE.title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    {published && <meta property="article:published_time" content={published.toISOString()} />}
+    <meta name="twitter:card" content="summary" />
+    <link rel="alternate" type="application/atom+xml" title={SITE.title} href="/feed.xml" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    {math && <link rel="stylesheet" href="/katex/katex.min.css" />}
+    <script is:inline>
+      // Apply the saved theme before first paint to avoid a flash.
+      try { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; } catch {}
+    </script>
+    {GOATCOUNTER_CODE && (
+      <script is:inline async data-goatcounter={`https://${GOATCOUNTER_CODE}.goatcounter.com/count`} src="https://gc.zgo.at/count.js"></script>
+    )}
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="wrap">
+        <a class="brand" href="/"><img src={avatar.src} width="30" height="30" alt="" /><span>{SITE.title}</span></a>
+        <nav class="nav" aria-label="主导航">
+          {nav.map((n) => <a href={n.href} class:list={{ 'nav-cat': 'cat' in n }} aria-current={current(n.href)}>{n.label}</a>)}
+          <a href="/search/" aria-current={current('/search/')} aria-label="搜索" title="搜索">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          </a>
+          <button class="icon-btn" id="theme-toggle" type="button" aria-label="切换深色/浅色" title="切换深色/浅色">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></svg>
+          </button>
+        </nav>
+      </div>
+    </header>
+    <slot name="banner" />
+    <main><div class="wrap"><slot /></div></main>
+    <footer class="site-footer">
+      <div class="wrap">
+        <p>© 2018–{new Date().getFullYear()} {SITE.title} · <a href="/feed.xml">RSS</a> · <a href="/about/">关于</a></p>
+      </div>
+    </footer>
+    <script>
+      // Theme toggle: system preference by default, a click pins light/dark.
+      const root = document.documentElement;
+      document.getElementById('theme-toggle')?.addEventListener('click', () => {
+        const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+        root.dataset.theme = dark ? 'light' : 'dark';
+        try { localStorage.setItem('theme', root.dataset.theme); } catch {}
+      });
+
+      // Copy buttons on code blocks.
+      for (const pre of document.querySelectorAll<HTMLPreElement>('.prose pre')) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'copy-btn';
+        btn.textContent = '复制';
+        btn.addEventListener('click', async () => {
+          try {
+            await navigator.clipboard.writeText(pre.querySelector('code')?.innerText ?? pre.innerText);
+            btn.textContent = '已复制';
+          } catch { btn.textContent = '复制失败'; }
+          setTimeout(() => (btn.textContent = '复制'), 1500);
+        });
+        pre.append(btn);
+      }
+
+      // Click an article image to view it full size.
+      const images = document.querySelectorAll<HTMLImageElement>('.prose img');
+      if (images.length) {
+        const dialog = document.createElement('dialog');
+        dialog.className = 'zoom';
+        const big = document.createElement('img');
+        dialog.append(big);
+        document.body.append(dialog);
+        dialog.addEventListener('click', () => dialog.close());
+        for (const img of images) {
+          img.addEventListener('click', () => {
+            big.src = img.currentSrc || img.src;
+            big.alt = img.alt;
+            dialog.showModal();
+          });
+        }
+      }
+    </script>
+  </body>
+</html>

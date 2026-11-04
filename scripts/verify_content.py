@@ -32,7 +32,8 @@ def tokens(text):
 
 def new_page(path):
     html = (ROOT / 'dist' / path.strip('/') / 'index.html').read_text(encoding='utf-8')
-    m = re.search(r'<article id="post-body">(.*)</article>', html, re.S)
+    # The post body, without the footer (source, prev/next, comments).
+    m = re.search(r'<article[^>]*data-pagefind-body[^>]*>(.*?)<footer class="post-foot"', html, re.S)
     p = Body()
     p.feed(m.group(1))
     return p
@@ -45,6 +46,8 @@ def main():
     args = ap.parse_args()
     base = json.loads((ROOT / 'scripts/baseline/baseline.json').read_text(encoding='utf-8'))
     posts = [p for p in base['pages'] if 'text' in p]
+    # Posts whose text was changed on purpose after the baseline, with the reason.
+    expected = json.loads((ROOT / 'scripts/baseline/expected-diffs.json').read_text(encoding='utf-8'))
     bad = 0
     for old in posts:
         slug = old['path'].strip('/')
@@ -63,9 +66,11 @@ def main():
         if nh_old != nh_new:
             diffs['headings'] = (nh_old, nh_new)
         if ratio < args.threshold or diffs:
-            bad += ratio < args.threshold
+            low = ratio < args.threshold and slug not in expected
+            bad += low
             shown = ', '.join(f'{k} {o}->{n}' for k, (o, n) in diffs.items())
-            print(f'{ratio:.4f}  {slug}  {shown}')
+            note = f'  (expected: {expected[slug]})' if slug in expected else ''
+            print(f'{ratio:.4f}  {slug}  {shown}{note}')
         if args.show == slug:
             for op in difflib.SequenceMatcher(None, a, b, autojunk=False).get_opcodes():
                 if op[0] != 'equal':

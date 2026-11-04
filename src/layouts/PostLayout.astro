@@ -1,0 +1,54 @@
+---
+import type { MarkdownHeading } from 'astro';
+import Banner from '../components/Banner.astro';
+import Giscus from '../components/Giscus.astro';
+import BaseLayout from './BaseLayout.astro';
+import { categoryUrl, excerpt, formatDate, isHidden, postUrl, readingMinutes, tagUrl, type Post } from '../lib/posts';
+
+interface Props {
+  post: Post;
+  headings: MarkdownHeading[];
+  math: boolean;
+  prev?: Post;   // older
+  next?: Post;   // newer
+}
+const { post, headings, math, prev, next } = Astro.props;
+const { title, date, category, tags, description, source } = post.data;
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const showToc = toc.length >= 3;
+const hiddenCategory = isHidden(category);
+---
+<BaseLayout title={title} description={description ?? excerpt(post.body ?? '')} type="article" published={date} math={math}>
+  <Banner slot="banner">
+    <div class="measure">
+      <h1>{title}</h1>
+      <div class="meta">
+        <time datetime={date.toISOString()}>{formatDate(date)}</time>
+        <span>约 {readingMinutes(post.body ?? '')} 分钟</span>
+        {hiddenCategory ? <span>{category}</span> : <a href={categoryUrl(category)}>{category}</a>}
+        {tags.map((t) => <a class="tag" href={tagUrl(t)}>{t}</a>)}
+      </div>
+    </div>
+  </Banner>
+  <div class:list={['post-grid', { 'has-toc': showToc }]}>
+    <article class="prose" data-pagefind-body>
+      <slot />
+      <footer class="post-foot" data-pagefind-ignore>
+        {source && <p class="source">原文：<a href={source.url} rel="noopener">{source.title}</a></p>}
+        {(prev || next) && (
+          <nav class="pager" aria-label="上一篇和下一篇">
+            {prev && <a class="prev" href={postUrl(prev)}><small>← 上一篇</small>{prev.data.title}</a>}
+            {next && <a class="next" href={postUrl(next)}><small>下一篇 →</small>{next.data.title}</a>}
+          </nav>
+        )}
+        <Giscus />
+      </footer>
+    </article>
+    {showToc && (
+      <aside class="toc" aria-label="目录" data-pagefind-ignore>
+        <h2>目录</h2>
+        <ol>{toc.map((h) => <li class={`depth-${h.depth}`}><a href={`#${h.slug}`}>{h.text}</a></li>)}</ol>
+      </aside>
+    )}
+  </div>
+</BaseLayout>
