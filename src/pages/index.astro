@@ -1,0 +1,9 @@
+---
+import { getCollection } from 'astro:content';
+const posts = await getCollection('posts');
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8" /><title>北境程序猿</title></head>
+  <body><p>Astro 骨架：{posts.length} 篇文章</p></body>
+</html>
