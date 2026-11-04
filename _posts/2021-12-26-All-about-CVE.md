@@ -232,7 +232,7 @@ MITRE CNA-LR	36%	31%	32%	35%	30%	44%	47%	42%	54%	38%	41%	47%	48%	36%	47%	44%	51%
   [34]: https://www.nist.gov/index.html
   [35]: https://www.nsa.gov/
   [36]: https://www.af.mil/
-  [37]: http://static.zybuluo.com/gamedebug/xfl69mwzf4e50zgpr7mdmkl8/CVERecordLifeyclnfographic.c5741afa.jpg
+  [37]: https://static.zybuluo.com/gamedebug/xfl69mwzf4e50zgpr7mdmkl8/CVERecordLifeyclnfographic.c5741afa.jpg
   [38]: https://www.cve.org/ResourcesSupport/AllResources/CNARules#section_7_assignment_rules
   [39]: https://nvd.nist.gov/
   [40]: https://www.nist.gov/

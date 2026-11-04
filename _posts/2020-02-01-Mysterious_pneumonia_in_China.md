@@ -21,5 +21,5 @@ tags: [卫生与健康, 病毒]
 > 本文援引柳叶刀，翻译：Louis，文章ID：[PIIS1473309920300116][2]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/cjhvoedxg31h0qff443495bg/fx1.jpg
+  [1]: https://static.zybuluo.com/gamedebug/cjhvoedxg31h0qff443495bg/fx1.jpg
   [2]: https://www.thelancet.com/journals/laninf/article/PIIS1473-3099%2820%2930011-6/fulltext

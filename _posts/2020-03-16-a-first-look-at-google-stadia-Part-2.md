@@ -118,13 +118,13 @@ Stadia是游戏流媒体技术的一次巨大飞跃，它需要一个拥有谷�
  
 
 
-  [1]: http://static.zybuluo.com/gamedebug/3cxxecgg0lz37bpnrilg1dlt/multiplayer.png
-  [2]: http://static.zybuluo.com/gamedebug/rfwpu0vxcz9k6lz91r1qjwks/save-state.png
-  [3]: http://static.zybuluo.com/gamedebug/mx9x5k2p6zuh826i2wut4u6c/crowd-play.png
-  [4]: http://static.zybuluo.com/gamedebug/mwdsrk3i9qyr4xj7508pnz8m/style-transfer-ml.png
-  [5]: http://static.zybuluo.com/gamedebug/6d475cxiem733jt3cs056wiq/overview.png
-  [6]: http://static.zybuluo.com/gamedebug/z27wjkg95vyvn9psae5zzxe2/annotated.png
-  [7]: http://static.zybuluo.com/gamedebug/d8fsdruh0gdnv3yswl3pwfe7/konami-code.png
-  [8]: http://static.zybuluo.com/gamedebug/ajgnm9b48a1o7epja27k5mga/controller-colors.png
+  [1]: https://static.zybuluo.com/gamedebug/3cxxecgg0lz37bpnrilg1dlt/multiplayer.png
+  [2]: https://static.zybuluo.com/gamedebug/rfwpu0vxcz9k6lz91r1qjwks/save-state.png
+  [3]: https://static.zybuluo.com/gamedebug/mx9x5k2p6zuh826i2wut4u6c/crowd-play.png
+  [4]: https://static.zybuluo.com/gamedebug/mwdsrk3i9qyr4xj7508pnz8m/style-transfer-ml.png
+  [5]: https://static.zybuluo.com/gamedebug/6d475cxiem733jt3cs056wiq/overview.png
+  [6]: https://static.zybuluo.com/gamedebug/z27wjkg95vyvn9psae5zzxe2/annotated.png
+  [7]: https://static.zybuluo.com/gamedebug/d8fsdruh0gdnv3yswl3pwfe7/konami-code.png
+  [8]: https://static.zybuluo.com/gamedebug/ajgnm9b48a1o7epja27k5mga/controller-colors.png
   [9]: https://dzone.com/
   [10]: https://dzone.com/articles/a-first-look-at-google-stadia-part-2

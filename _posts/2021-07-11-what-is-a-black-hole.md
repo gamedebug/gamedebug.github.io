@@ -63,7 +63,7 @@ NASA 正在使用在太空中旅行的卫星和望远镜来了解更多关于黑
 文章来源：[https://www.nasa.gov/audience/forstudents/k-4/stories/nasa-knows/what-is-a-black-hole-k4.html][4]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/dtvjej7czpv5ec04tldzwwyd/cygx1_ill.jpeg
-  [2]: http://static.zybuluo.com/gamedebug/8a1q5pxfzaf3rugtgz9nw26h/blackhole_2.jpeg
-  [3]: http://static.zybuluo.com/gamedebug/q5sz9e7tqkbf0pdc3tpis2ng/sgr_lg_2.jpeg
+  [1]: https://static.zybuluo.com/gamedebug/dtvjej7czpv5ec04tldzwwyd/cygx1_ill.jpeg
+  [2]: https://static.zybuluo.com/gamedebug/8a1q5pxfzaf3rugtgz9nw26h/blackhole_2.jpeg
+  [3]: https://static.zybuluo.com/gamedebug/q5sz9e7tqkbf0pdc3tpis2ng/sgr_lg_2.jpeg
   [4]: https://www.nasa.gov/audience/forstudents/k-4/stories/nasa-knows/what-is-a-black-hole-k4.html

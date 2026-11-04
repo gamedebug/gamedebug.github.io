@@ -134,7 +134,7 @@ plt.show()
 ![1_lcezWtzrZPLIQB3Ejkxjbw.png-11.8kB][4]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/k7s0379vq87kvk793imdhwkm/0_aEKtSyYHDtAZ5Crq.gif
-  [2]: http://static.zybuluo.com/gamedebug/lg7ob631bw20dxuelksizzcw/0_2FaMYArlXYVoEPEG.gif
-  [3]: http://static.zybuluo.com/gamedebug/6kviox6id0v07ts5ulkglk3u/0_ZOLTynpgDtU289dZ.jpeg
-  [4]: http://static.zybuluo.com/gamedebug/f9nlqito2897dwyfe1ffbpcs/1_lcezWtzrZPLIQB3Ejkxjbw.png
+  [1]: https://static.zybuluo.com/gamedebug/k7s0379vq87kvk793imdhwkm/0_aEKtSyYHDtAZ5Crq.gif
+  [2]: https://static.zybuluo.com/gamedebug/lg7ob631bw20dxuelksizzcw/0_2FaMYArlXYVoEPEG.gif
+  [3]: https://static.zybuluo.com/gamedebug/6kviox6id0v07ts5ulkglk3u/0_ZOLTynpgDtU289dZ.jpeg
+  [4]: https://static.zybuluo.com/gamedebug/f9nlqito2897dwyfe1ffbpcs/1_lcezWtzrZPLIQB3Ejkxjbw.png

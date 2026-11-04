@@ -137,5 +137,5 @@ FTP协议不能保证数据的安全，也不能满足新时代的数据集成�
 用更好的替代方案替换FTP可以帮助企业提高效率和生产率。使用FTP的企业应该评估该协议如何适应其网络，并实施更好的标准来保护其业务的关键数据。
 
 
-  [1]: http://static.zybuluo.com/gamedebug/0bx8eqw661hcgt8exkzwdh9i/ChandraPicture1_0.png
-  [2]: http://static.zybuluo.com/gamedebug/shxagjuv481glp2xeuejehr4/ChandraPicture2.png
+  [1]: https://static.zybuluo.com/gamedebug/0bx8eqw661hcgt8exkzwdh9i/ChandraPicture1_0.png
+  [2]: https://static.zybuluo.com/gamedebug/shxagjuv481glp2xeuejehr4/ChandraPicture2.png

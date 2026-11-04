@@ -93,23 +93,23 @@ SUSE LINUX包含一个救援系统，用于在紧急情况下从外部访问您�
 ![010.png-14.5kB][20]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/eaxoz87iz79czbprlz8gnvcq/001.png
-  [2]: http://static.zybuluo.com/gamedebug/bjelsi7u650jhz96nfjww03n/002.png
-  [3]: http://static.zybuluo.com/gamedebug/hzoiyxzlagu15g3k63y25a8e/003.png
-  [4]: http://static.zybuluo.com/gamedebug/kmjux1hwprdok5lavq5jacvs/001.png
-  [5]: http://static.zybuluo.com/gamedebug/sr07zjqil3cwfk8srelrnycn/002.png
-  [6]: http://static.zybuluo.com/gamedebug/njyathchm67h4bkja3n62gd3/003.png
-  [7]: http://static.zybuluo.com/gamedebug/f8t0u04ikfavjeq3w8yn1j58/004.png
-  [8]: http://static.zybuluo.com/gamedebug/59kv6hlygvwgbh6knrnw4wxy/004.png
-  [9]: http://static.zybuluo.com/gamedebug/f6qasbkkwbwq3p4zwl5775tn/005.png
-  [10]: http://static.zybuluo.com/gamedebug/m4isf49f37308ox5h52r0urk/005.png
-  [11]: http://static.zybuluo.com/gamedebug/xbum935njg8nwgyovwg2i17w/006.png
-  [12]: http://static.zybuluo.com/gamedebug/84ukf1zpz17fguh2nwmstezk/007.png
-  [13]: http://static.zybuluo.com/gamedebug/m5ozkdrq3y8ndt13xpa0qzco/006.png
-  [14]: http://static.zybuluo.com/gamedebug/gibthwfj5iy3w61o7at1splz/007.png
-  [15]: http://static.zybuluo.com/gamedebug/8ir9fs7bozra2d8a7hbf1hrt/008.png
-  [16]: http://static.zybuluo.com/gamedebug/guike4u7dkgibjr5j1fv5its/008.png
-  [17]: http://static.zybuluo.com/gamedebug/3fwgi95q1psnmd7rmn7jjjou/009.png
-  [18]: http://static.zybuluo.com/gamedebug/pk47zyr645oclmsxuudjlq4j/009.png
-  [19]: http://static.zybuluo.com/gamedebug/ssbi9b01ozh4l1p8n9mrkqxk/010.png
-  [20]: http://static.zybuluo.com/gamedebug/cs62fwcfpe9vjk0niyfk4qyt/010.png
+  [1]: https://static.zybuluo.com/gamedebug/eaxoz87iz79czbprlz8gnvcq/001.png
+  [2]: https://static.zybuluo.com/gamedebug/bjelsi7u650jhz96nfjww03n/002.png
+  [3]: https://static.zybuluo.com/gamedebug/hzoiyxzlagu15g3k63y25a8e/003.png
+  [4]: https://static.zybuluo.com/gamedebug/kmjux1hwprdok5lavq5jacvs/001.png
+  [5]: https://static.zybuluo.com/gamedebug/sr07zjqil3cwfk8srelrnycn/002.png
+  [6]: https://static.zybuluo.com/gamedebug/njyathchm67h4bkja3n62gd3/003.png
+  [7]: https://static.zybuluo.com/gamedebug/f8t0u04ikfavjeq3w8yn1j58/004.png
+  [8]: https://static.zybuluo.com/gamedebug/59kv6hlygvwgbh6knrnw4wxy/004.png
+  [9]: https://static.zybuluo.com/gamedebug/f6qasbkkwbwq3p4zwl5775tn/005.png
+  [10]: https://static.zybuluo.com/gamedebug/m4isf49f37308ox5h52r0urk/005.png
+  [11]: https://static.zybuluo.com/gamedebug/xbum935njg8nwgyovwg2i17w/006.png
+  [12]: https://static.zybuluo.com/gamedebug/84ukf1zpz17fguh2nwmstezk/007.png
+  [13]: https://static.zybuluo.com/gamedebug/m5ozkdrq3y8ndt13xpa0qzco/006.png
+  [14]: https://static.zybuluo.com/gamedebug/gibthwfj5iy3w61o7at1splz/007.png
+  [15]: https://static.zybuluo.com/gamedebug/8ir9fs7bozra2d8a7hbf1hrt/008.png
+  [16]: https://static.zybuluo.com/gamedebug/guike4u7dkgibjr5j1fv5its/008.png
+  [17]: https://static.zybuluo.com/gamedebug/3fwgi95q1psnmd7rmn7jjjou/009.png
+  [18]: https://static.zybuluo.com/gamedebug/pk47zyr645oclmsxuudjlq4j/009.png
+  [19]: https://static.zybuluo.com/gamedebug/ssbi9b01ozh4l1p8n9mrkqxk/010.png
+  [20]: https://static.zybuluo.com/gamedebug/cs62fwcfpe9vjk0niyfk4qyt/010.png

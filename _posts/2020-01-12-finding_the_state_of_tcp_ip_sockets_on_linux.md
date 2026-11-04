@@ -142,4 +142,4 @@ switch ( e.mState )
 这将在读取tcp文件时报告套接字的状态。因此，您不能使用这个来获得每个套接字的确切当前状态。这只适用于报告，因此您或多或少地了解每个套接字的情况。
 
 
-  [1]: http://static.zybuluo.com/gamedebug/jxjbwy3tnv35whbv7rznf1rk/tcpStateDiagram1.gif
+  [1]: https://static.zybuluo.com/gamedebug/jxjbwy3tnv35whbv7rznf1rk/tcpStateDiagram1.gif

@@ -55,5 +55,5 @@ tags: [宇宙, 恒星]
 如你所见，恒星有许多不同的质量、大小和颜色。通过更多地了解恒星的演化，我们可以更多地了解我们的宇宙。你知道在我们的宇宙中有超过1000亿颗恒星吗？
 
 
-  [1]: http://static.zybuluo.com/gamedebug/1nfjgnq3rz442cxz6yooswwo/robson-hatsukami-morgan-wEFdRCG4IU-unsplash-1.jpg
-  [2]: http://static.zybuluo.com/gamedebug/o00bt1twhpu5348aqbgb3t50/lubo-minar-jUiNBSfWZPw-unsplash-1.jpg
+  [1]: https://static.zybuluo.com/gamedebug/1nfjgnq3rz442cxz6yooswwo/robson-hatsukami-morgan-wEFdRCG4IU-unsplash-1.jpg
+  [2]: https://static.zybuluo.com/gamedebug/o00bt1twhpu5348aqbgb3t50/lubo-minar-jUiNBSfWZPw-unsplash-1.jpg

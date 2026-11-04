@@ -49,5 +49,5 @@ Neutron缩放被证明是暴雪的第三大障碍。由于将某些OpenStack服�
 > 注：内容援引OpenStack开源社区，原文链接：[https://superuser.openstack.org/articles/for-blizzard-entertainment-its-game-over-on-scaling-complexity/][2]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/p4jjyljtg0sh75lr3rnar5nw/Screen-Shot-2020-08-03-at-2.21.48-PM-1500x1110.png
+  [1]: https://static.zybuluo.com/gamedebug/p4jjyljtg0sh75lr3rnar5nw/Screen-Shot-2020-08-03-at-2.21.48-PM-1500x1110.png
   [2]: https://superuser.openstack.org/articles/for-blizzard-entertainment-its-game-over-on-scaling-complexity/

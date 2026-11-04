@@ -302,15 +302,15 @@ add-symbol-file /home/dawei/nzuta/nzuta.ko <text addr> -s .data <data addr> -s .
 使用 GDB+KVM 调试内核和模块有几个优势。一是可以进行源码级单步调试，二是对硬件环境的要求比较简单，只需要一台主机即可。 第三是当内核或模块有问题时可以快速重启虚拟机，这一点对内核模块的开发相当重要。这种方法的局限之处在于，当需要调试硬件驱动的时候，如果这种硬件还没有被 KVM 虚拟化支持，则不能调试与此硬件有关的功能，而只能调试仅与内核操作有关的代码。
 
 
-  [1]: http://static.zybuluo.com/gamedebug/w0tfkm72ip094bwzcwx2yk70/img001.png
-  [2]: http://static.zybuluo.com/gamedebug/hdwxny4r5fvf1daacafg6s8b/img002.png
-  [3]: http://static.zybuluo.com/gamedebug/kc2ql3a0roq5v9r8s6p0mxa6/img003.png
-  [4]: http://static.zybuluo.com/gamedebug/cock6ks7v0b57fzg8kb3d1am/img004.png
-  [5]: http://static.zybuluo.com/gamedebug/g1q40ja7kwy5rgulmq3iinz6/img005.png
-  [6]: http://static.zybuluo.com/gamedebug/uqyubocc3tebe84jagrusqgi/img006.png
-  [7]: http://static.zybuluo.com/gamedebug/t8u73hd96egekcr33i6foaaf/img007.png
-  [8]: http://static.zybuluo.com/gamedebug/0tswa50f3xod4a44feqrbg0d/img008.png
-  [9]: http://static.zybuluo.com/gamedebug/zmn70yu6jb436ymy983y3sjw/img009.png
-  [10]: http://static.zybuluo.com/gamedebug/04cr770qtxp9yy4zrlteveer/img010.png
-  [11]: http://static.zybuluo.com/gamedebug/jhmbixpl3gauvqpy11czmfny/img011.png
-  [12]: http://static.zybuluo.com/gamedebug/oxs6ed2ckaonr7dzbh4kqz5u/img012.png
+  [1]: https://static.zybuluo.com/gamedebug/w0tfkm72ip094bwzcwx2yk70/img001.png
+  [2]: https://static.zybuluo.com/gamedebug/hdwxny4r5fvf1daacafg6s8b/img002.png
+  [3]: https://static.zybuluo.com/gamedebug/kc2ql3a0roq5v9r8s6p0mxa6/img003.png
+  [4]: https://static.zybuluo.com/gamedebug/cock6ks7v0b57fzg8kb3d1am/img004.png
+  [5]: https://static.zybuluo.com/gamedebug/g1q40ja7kwy5rgulmq3iinz6/img005.png
+  [6]: https://static.zybuluo.com/gamedebug/uqyubocc3tebe84jagrusqgi/img006.png
+  [7]: https://static.zybuluo.com/gamedebug/t8u73hd96egekcr33i6foaaf/img007.png
+  [8]: https://static.zybuluo.com/gamedebug/0tswa50f3xod4a44feqrbg0d/img008.png
+  [9]: https://static.zybuluo.com/gamedebug/zmn70yu6jb436ymy983y3sjw/img009.png
+  [10]: https://static.zybuluo.com/gamedebug/04cr770qtxp9yy4zrlteveer/img010.png
+  [11]: https://static.zybuluo.com/gamedebug/jhmbixpl3gauvqpy11czmfny/img011.png
+  [12]: https://static.zybuluo.com/gamedebug/oxs6ed2ckaonr7dzbh4kqz5u/img012.png

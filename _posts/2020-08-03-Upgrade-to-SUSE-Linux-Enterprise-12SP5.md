@@ -109,5 +109,5 @@ root # zypper install $(cat installed-software.bak)
 - 包依赖项和模式范围可能已发生变化。 
 
 
-  [1]: http://static.zybuluo.com/gamedebug/k5utcuoynjtajvb1lipwr6v8/upgrade-paths.png
+  [1]: https://static.zybuluo.com/gamedebug/k5utcuoynjtajvb1lipwr6v8/upgrade-paths.png
   [2]: https://www.suse.com/releasenotes/

@@ -36,6 +36,6 @@ tags: [卫生与健康, 病毒]
 >本文援引柳叶刀，翻译：Louis，文章ID：[PIIS0140673620301859][3]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/0688xpwhngdf7zcc2z5l0ca4/WX20200126-205344@2x.png
-  [2]: http://static.zybuluo.com/gamedebug/ewrj6ru2pct2ryxaox13t28e/WX20200126-210219@2x.png
+  [1]: https://static.zybuluo.com/gamedebug/0688xpwhngdf7zcc2z5l0ca4/WX20200126-205344@2x.png
+  [2]: https://static.zybuluo.com/gamedebug/ewrj6ru2pct2ryxaox13t28e/WX20200126-210219@2x.png
   [3]: https://www.thelancet.com/pdfs/journals/lancet/PIIS0140-6736%2820%2930185-9.pdf

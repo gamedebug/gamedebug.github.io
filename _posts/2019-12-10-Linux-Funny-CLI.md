@@ -1038,5 +1038,5 @@ MAINTAINER
 
 最后也许还会有很多人想问，这些小玩意怎么安装到我们的Linux系统上呢？各大发行版的在线软件源基本都能找到这些东东，至于怎么安装，大家伙自己研究吧，如果你是一名IT工程师，这都解决不了也许你真的不太适合这个行业，如果你是一名非技术人员，那么请找你的工程师朋友帮你解决一下咯，这里就不再花篇幅来介绍了。
 
-  [1]: http://static.zybuluo.com/gamedebug/nw56egy0ttbphh4l4nxirhyj/WX20191210-144018@2x.png
-  [2]: http://static.zybuluo.com/gamedebug/ywonem0txq7q0gc0p8892pnr/WX20191210-153503@2x.png
+  [1]: https://static.zybuluo.com/gamedebug/nw56egy0ttbphh4l4nxirhyj/WX20191210-144018@2x.png
+  [2]: https://static.zybuluo.com/gamedebug/ywonem0txq7q0gc0p8892pnr/WX20191210-153503@2x.png

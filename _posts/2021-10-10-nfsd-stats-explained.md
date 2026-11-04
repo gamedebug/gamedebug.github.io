@@ -228,12 +228,12 @@ Proc4是最新的协议（2000年），其中一项重大变化是复合操作�
 - NFSv4.1：[RFC5661][13]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/mp1upugursnxhpdb2qzx96g0/reply_cache_white.png
+  [1]: https://static.zybuluo.com/gamedebug/mp1upugursnxhpdb2qzx96g0/reply_cache_white.png
   [2]: https://www.kernel.org/doc/ols/2009/ols2009-pages-95-100.pdf
   [3]: https://stackoverflow.com/questions/20105260/what-does-stale-file-handle-in-linux-means
-  [4]: http://static.zybuluo.com/gamedebug/f51c0jwx362ri0vbozbzkk3g/io_white.png
-  [5]: http://static.zybuluo.com/gamedebug/bopjgj6a75lwg1i6d19frjd6/net_white.png
-  [6]: http://static.zybuluo.com/gamedebug/7illhyy4bnocozriplaoe1g4/proc3.png
+  [4]: https://static.zybuluo.com/gamedebug/f51c0jwx362ri0vbozbzkk3g/io_white.png
+  [5]: https://static.zybuluo.com/gamedebug/bopjgj6a75lwg1i6d19frjd6/net_white.png
+  [6]: https://static.zybuluo.com/gamedebug/7illhyy4bnocozriplaoe1g4/proc3.png
   [7]: https://tools.ietf.org/html/rfc5661
   [8]: https://tools.ietf.org/html/draft-ietf-nfsv4-minorversion2-41
   [9]: https://web.archive.org/web/20100625004211/http://www.opensubscriber.com/message/nfs@lists.sourceforge.net/7833588.html

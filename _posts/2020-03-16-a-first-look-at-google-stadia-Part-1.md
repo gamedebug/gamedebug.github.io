@@ -179,15 +179,15 @@ GPU性能(10.7 TF)尤其引人关注，因为谷歌声称它比PlayStation (PS) 
  
 
 
-  [1]: http://static.zybuluo.com/gamedebug/v8i4ed42ypr4mbnoizf8nsno/stadia-network.png
-  [2]: http://static.zybuluo.com/gamedebug/anpt5euin4gfh2a72au381q9/traditional-multiplayer.png
-  [3]: http://static.zybuluo.com/gamedebug/h2y7q18n0cqzpawufdwyy7pz/stadia-topology.png
-  [4]: http://static.zybuluo.com/gamedebug/ncg7xf89mmbkqei309r23nyr/cross-platform.png
-  [5]: http://static.zybuluo.com/gamedebug/p3ybkpso51ysjmwkuxxqtjul/simultaneous-stream-to-youtube.png
-  [6]: http://static.zybuluo.com/gamedebug/q8z01x7eo2l0ckpuk17vxpzv/visual-comparison-xbox-one-x.png
-  [7]: http://static.zybuluo.com/gamedebug/v46bkiqajcuqxdl7htab2ext/stadia-node.png
-  [8]: http://static.zybuluo.com/gamedebug/vktn6oj532mpz0nnlf1b378z/spec-comparison.png
-  [9]: http://static.zybuluo.com/gamedebug/zj3mzj6gtcjbqfkyb2mk2dhv/single-and-multi-gpu.png
-  [10]: http://static.zybuluo.com/gamedebug/qx52z3gs7gtut2toydz68xat/loading-speed.png
+  [1]: https://static.zybuluo.com/gamedebug/v8i4ed42ypr4mbnoizf8nsno/stadia-network.png
+  [2]: https://static.zybuluo.com/gamedebug/anpt5euin4gfh2a72au381q9/traditional-multiplayer.png
+  [3]: https://static.zybuluo.com/gamedebug/h2y7q18n0cqzpawufdwyy7pz/stadia-topology.png
+  [4]: https://static.zybuluo.com/gamedebug/ncg7xf89mmbkqei309r23nyr/cross-platform.png
+  [5]: https://static.zybuluo.com/gamedebug/p3ybkpso51ysjmwkuxxqtjul/simultaneous-stream-to-youtube.png
+  [6]: https://static.zybuluo.com/gamedebug/q8z01x7eo2l0ckpuk17vxpzv/visual-comparison-xbox-one-x.png
+  [7]: https://static.zybuluo.com/gamedebug/v46bkiqajcuqxdl7htab2ext/stadia-node.png
+  [8]: https://static.zybuluo.com/gamedebug/vktn6oj532mpz0nnlf1b378z/spec-comparison.png
+  [9]: https://static.zybuluo.com/gamedebug/zj3mzj6gtcjbqfkyb2mk2dhv/single-and-multi-gpu.png
+  [10]: https://static.zybuluo.com/gamedebug/qx52z3gs7gtut2toydz68xat/loading-speed.png
   [11]: https://dzone.com/
   [12]: https://dzone.com/articles/a-first-look-at-google-stadia

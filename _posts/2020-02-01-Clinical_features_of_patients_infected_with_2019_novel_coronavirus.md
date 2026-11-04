@@ -913,7 +913,7 @@ SARS-CoV和MERS-CoV都被认为起源于蝙蝠，这些感染分别通过市场�
 >本文援引柳叶刀，翻译：Louis，文章ID：[PIIS0140-6736(20)30183-5][4]
 
 
-  [1]: http://static.zybuluo.com/gamedebug/8wtgriopwwcztieniio6y179/gr1.jpg
-  [2]: http://static.zybuluo.com/gamedebug/bny4c1tiqku2zjxluwf3a0bt/gr2.jpg
-  [3]: http://static.zybuluo.com/gamedebug/w0ymkrwrupm5yizo016fhx6f/gr3.jpg
+  [1]: https://static.zybuluo.com/gamedebug/8wtgriopwwcztieniio6y179/gr1.jpg
+  [2]: https://static.zybuluo.com/gamedebug/bny4c1tiqku2zjxluwf3a0bt/gr2.jpg
+  [3]: https://static.zybuluo.com/gamedebug/w0ymkrwrupm5yizo016fhx6f/gr3.jpg
   [4]: https://www.thelancet.com/journals/lancet/article/PIIS0140-6736%2820%2930183-5/fulltext

@@ -54,4 +54,4 @@ Linux 6.0现在可以作为源代码下载，您可以在您选择的发行版�
 您可以在Canonical的主线存储库上赌一把，在基于Ubuntu的发行版上安装Linux 6.0（但请记住，这些发行版不附带任何保证或支持保证）。
 
 
-  [1]: http://static.zybuluo.com/gamedebug/aos6plq08sfehwhe013mk5pw/linux-kernel-6.0.jpg
+  [1]: https://static.zybuluo.com/gamedebug/aos6plq08sfehwhe013mk5pw/linux-kernel-6.0.jpg

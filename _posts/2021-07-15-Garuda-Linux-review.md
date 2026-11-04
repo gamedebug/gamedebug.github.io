@@ -90,9 +90,9 @@ Garuda Linux专注于为大多数常见任务提供GUI应用程序，这使得Ga
 
 
 
-  [1]: http://static.zybuluo.com/gamedebug/pou50st64y88grhanqow52kc/garuda-installer.png
-  [2]: http://static.zybuluo.com/gamedebug/jrz6zhtpm84ty06jmi4im6ah/garuda-snapshots.png
-  [3]: http://static.zybuluo.com/gamedebug/fobnszclfhdb82qyvn0fbkv6/Garuda-pamac.png
-  [4]: http://static.zybuluo.com/gamedebug/u87tc76ymzr7npm3q1lpvuhm/Garuda-Assistant.png
-  [5]: http://static.zybuluo.com/gamedebug/8y27ort9dri01gr8c9p42vy1/garuda-settings-manager.png
-  [6]: http://static.zybuluo.com/gamedebug/jyxf9uj18bch99xioguom6lc/Garuda-gamer.png
+  [1]: https://static.zybuluo.com/gamedebug/pou50st64y88grhanqow52kc/garuda-installer.png
+  [2]: https://static.zybuluo.com/gamedebug/jrz6zhtpm84ty06jmi4im6ah/garuda-snapshots.png
+  [3]: https://static.zybuluo.com/gamedebug/fobnszclfhdb82qyvn0fbkv6/Garuda-pamac.png
+  [4]: https://static.zybuluo.com/gamedebug/u87tc76ymzr7npm3q1lpvuhm/Garuda-Assistant.png
+  [5]: https://static.zybuluo.com/gamedebug/8y27ort9dri01gr8c9p42vy1/garuda-settings-manager.png
+  [6]: https://static.zybuluo.com/gamedebug/jyxf9uj18bch99xioguom6lc/Garuda-gamer.png
