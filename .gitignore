@@ -11,3 +11,6 @@ _site/
 .bundle/
 vendor/
 Gemfile.lock
+
+# Editor settings
+.vscode/
