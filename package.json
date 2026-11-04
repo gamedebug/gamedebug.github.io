@@ -12,7 +12,7 @@
     "check": "astro check",
     "astro": "astro",
     "migrate": "node scripts/migrate-posts.mjs",
-    "verify": "python3 -I scripts/verify_content.py && python3 -I scripts/verify_urls.py"
+    "verify": "python3 -I scripts/verify_content.py && python3 -I scripts/verify_urls.py && python3 -I scripts/check_links.py"
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.3.5",
