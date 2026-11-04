@@ -26,8 +26,8 @@ const UA = 'Mozilla/5.0 (X11; Linux x86_64) gamedebug-image-fetch';
 const CONCURRENCY = Number(process.argv[process.argv.indexOf('--concurrency') + 1]) || 6;
 const EXT = { jpeg: 'jpg', png: 'png', gif: 'gif', webp: 'webp', svg: 'svg', avif: 'avif', tiff: 'tif' };
 
-const INLINE = /!\[[^\]]*\]\(\s*<?([^)\s>]+)/g; // ![alt](url)
-const REFUSE = /!\[([^\]]*)\]\[([^\]]*)\]/g; // ![alt][id]
+const INLINE = /!\[(?:[^\[\]]|\[[^\]]*\])*\]\(\s*<?([^)\s>]+)/g; // ![alt](url), alt may hold [..]
+const REFUSE = /!\[((?:[^\[\]]|\[[^\]]*\])*)\]\[([^\]]*)\]/g; // ![alt][id]
 const REFDEF = /^\s*\[([^\]]+)\]:\s*<?(\S+?)>?(?:\s|$)/gm; // [id]: url
 const IMGTAG = /<img[^>]+src=["']([^"']+)/gi;
 

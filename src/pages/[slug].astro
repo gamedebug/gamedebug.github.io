@@ -1,0 +1,16 @@
+---
+// Temporary post page for migration checks; the real layout comes in phase 2.
+import { getCollection, render } from 'astro:content';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts');
+  return posts.map((post) => ({ params: { slug: post.id }, props: { post } }));
+}
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head><meta charset="utf-8" /><title>{post.data.title} – 北境程序猿</title></head>
+  <body><article id="post-body"><Content /></article></body>
+</html>

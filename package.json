@@ -13,7 +13,12 @@
     "astro": "astro"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "7.3.5",
     "astro": "7.4.5",
+    "remark-cjk-friendly": "2.3.4",
     "sharp": "0.35.0"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
   }
 }
