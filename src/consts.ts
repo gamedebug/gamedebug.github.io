@@ -43,4 +43,4 @@ export const GISCUS = {
 
 // Analytics: the GoatCounter site code (https://<code>.goatcounter.com).
 // Left empty, no analytics script is rendered.
-export const GOATCOUNTER_CODE = '';
+export const GOATCOUNTER_CODE = 'gamedebug';
