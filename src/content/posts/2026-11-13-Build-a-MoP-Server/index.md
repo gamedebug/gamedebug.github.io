@@ -1299,9 +1299,137 @@ General Grimaxe（42010）站在他的黑铁魔像（42008）头顶上，模板�
 
 </details>
 
-### 4.8 接下来
+### 4.8 批次四：1–19 级的掉落表（模式 A）
 
-审计剩下的问题，按等级段从低到高继续修，先做 1–19 级。这一段扣掉禁用的任务后还有 110 个，下一个要批量处理的模式是**掉落表空了**：掉落任务物品的怪还在，只是掉落表里没有这件物品（比如 King Reaperclaw 的角、Keeshan 的弓）。每一批修完都会更新到这一章。
+审计里"要收集的物品没有来源"这一类，很多其实是掉落表空了：掉这件物品的怪还在、也刷着，只是掉落表里没有这一行。比如贫瘠之地的 King Reaperclaw 有刷新点，可他的 `lootid` 是 0，任务要的角永远掉不出来。
+
+原始的掉落数据找不回来了，但有一个可靠的线索：**客户端缓存里，每个生物和物体都带着一份"身上可能有的任务物品"列表**，在库里是 `creature_template` / `gameobject_template` 的 `questItem1..6`（库里分别有 4366 个生物、1588 个物体填了这份列表）。`tools/fix_pattern_a.py` 就按这份列表还原：
+
+- 列表里有这件物品、并且**有刷新点**的生物：把物品加进它的掉落表，设成任务掉落（掉率写成负数，只有身上有这个任务的玩家才会掉）。任务只要 1 件，或者这个生物刷新点不超过 3 个（多半是有名字的头目），掉率给 100%；其他给 50%。原本 `lootid` 是 0 的，顺手设成自己的编号；
+- 列表里有这件物品、并且有刷新点的宝箱类物体：加进宝箱的掉落表，100%；
+- 物品本来有别的获取方式（比如对尸体或物体使用道具），只是那个法术没人施放的，不当成掉落问题处理，留给人工。
+
+1–19 级段（扣掉已禁用的任务）的结果：还原了 **40 件物品、93 条掉落**，写库后逐条核对过；**53 条**需要人工处理。
+
+文件：`sql-custom/2026_11_13_15_audit_pattern_a_loot_1_19.sql`，备份：`backup/audit_pattern_a_1_19_20261113.tsv`（相关生物/宝箱原来的 `lootid`/`data1` 和原有的掉落行）。改了模板，所以重启后才生效（已重启）。
+
+有两处值得一提：
+
+- **Elemental Goo（52506）**是珠宝加工日常要的材料，缓存里有 40 个深岩之洲的元素生物带着它，这次都加上了掉落。这个日常的最低等级是 1，所以落在这一段里。
+- **Kaja'Cola Zero-One（52483）**的缓存来源同时有怪和三种宝箱，两边都还原了。
+
+<details>
+<summary>还原的 40 件物品（按任务编号排序）</summary>
+
+| 任务 | 物品 | 掉落来源（编号，刷新点，掉率） |
+|---|---|---|
+| 865 | King Reaperclaw's Horn（46850） | King Reaperclaw（34829，1 个刷新点，100%） |
+| 13558 | Aetherion's Essence（44929） | Aetherion（33041，1 个刷新点，100%） |
+| 13582 | Elune's Torch（46692） | Horoo the Flamekeeper（34385，1 个刷新点，100%） |
+| 14056 | Glomp's Booty（46834） | Glomp（34747，1 个刷新点，100%） |
+| 14118 | Slab of Venison（47038） | Weakened Mosshoof Stag（35096，48 个刷新点，50%） |
+| 14241 | Gyrochoppa Keys（49424） | SI:7 Operative（36103，40 个刷新点，100%）；Gyrochoppa Pilot（36129，3 个刷新点，100%）；SI:7 Operative（36348，10 个刷新点，100%） |
+| 14249 | Pristine Thunderhead Feather（49068） | Thunderhead Hippogryph（6375，67 个刷新点，50%）；Thunderhead Stagwing（6377，11 个刷新点，50%） |
+| 14401 | Chance the Cat（49281） | Lucius the Cruel（36461，1 个刷新点，100%） |
+| 14429 | Attuned Runestone（49359） | Apprentice Investigator（36592，15 个刷新点，50%）；Apprentice Illuminator（36593，13 个刷新点，50%） |
+| 14431 | Blackmaw Intelligence（49364） | Talrendis Biologist（36611，13 个刷新点，100%） |
+| 14433 | Ambassador's Robes（49366） | Talrendis Ambassador（36614，8 个刷新点，100%） |
+| 14464 | Grunwald's Head（49540） | Captain Grunwald（36680，1 个刷新点，100%） |
+| 24439 | The Head of Jarrodenus（49674） | Commander Jarrodenus（36884，1 个刷新点，100%） |
+| 24675 | Side of Stag Meat（50219） | Brown Stag（37786，28 个刷新点，50%） |
+| 24816 | Shark Parts（50381） | Ravenous Lurker（36681，34 个刷新点，50%） |
+| 24859 | Intact Naga Hide（50437） | Vashj'elan Warrior（38359，34 个刷新点，50%）；Vashj'elan Siren（38360，37 个刷新点，50%） |
+| 24954 | Fire Gland（52035） | Child of Volcanoth（38845，42 个刷新点，50%） |
+| 24981 | Urgent Scarlet Memorandum（52077） | Scarlet Missionary（1536，15 个刷新点，100%）；Scarlet Zealot（1537，22 个刷新点，100%）；Captain Perrine（1662，1 个刷新点，100%）；Slain Scarlet Zealot（39086，16 个刷新点，100%） |
+| 25056 | Plagued Bruin Hide（52270） | Plagued Bruin（39049，42 个刷新点，50%） |
+| 25093 | Commander Arrington's Head（52346） | Commander Arrington（39141，2 个刷新点，100%） |
+| 25093 | Darkblade Cyn's Head（52347） | Darkblade Cyn（39142，3 个刷新点，100%） |
+| 25110 | Kaja'Cola Zero-One（52483） | Brute Overseer（39193，35 个刷新点，100%）；宝箱 Kaja'Cola Zero-One（202552，15 个刷新点，100%）；宝箱 Kaja'Cola Zero-One（202553，12 个刷新点，100%）；宝箱 Kaja'Cola Zero-One（202554，16 个刷新点，100%） |
+| 25156、25162 | Elemental Goo（52506） | Sun-Touched Servant（39366，2 个刷新点，100%）；Sun-Touched Speaker（39373，1 个刷新点，100%）；Ascended Windwalker（39414，2 个刷新点，100%）；Ascended Flameseeker（39415，2 个刷新点，100%）；Spatial Flux（39612，2 个刷新点，100%）；Flux Animator（40033，2 个刷新点，100%）；Spatial Anomaly（40170，2 个刷新点，100%）；Ascended Rockbreaker（40272，3 个刷新点，100%）；Ascended Waterlasher（40273，3 个刷新点，100%）；Void Lord（41364，1 个刷新点，100%）；Compelled Elemental（42210，22 个刷新点，50%）；Fungal Behemoth（42475，45 个刷新点，50%）；Irestone Rumbler（42527，150 个刷新点，50%）；Gorged Gyreworm（42766，10 个刷新点，50%）；Irestone Rumbler（42780，34 个刷新点，50%）；Stonecore Magmalord（42789，10 个刷新点，50%）；Crystalspawn Giant（42810，3 个刷新点，100%）；Ravenous Tunneler（42925，7 个刷新点，50%）；Deepstone Elemental（43026，28 个刷新点，50%）；Living Blood（43123，49 个刷新点，50%）；Mercurial Ooze（43158，39 个刷新点，50%）；Energized Geode（43254，65 个刷新点，50%）；Lodestone Elemental（43258，42 个刷新点，50%）；Pulsing Geode（43374，48 个刷新点，50%）；Corborus（43438，1 个刷新点，100%）；Temperamental Rumbler（43480，24 个刷新点，50%）；Defaced Earthrager（44076，28 个刷新点，50%）；Earthbound Rumbler（44078，54 个刷新点，50%）；Jade Rager（44220，72 个刷新点，50%）；Gyreworm（44257，46 个刷新点，50%）；Gorged Gyreworm（44259，29 个刷新点，50%）；Desecrated Earthrager（44683，30 个刷新点，50%）；Maziel（44967，2 个刷新点，100%）；Greater Quicksilver Ooze（44988，15 个刷新点，50%）；Elemental Overseer（45084，11 个刷新点，50%）；Scion of Al'Akir（45755，24 个刷新点，50%）；Sweeping Winds（51672，29 个刷新点，50%） |
+| 25193 | Durotar Crocolisk Tooth（60615） | Dreadmaw Crocolisk（3110，47 个刷新点，50%）；Dreadmaw Toothgnasher（39452，69 个刷新点，50%） |
+| 25202 | Still-Beating Heart（52531） | Chip Endale（39363，2 个刷新点，100%） |
+| 25232 | Burning Blade Spellscroll（52564） | Burning Blade Thug（3195，5 个刷新点，50%）；Burning Blade Neophyte（3196，5 个刷新点，50%）；Burning Blade Cultist（3199，4 个刷新点，50%） |
+| 25243 | Fickle Heart（52559） | Candy Cane（39426，3 个刷新点，100%） |
+| 26220 | Swine Belly（57758） | Mature Swine（42504，22 个刷新点，50%）；Wild Mature Swine（42859，44 个刷新点，50%） |
+| 26445、26449 | Seeker's Fel Spear（45476） | Diathorus the Seeker（6072，1 个刷新点，100%） |
+| 26445、26449 | Gorgannon's Flaming Blade（45477） | Gorgannon（17300，1 个刷新点，100%） |
+| 26560 | Jorgensen's Cage Key（58969） | Utroka the Keymistress（43350，1 个刷新点，100%） |
+| 26562 | Blackrock Lever Key（59033） | Overlord Barbarius（43369，1 个刷新点，100%） |
+| 26571 | Keeshan's Bow（58953） | Murdunk（43327，1 个刷新点，100%） |
+| 26571 | Keeshan's Survival Knife（58954） | Homurk（43329，1 个刷新点，100%） |
+| 26862 | Searing Binding（60499） | Molten Elemental（11321，8 个刷新点，50%） |
+| 27082 | Diseased Organ（60793） | Rabid Worg（1766，96 个刷新点，50%）；Giant Rabid Bear（1797，104 个刷新点，50%） |
+| 27575 | Dempsey's Torso（61506） | Marsh Crocolisk（45896，24 个刷新点，100%） |
+| 27575 | Dempsey's Appendages（61507） | Marsh Crocolisk（45896，24 个刷新点，100%） |
+| 27575 | Dempsey's Giblets（61508） | Marsh Crocolisk（45896，24 个刷新点，100%） |
+| 28199 | Flesh Sample（63254） | Risen Hillsbrad Farmer（47859，21 个刷新点，50%）；Risen Hillsbrad Peasant（47861，31 个刷新点，50%） |
+
+</details>
+
+<details>
+<summary>53 条需要人工处理的物品</summary>
+
+| 任务 | 名称 | 物品 | 原因 |
+|---|---|---|---|
+| 13566 | Ritual Materials | Moonstalker Whisker（44969） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 13566 | Ritual Materials | Thistle Bear Fur（45885） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 13626 | Respect for the Fallen | Feero's Holy Hammer（45042） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 13626 | Respect for the Fallen | The Purifier's Prayer Book（45043） | 缓存里没有任何来源 |
+| 13842 | Dread Head Redemption | Durak's Head（60638） | 缓存里的来源没有刷新点（2 个生物, 0 个物体） |
+| 13871 | Security! | Kaldorei Assassin's Head（46147） | 缓存里的来源没有刷新点（1 个生物, 0 个物体） |
+| 14034 | Club Foote | Ship Schematics（46827） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14050 | Gazlowe's Fortune | Gazlowe's Treasure Chest（46833） | 缓存里的来源没有刷新点（0 个生物, 1 个物体） |
+| 14109 | The New You | Shiny Bling（47045） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14109 | The New You | Hip New Outfit（47046） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14109 | The New You | Cool Shades（47047） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14110 | The New You | Shiny Bling（47045） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14110 | The New You | Hip New Outfit（47046） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14110 | The New You | Cool Shades（47047） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14121 | Robbing Hoods | Stolen Loot（47530） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14122 | The Great Bank Heist | Personal Riches（46858） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14123 | Waltz Right In | Maldy's Falcon（48937） | 缓存里的来源没有刷新点（0 个生物, 1 个物体） |
+| 14123 | Waltz Right In | The Goblin Lisa（48939） | 缓存里的来源没有刷新点（0 个生物, 1 个物体） |
+| 14123 | Waltz Right In | The Ultimate Bomb（48941） | 缓存里的来源没有刷新点（0 个生物, 1 个物体） |
+| 14124 | Liberate the Kaja'mite | Kaja'mite Chunk（48766） | 缓存里的来源没有刷新点（0 个生物, 1 个物体） |
+| 14134 | The Captain's Logs | Azshara Lumber（47050） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14323 | Absorbent | Simmering Water Droplet（49172） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 14324 | Full of Hot Water | Globe of Boiling Water（49174） | 缓存里的来源没有刷新点（1 个生物, 0 个物体） |
+| 14385 | Azsharite Experiment Number One | Giant-Sized Laxative（49230） | 缓存里的来源没有刷新点（0 个生物, 1 个物体） |
+| 14469 | Hand-me-downs | Military Supplies（49599） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 25260 | Fizzled | Fizzle's Orb（52580） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 26177 | Feeling Crabby? | Canal Crab（57175） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 26414 | Hitting a Walleye | Hardened Walleye（58503） | 缓存里没有任何来源 |
+| 26420 | Diggin' For Worms | Crystal Bass（58787） | 缓存里没有任何来源 |
+| 26536 | Thunder Falls | Violet Perch（58899） | 缓存里没有任何来源 |
+| 26556 | No Dumping Allowed | Toxic Puddlefish（58945） | 缓存里没有任何来源 |
+| 26557 | A Staggering Effort | Sandy Carp（58946） | 缓存里没有任何来源 |
+| 26588 | A Furious Catch | Giant Furious Pike（58951） | 缓存里没有任何来源 |
+| 26858 | Taragaman the Hungerer | Taragaman the Hungerer's Heart（14540） | 缓存里的来源没有刷新点（1 个生物, 0 个物体） |
+| 27577 | 7th Legion Battle Plans | 7th Legion Battle Plan（61510） | 缓存里的来源没有刷新点（2 个生物, 0 个物体） |
+| 28114 | Glorious Harvest | Creeper Egg（63029） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 28799 | Might of the Earthen | Dwarf Rune Stone（52843） | 缓存里没有任何来源 |
+| 28801 | Tol'vir Heiroglyphics | Tol'vir Hieroglyphic（64397） | 缓存里没有任何来源 |
+| 29261 | Zul'Aman Voodoo | Troll Tablet（63128） | 缓存里没有任何来源 |
+| 29317 | Fish Head | Severed Abomination Head（69901） | 缓存里没有任何来源 |
+| 29319 | Tadpole Terror | Giant Flesh-Eating Tadpole（69905） | 缓存里没有任何来源 |
+| 29320 | Like Pike? | Corpse-Fed Pike（69909） | 缓存里没有任何来源 |
+| 29323 | Stocking Up | Lake Whitefish（69912） | 缓存里没有任何来源 |
+| 29342 | Cold Water Fishing | Arctic Char（69931） | 缓存里没有任何来源 |
+| 29345 | Pond Predators | Azshara Snakehead（69934） | 缓存里没有任何来源 |
+| 29348 | The Race to Restock | Randy Smallfish（69964） | 缓存里没有任何来源 |
+| 29348 | The Race to Restock | Amorous Mud Snapper（69967） | 缓存里没有任何来源 |
+| 29352 | A Fowl Shortage | Dun Morogh Chicken（69982） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 29353 | Keepin' the Haggis Flowin' | Bag o' Sheep Innards（69984） | 缓存里没有任何来源 |
+| 29401 | Blown Away | Windswept Balloon（71034） | 缓存里的来源没有刷新点（0 个生物, 2 个物体） |
+| 29402 | Taking Precautions | Blood Nettle（71035） | 缓存里的来源没有刷新点（0 个生物, 1 个物体） |
+| 29509 | Putting the Crunch in the Frog | Crunchy Frog（72058） | 本来靠法术获得（对物体/尸体使用道具等），该法术没人施放 |
+| 29513 | Spoilin' for Salty Sea Dogs | Great Sea Herring（73269） | 缓存里没有任何来源 |
+
+</details>
+
+### 4.9 接下来
+
+1–19 级段剩下的问题继续逐类处理：上面人工清单里的 53 条；要杀/互动的目标不存在；事件型任务没有触发。其中钓鱼、烹饪日常要的鱼占了一大块，库里没有这些鱼的钓鱼掉落数据。每一批修完都会更新到这一章。
 
 
 ## 还没解决的问题
