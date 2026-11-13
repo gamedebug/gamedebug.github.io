@@ -1597,10 +1597,94 @@ General Grimaxe（42010）站在他的黑铁魔像（42008）头顶上，模板�
 
 **没修的：** 荆棘谷海角的祖尔格拉布系列（26550–26555），要进入祖尔格拉布的一段幻象，后几环的发任务人（Jeklik、Venoxis）都没刷，链条中间就断了，先跳过；灰谷 13982 In a Bind 要的 Kaliva 没有刷新点，原版位置不知道；凄凉之地 5943 Gizelton Caravan 的发任务人和交任务人都没刷，玩家接不到。另外这一段还有一批部落任务（奥特兰克山脉的"植物大战僵尸"小游戏等），矮人路线用不到，暂时没管。
 
-### 4.15 接下来
+### 4.15 批次十一：30–39 级（第一部分）
 
-下一段是 30–39 级，流程不变。
+**掉落表（模式 A）。** 还原 41 件物品、58 条掉落，逐条核对过（`sql-custom/2026_11_13_33_audit_pattern_a_loot_30_39.sql`）。
 
+<details>
+<summary>30–39 级还原的 41 件物品</summary>
+
+| 任务 | 物品 | 掉落来源（编号，刷新点，掉率） |
+|---|---|---|
+| 24606 | Blood Shard Trinket（49934） | Razormane Pathfinder（37560，14，50%）；Razormane Warfrenzy（37660，15，50%）；Razormane Seer（37661，14，50%） |
+| 24620 | Enormous Kodo Heart（49946） | Landquaker Bull（37556，11，100%） |
+| 24621 | Fresh Brain（49947） | Triumph Captain（37926，5，100%） |
+| 25042 | Fresh Stormsnout Steak（52198） | Stormsnout（3240，43，50%） |
+| 25079 | Keg of Blast-O Powder（52290） | Sapper Specialist（37925，22，100%） |
+| 25080 | Humming Electrogizard（52305） | Thunderhead（37208，22，100%） |
+| 25627, 25628 | Rusted Cage Key（55160） | Tony Two-Tusk（40958，1，100%） |
+| 25661 | Evil Dolly's Heart（55196） | Evil Dolly（41076，1，100%） |
+| 25661 | Seadog Fajardo's Lungs（55197） | Seadog Fajardo（41081，1，100%） |
+| 25661 | Lilly Landlubber's Liver（55199） | Lilly Landlubber（41082，1，100%） |
+| 25873, 25874 | Longhorn's Horn（56139） | Cliffwatcher Longhorn（41458，1，100%） |
+| 26366, 26518 | Umboda's Head（58236） | Umboda Three-Heads（42724，1，100%） |
+| 26368 | Shadra-Spawn Venom Sample（58239） | Spawn of Shadra（42879，8，50%） |
+| 26595 | Fitztittle's Ratcheting Torque Wrench（59034） | Freewheelin' Juntz Fitztittle（43376，1，100%） |
+| 26595 | Ephram's Jeweled Mirror（59035） | Ephram "Midriff" Moonfall（43377，1，100%） |
+| 26605 | Poobah's Tiara（59057） | Skymane Gorilla（2521，12，100%）；Skymane Bonobo（43417，8，100%） |
+| 26605 | Poobah's Scepter（59058） | Skymane Gorilla（2521，12，100%）；Skymane Bonobo（43417，8，100%） |
+| 26605 | Poobah's Slippers（59059） | Skymane Gorilla（2521，12，100%）；Skymane Bonobo（43417，8，100%） |
+| 26605 | Poobah's Diary（59060） | Skymane Gorilla（2521，12，100%）；Skymane Bonobo（43417，8，100%） |
+| 26612 | Bloodsail Orders（59145） | Bloodsail Orders（2087，1，100%） |
+| 26999 | Plague Lurker Sample（60760） | Plague Lurker（1824，21，50%） |
+| 26999 | Venom Mist Lurker Sample（60761） | Venom Mist Lurker（1822，11，50%） |
+| 26999 | Hulking Plaguebear Sample（60762） | Hulking Plaguebear（44482，36，50%） |
+| 26999 | Diseased Wolf Sample（60763） | Diseased Wolf（1817，32，50%） |
+| 27012 | Redpine Stave（60747） | Redpine Shaman（44479，17，50%） |
+| 27012 | Redpine Club（60748） | Redpine Gnoll（44478，28，50%） |
+| 27167 | Side of Bear Meat（60851） | Shaggy Black Bear（44473，63，50%） |
+| 27229 | Broodqueen Pedipalp（60883） | Darkmist Broodqueen（45227，1，100%） |
+| 27368 | Crypt Bile（60983） | Crypt Stalker（8555，6，50%）；Crypt Walker（8556，4，50%）；Crypt Horror（8557，8，50%）；Crypt Slayer（8558，4，50%） |
+| 27372 | Plaguehound Blood（60986） | Plaguehound Runt（8596，103，50%）；Frenzied Plaguehound（8598，56，50%） |
+| 27452 | Death Cultist Headwear（61280） | Vile Tutor（8548，14，100%）；Dark Summoner（8551，14，100%） |
+| 27452 | Death Cultist Robes（61281） | Vile Tutor（8548，14，100%）；Dark Summoner（8551，14，100%） |
+| 27458 | Browman's Wrappings（62028） | Stephen Browman（46167，1，100%） |
+| 27479 | Mossflayer Eye（61313） | Mossflayer Scout（8560，11，50%）；Mossflayer Shadowhunter（8561，23，50%）；Mossflayer Cannibal（8562，16，50%）；Warlord Thresh'jin（10822，1，100%） |
+| 27539 | Stinking Skull（61372） | Scourge Soldier（8523，27，50%）；Cursed Mage（8524，39，50%） |
+| 27614 | Crimson Boar（61959） | Battered Chest（205878，1，100%） |
+| 27614 | Lihanna's Strand（61960） | Battered Chest（205879，1，100%） |
+| 27614 | Shroud of Uther（61961） | Battered Chest（205880，1，100%） |
+| 27614 | Gavinrad's Sigil（61962） | Battered Chest（205881，1，100%） |
+| 28087 | Trapper Net（62924） | Twilight Trapper（47479，38，50%） |
+| 28125 | Twilight's Hammer Armor（63035） | Bulwark Defender（47583，19，50%）；Twilight Magus（47585，11，50%） |
+
+</details>
+
+**同名换编号（模式 B，新规则）。** 30–39 级里常见的一种情况：任务要杀的有名字的敌人，这个编号没有刷新点，但库里另有一个**同名、刷着的编号**（同一个 NPC 在不同版本里换过编号）。规则（`tools/fix_pattern_b.py`）：只看敌对、可攻击、还没设 `KillCredit1` 的同名编号，把它的 `KillCredit1` 设成任务目标，杀它就算数。全库只命中 11 个任务（覆盖各个等级），一次应用（`sql-custom/2026_11_13_34_audit_pattern_b_killcredit_twins.sql`）。
+
+<details>
+<summary>模式 B 修复的 11 个任务</summary>
+
+| 任务 | 名称 | 目标（没刷新的编号） | 改成算数的同名编号（刷新点） |
+|---|---|---|---|
+| 12240 | A Means to an End | Foreman Kaleiki（27238） | 28552（1） |
+| 13161 | The Rider of the Unholy | Rokir（31160） | 30954（1） |
+| 13163 | The Rider of Blood | Baelok（31159） | 30953（1） |
+| 13164 | The Fate of Bloodbane | Orbaz Bloodbane（31283） | 29204（1） |
+| 26700 | The Damsel's (Bad) Luck | Bloodsail Corsair（43726） | 43636（15） |
+| 26938 | Combat Training | Opengut Behemoth（45098） | 44562（32） |
+| 27145 | Plagued Hatchlings...For Now | Rattlegore（11622） | 44318（1） |
+| 27202 | Brother Against Brother | Forsaken Trooper（45240） | 44791（25）、44792（17）、46053（8）、46054（16） |
+| 27770 | Lifting the Veil | Nyxondra（46658） | 46861（1） |
+| 28320 | Assault on Dreadmaul Rock | Blackrock Invader（48432） | 42937（46） |
+| 29827 | Acid Rain | Hozen Gutripper（55707） | 58943（29） |
+
+</details>
+
+**辛特兰（鹰巢山一线，`sql-custom/2026_11_13_35_hinterlands_30_39.sql`）：**
+
+| 任务 | 名称 | 原因 | 修法 |
+|---|---|---|---|
+| 26517 | Summit of Fate | 蜘蛛神像在库里、在客户端缓存里都没有来源 | 按任务说明"从 Jintha'Alor 山顶的邪枝巨魔身上收集"，加到平均刷新高度在 195 以上的 5 种邪枝巨魔掉落里，40% |
+| 26523 | All That Skitters | 小蜘蛛不能拾取 | 和抓螃蟹一样：点击 → 79588 → 79591（给物品）→ 消失 |
+| 26532 | Shadra the Venom Queen | Shadra 没有刷新点，模板是占位数据 | 改成 33 级怪物阵营、4 倍血，刷在 Shadra'Alor 西北神庙的祭坛旁边（祭坛建在建筑上，地形高度只有 75–88，所以直接用祭坛标记的高度 116.7）。位置和等级是我们定的 |
+| 27625 | In Defense of Quel'Danil | 要杀的 16 个亡灵潜伏者没有刷新点，模板是占位数据 | 改成 Undercity 阵营 30–31 级，在营地守卫周围一圈刷 8 个（按地图高度），60 秒重刷 |
+
+**还没修的：** 27626 The Highvale Documents 的 3 个文件物体模板是空壳（类型 0，名字"unk name"），也不知道原版位置。30–39 级剩下的大多是整段剧情或载具战（东瘟疫之地血色十字军的一串头目、荆棘谷海角的 Brashtide 海盗船系列、千针石林、西瘟疫之地 Andorhal 的攻防战），而且要杀的敌人普遍没有刷新点、模板是占位数据，重建要大量猜位置。
+
+### 4.16 接下来
+
+30–39 级剩下的问题见上一节末尾，处理方式待定。
 
 ## 还没解决的问题
 
