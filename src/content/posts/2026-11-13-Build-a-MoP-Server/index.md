@@ -116,7 +116,9 @@ docker attach --detach-keys="ctrl-x" mop-worldserver-1
 - 每个出生点放了一个自制的装备商人（Newcomer Watcher），按职业只卖对应的装备。
 - 顺手修了沙石幼龙：它的 `VehicleId` 是 0，不能带乘客。根据 Vehicle.dbc 选了一个空闲的双座载具 ID 填上，现在队友也能坐上去了。
 
-### 1.8 崩溃排查的准备
+### 1.8 崩溃排查
+
+#### 第一次崩溃：先打开 core dump
 
 11 月 9 日 worldserver 段错误退出过一次（退出码 139）。我用 dmesg 里的地址加 addr2line，定位到 `Player::GetQuestStatus`。最大的嫌疑是熊猫人岛任务 29414 的 Aysa 冥想事件脚本 `npc_aysa_meditationAI`：它缓存了裸的 `Player*` 指针，重置时不清空，每个 tick 都去调用 `GetQuestStatus`。而唯一接过这个任务的角色，正好在崩溃前下线了。
 
@@ -125,6 +127,69 @@ docker attach --detach-keys="ctrl-x" mop-worldserver-1
 - 关掉 apport，`core_pattern` 设为 `/cores/core.%e.%p.%t`；
 - compose 里给 worldserver 加上 `ulimits: core: -1`，并把 `./cores` 挂载进容器；
 - 宿主机装好 gdb。下次崩溃时，先看调用栈里有没有 `npc_aysa_meditationAI::UpdateAI`，再决定怎么改。
+
+#### 后来抓到的两个 core：关机时的 use-after-free
+
+之后 `cores/` 目录里陆续出现了两个 core，分别生成于 11 月 11 日 14:53 和 11 月 13 日 00:15，每个约 1.3 GB。两次都正好是我改完数据、重启 worldserver 的时候。
+
+**第一个难点：崩溃时运行的二进制已经没了。** 我们几乎每天都在重新编译，第二个 core 生成 8 分钟后，镜像就又编了一版。直接用现有的二进制去 gdb，调用栈全是 `??`。解决办法分三步：
+
+1. **从 core 里读出当时那个二进制的 build-id。** core 里的 `NT_FILE` 记录了 worldserver 映射到的地址，那一页里还保留着 ELF 头和 `.note.gnu.build-id`，写个几十行的 Python 就能把它读出来。两个 core 的 build-id 分别是 `18f43ca4…` 和 `144db24d…`，和现在的二进制都对不上。
+2. **按当时的源码重编一份。** 复制一份源码，把第二个 core 之后打的补丁（Raid Night）撤掉，借用同一个 BuildKit 编译缓存增量编译。38 秒就编完了，build-id 正好是 `144db24d…`，完全一致。
+3. **在镜像环境里跑 gdb。** 宿主机是 Ubuntu 26.04，容器是 24.04，两边的 libc、libstdc++ 不一样。所以要在镜像里临时装上 gdb，把 core 挂载进去再分析，这样共享库也能对上。
+
+拿到的调用栈：
+
+```
+#0  WorldSocket::CloseSocket() [clone .part.0]
+#1  ReactorRunnable::Stop()
+#2  WorldSocketMgr::StopNetwork()
+#3  WorldRunnable::Run()
+```
+
+**它不是游戏过程中的崩溃，而是关机过程中的崩溃。** 主循环已经结束，正在断开所有网络连接。第一个 core 没有重编对应的二进制，但我把两个 core 栈上指向 worldserver 的返回地址一一列出来对比：网络模块的地址整体差 0x3200，主程序整体差 0x30c0，崩溃的 PC 也正好差 0x3200。所以这是同一处崩溃。
+
+**原因。** 看反汇编，崩溃点在内联进来的 `CloseTcpSocket()` 里。它依次调用 `cancel()`、`shutdown()`、`close()`，崩在最后的 `close()` 上：从 socket 对象里读出来的指针是 `0x7acba8c1421e`，地址没有对齐，正是 glibc 回收内存后写进去的那种"乱码"。也就是说，**这个 socket 对象在 `CloseSocket()` 执行的过程中被释放了**。再看源码：
+
+```cpp
+void Stop()
+{
+    std::vector<WorldSocket*> sockets;
+    {
+        std::lock_guard<std::mutex> guard(m_SocketsLock);
+        sockets.assign(m_Sockets.begin(), m_Sockets.end());   // 只复制了裸指针
+    }
+    for (WorldSocket* socket : sockets)
+        socket->CloseSocket();
+    ...
+}
+```
+
+`Stop()` 复制了连接列表，但没有给这些连接加引用计数。`CloseSocket()` 里的 `cancel()` 会让网络线程立刻执行被取消的异步读回调，回调一路走到 `SocketClosed()`，减掉最后一个引用，把对象 `delete` 掉。而主线程这时还在 `CloseSocket()` 里面，接着就去 `close()` 一块已经释放的内存。
+
+**影响。** 只有关机时恰好有客户端连着才会触发，比如有人停在登录界面或者人物选择界面。保存角色的 `KickAll()` 在断开网络之前就执行完了，所以角色数据不会丢，只是 worldserver 没能正常退出。
+
+**修复。** 在锁里给每个连接加一个引用，`CloseSocket()` 返回后再减掉：
+
+```cpp
+{
+    std::lock_guard<std::mutex> guard(m_SocketsLock);
+    sockets.assign(m_Sockets.begin(), m_Sockets.end());
+    for (WorldSocket* socket : sockets)
+        socket->AddReference();
+}
+for (WorldSocket* socket : sockets)
+{
+    socket->CloseSocket();
+    socket->RemoveReference();
+}
+```
+
+注意不能在 `CloseSocket()` 自己里面加引用：析构函数 `~WorldSocket()` 也会调用 `CloseSocket()`，引用计数会从 0 变回 1 再变回 0，导致对象被二次 delete。
+
+改完后我做了个测试：开 20 条到 8085 端口的 TCP 连接，然后重启 worldserver。这样测了两轮，都正常退出，没有生成 core。不过原来的 bug 本身也是看时机才触发的，所以这只能说明修复没有引入新问题，还不能算证明它彻底修好了。之后每次重启都会看一眼 `cores/` 目录。
+
+**编译缓存的小插曲。** 为了还原旧二进制，我在共享的编译缓存里编过一份"撤掉补丁"的源码。之后正常编译时，ninja 只看修改时间：真实源码比缓存里的 `.o` 旧，就不会重编，结果编出来的 worldserver 里少了 Raid Night 的脚本。我用 `nm` 检查时发现了这个问题，于是把所有改动过的文件 touch 一遍。但 Docker 的层缓存只认文件内容、不认修改时间，又把整个编译步骤跳过了。最后在源码目录里临时放一个标记文件，让 COPY 层失效，才真正重编。以后再借用编译缓存做这种事，最好单独用一个 cache id。
 
 ### 1.9 修任务的工作方式
 
@@ -290,6 +355,6 @@ docker attach --detach-keys="ctrl-x" mop-worldserver-1
 - **多人同时做同一个任务从没测过。** 每个修复都只用一个角色验证过，像 29799 这种全场共用的事件，中途加入或者几个人进度不同步，都还是未知数。
 - **其他种族已知做不了的任务：** 地精的 14113、14153 Life of the Party（派对客人一个刷新点都没有），14110 The New You（物品没有任何来源）。这些暂时搁置。
 - **攒着等下一批编译的小 bug：** 放弃 29423 后，Huo 还会一直跟着玩家，重新登录可以解决。
-- **11 月 9 日那次崩溃还没有结论。** core dump 已经打开，等调用栈出来再动代码。
+- **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
 熊猫人岛和矮人这两条新手线目前都能完整做完。接下来继续往后玩，遇到问题再接着修，这篇文章也会跟着更新。
