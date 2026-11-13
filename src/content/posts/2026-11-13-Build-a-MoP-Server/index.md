@@ -111,6 +111,7 @@ docker attach --detach-keys="ctrl-x" mop-worldserver-1
 - 经验倍率：击杀 5 倍、探索 5 倍。任务经验一开始也是 5 倍，后来调回了 1 倍。
 - 新角色初始金币 10 万金。
 - `AllFlightPaths 1`：所有飞行点直接开放；`InstantFlightPaths 1`：飞行改成瞬间到达。后来发现它会把任务里的演出航线也变成瞬移，就改了源码，只让普通航线瞬间到达（见第三章 26094）。
+- `PlayerSaveInterval 300000`：自动存档从 15 分钟一次改成 5 分钟一次（原因见 1.8 节 11 月 13 日那次重启）。
 - `MaxPrimaryTradeSkill 10`：每个角色可以学全部主专业（默认 2 个）。核心在每次登录时按配置重新计算剩余的专业数，老角色也直接生效。注意英文客户端技能书的专业页只有两个主专业的位置，第三个以后不一定显示出来，但专业本身能用。
 - 骑术、飞行许可和本阵营所有坐骑写进 `playercreateinfo_spell`，新建角色就有 36 格大包。
 
@@ -190,6 +191,19 @@ for (WorldSocket* socket : sockets)
 注意不能在 `CloseSocket()` 自己里面加引用：析构函数 `~WorldSocket()` 也会调用 `CloseSocket()`，引用计数会从 0 变回 1 再变回 0，导致对象被二次 delete。
 
 改完后我做了个测试：开 20 条到 8085 端口的 TCP 连接，然后重启 worldserver。这样测了两轮，都正常退出，没有生成 core。不过原来的 bug 本身也是看时机才触发的，所以这只能说明修复没有引入新问题，还不能算证明它彻底修好了。之后每次重启都会看一眼 `cores/` 目录。
+
+#### 11 月 13 日：一次"被重启"引出的关机顺序问题
+
+下午 18:03 服务器突然重启，`cores/` 里多了一个 core。我一度以为终于抓到了 11 月 9 日那个崩溃的现场，结果不是。
+
+- **谁重启的：** 机器自带的自动更新（unattended-upgrades）的自动重启是关着的。查 SSM agent 的日志才找到，18:00 AWS 下发了一条 Systems Manager Run Command，文档是 `AWS-RunPatchBaselineAssociation`，参数是 `Operation=Install`、`RebootOption=RebootIfNeeded`。这次更新里有 libc，装完就判定需要重启。AWS 的补丁策略我们决定先不动。
+- **为什么崩：** 主机关机时，docker 是同时停所有容器的，数据库先停了。worldserver 这时正在给在线的角色做下线存档，写库失败，重连也连不上；退出时数据库连接的句柄已经是空的，`~MySQLConnection` 里的 `ASSERT(m_Mysql)` 主动让进程崩溃。core 是关机途中写的，被截断了，gdb 只看得到 `Skyfire::Assert` 一层，原因是从 docker 日志里那行 `ASSERTION FAILED: m_Mysql` 看出来的。
+- **影响：** 那次下线存档没写进去，角色回到了上一次自动存档（当时间隔是 15 分钟）。
+- **加固：**
+  - 加了一个 systemd 服务 `mop-graceful-stop`，排在 `docker.service` 之后启动，所以关机时会先于 docker 停止。它停止时执行 `docker compose -p mop stop -t 120 worldserver authserver`：worldserver 收到 SIGTERM 会先保存所有在线玩家再退出，最多等 2 分钟，然后 docker 才去停数据库；
+  - 自动存档间隔从 15 分钟改成 5 分钟（`PlayerSaveInterval 300000`，写进了 `gen-config.sh`），出事时最多丢 5 分钟。
+
+顺带记一个坑：`etc/worldserver.conf` 是单文件挂载进容器的。用 `sed -i` 改它，会生成一个新文件来替换原文件，运行中的容器还挂着旧文件，所以 `reload config` 读到的仍是旧值，必须重启容器才生效。
 
 **编译缓存的小插曲。** 为了还原旧二进制，我在共享的编译缓存里编过一份"撤掉补丁"的源码。之后正常编译时，ninja 只看修改时间：真实源码比缓存里的 `.o` 旧，就不会重编，结果编出来的 worldserver 里少了 Raid Night 的脚本。我用 `nm` 检查时发现了这个问题，于是把所有改动过的文件 touch 一遍。但 Docker 的层缓存只认文件内容、不认修改时间，又把整个编译步骤跳过了。最后在源码目录里临时放一个标记文件，让 COPY 层失效，才真正重编。以后再借用编译缓存做这种事，最好单独用一个 cache id。
 
@@ -1197,6 +1211,8 @@ General Grimaxe（42010）站在他的黑铁魔像（42008）头顶上，模板�
 
 跳过的情况：计数 NPC 已经有 AI 或脚本的，标记法术挂着 C++ 法术脚本的（可能已经在代码里处理了），物品法术不是无害标记的（比如即死、伤害类，需要另想办法）。最后 76 个任务符合条件，涉及 128 个计数 NPC、67 个法术，加了 131 条 SAI、60 条条件。
 
+重启后启动日志里有 15 条提示"这个 NPC 另有一个计数法术"（`There is a killcredit spell for creatureEntry ...`）。意思是库里本来有一个专门给它计数的法术，但审计确认没有任何东西会施放它，所以这里直接计数，不会重复计数。
+
 文件：`sql-custom/2026_11_13_14_audit_pattern_c_mark_spells.sql`，备份：`backup/audit_pattern_c_20261113.tsv`。
 
 <details>
@@ -1295,7 +1311,6 @@ General Grimaxe（42010）站在他的黑铁魔像（42008）头顶上，模板�
 - **其他种族已知做不了的任务：** 地精的 14113、14153 Life of the Party（派对客人一个刷新点都没有），14110 The New You（物品没有任何来源）。这些暂时搁置。
 - **攒着等下一批编译的小 bug：** 放弃 29423 后，Huo 还会一直跟着玩家，重新登录可以解决。
 - **全局审计剩下的问题。** 联盟这边还有约 1000 个任务需要重建内容（第四章），按等级段从低到高逐批修。
-- **批次一、批次三的数据已经写入，要重启 worldserver 才生效。** 写这一段时还有玩家在线，重启后会在这里更新。
 - **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
 熊猫人岛和矮人这两条新手线目前都能完整做完。接下来继续往后玩，遇到问题再接着修，这篇文章也会跟着更新。
