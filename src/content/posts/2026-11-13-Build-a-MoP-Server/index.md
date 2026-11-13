@@ -1527,9 +1527,79 @@ General Grimaxe（42010）站在他的黑铁魔像（42008）头顶上，模板�
 
 **还剩的：** 29353 Keepin' the Haggis Flowin' 的 Bag o' Sheep Innards 在库里和客户端缓存里都查不到来源，暂时没修；暗月马戏团的两个任务和 29412 Blown Away（气球物体没有刷新点）只在活动期间出现，先放着。
 
-### 4.14 接下来
+### 4.14 批次十：20–29 级
 
-1–19 级段联盟这边的阻塞问题基本处理完了，下一段是 20–29 级。宠物对战入门、珠宝加工日常这两个系统性问题先跳过。
+**掉落表（模式 A）。** 这一段跑出来时发现规则要补一条：荆棘谷那本书的散页（Green Hills of Stranglethorn - Page 14）在客户端缓存里挂在荆棘谷**一百四十多种怪**身上，按"只要 1 件就给 100%"会变成任何怪都必掉。原版这类散页是全区随机低概率掉落，所以加了一条：**一件物品挂在 8 种以上的怪身上，掉率统一给 10%**。1–19 级那批里的 Elemental Goo（挂在 40 种怪上）也一并改回 10%。这一段还原了 32 件物品、205 条掉落，逐条核对过（`sql-custom/2026_11_13_27_audit_pattern_a_loot_20_29.sql`）。
+
+<details>
+<summary>20–29 级还原的 32 件物品</summary>
+
+| 任务 | 物品 | 掉落来源 |
+|---|---|---|
+| 13967 | Furbolg Ear（46741） | Foulweald Warrior（3743，11 个刷新点，50%）；Foulweald Pathfinder（3745，3 个刷新点，100%）；Foulweald Totemic（3750，12 个刷新点，50%）；Foulweald Pathfinder（52161，14 个刷新点，50%） |
+| 24513 | Captain Peake's Eyeballs（49771） | Captain Peake（37157，1 个刷新点，100%） |
+| 24571 | Writhing Seed（49876） | Lashvine（37093，45 个刷新点，50%） |
+| 24574 | Squirming Heart（49883） | Outgrowth（37092，27 个刷新点，100%） |
+| 25730, 26043 | Cragjaw's Huge Tooth（55239） | Cragjaw（41064，1 个刷新点，100%） |
+| 25741 | Deepmoss Venom Sac（55280） | Deepmoss Creeper（4005，35 个刷新点，50%）；Deepmoss Webspinner（4006，14 个刷新点，50%）；Deepmoss Venomspitter（4007，21 个刷新点，50%）；Queen Silith（41185，1 个刷新点，100%） |
+| 25837 | Ram Haunch（56040） | Stonetalon Ram（34894，95 个刷新点，50%） |
+| 25837 | Boulderslide Cheese（56042） | Boulderslide Rock Keeper（11915，10 个刷新点，50%）；Boulderslide Geomancer（11917，13 个刷新点，50%）；Boulderslide Stonepounder（11918，11 个刷新点，50%） |
+| 25913 | Sentinel's Glaive（56187） | Corrupted Sentinel（34969，16 个刷新点，50%） |
+| 25935 | Black Dragon Whelp Filet（56223） | Black Dragon Whelp（34898，100 个刷新点，50%） |
+| 26060 | Stormer Heart（56796） | Cliff Stormer（4008，20 个刷新点，100%） |
+| 26061 | Stonetalon Ram Horns（56797） | Stonetalon Ram（34894，95 个刷新点，50%） |
+| 26269 | Green Hills of Stranglethorn - Page 14（57990） | 144 种怪（全区随机掉落，10%） |
+| 26330 | Gan'zulah's Body（58179） | Gan'zulah（1061，1 个刷新点，100%） |
+| 26332 | Skullsplitter Mojo（58201） | Skullsplitter Warrior（667，6 个刷新点，50%）；Skullsplitter Axe Thrower（696，16 个刷新点，50%）；Skullsplitter Mystic（780，9 个刷新点，50%） |
+| 26360 | Braddok's Big Brain（58225） | Braddok（42858，1 个刷新点，100%） |
+| 26485 | Snapjaw Gizzard（58867） | Saltwater Snapjaw（2505，81 个刷新点，50%） |
+| 26730 | Sea Salt（60274） | Murkgill Forager（4457，6 个刷新点，50%）；Murkgill Hunter（4458，10 个刷新点，50%）；Murkgill Coldbringer（4460，3 个刷新点，100%）；Murkgill Warrior（4461，11 个刷新点，50%） |
+| 26733 | Crystal Spine Basilisk Blood（60213） | Crystal Spine Basilisk（689，40 个刷新点，50%） |
+| 26734 | Whispering Blue Stone（60263） | 9 种怪（全区随机掉落，10%） |
+| 26823 | Ironjaw Humour（60380） | Ironjaw Behemoth（44113，6 个刷新点，100%） |
+| 27337, 27343 等 11 个 | Deathless Sinew（60874） | Frantic Geist（47131，25 个刷新点，50%）；Dark Creeper（47132，12 个刷新点，50%）；Corpse Eater（47134，10 个刷新点，50%）；Fetid Ghoul（47135，3 个刷新点，100%）；Unstable Ravager（47136，4 个刷新点，50%） |
+| 27337, 27365 | Silverlaine Family Sword（60885） | Baron Silverlaine（3887，1 个刷新点，100%） |
+| 27343, 27361 等 11 个 | Commander's Holy Symbol（60879） | Commander Springvale（4278，1 个刷新点，100%） |
+| 27344, 27395 | Godfrey's Crystal Scope（60877） | Lord Godfrey（46964，1 个刷新点，100%） |
+| 27351, 27396 | Springvale's Sharpening Stone（60880） | Commander Springvale（4278，1 个刷新点，100%） |
+| 27353, 27354 等 14 个 | Ghostly Essence（60875） | Tormented Officer（3873，5 个刷新点，50%）；Haunted Servitor（3875，12 个刷新点，50%）；Wailing Guardsman（3877，10 个刷新点，50%）；Shadowy Attendant（47231，9 个刷新点，50%）；Ghostly Cook（47232，4 个刷新点，50%） |
+| 27353, 27397 | Walden's Talisman（60881） | Lord Walden（46963，1 个刷新点，100%） |
+| 27355, 27402 | Tenebrous Orb（60882） | Lord Godfrey（46964，1 个刷新点，100%） |
+| 27356, 27404 | Walden's Elixirs（60876） | Lord Walden（46963，1 个刷新点，100%） |
+| 28484 | Beating Yeti Heart（64380） | Cave Yeti（2248，18 个刷新点，50%）；Ferocious Yeti（48628，16 个刷新点，50%） |
+| 28489 | Juicy Stag Meat（64410） | Hill Stag（48184，15 个刷新点，50%） |
+
+</details>
+
+**名字对应的计数（模式 C2）。** 只命中 1 个：28495 A Fighting Chance（奥特兰克山脉的小鹿，`2026_11_13_28_audit_pattern_c2_20_29.sql`）。
+
+**逐个修的：**
+
+| 任务 | 名称 | 原因 | 修法 |
+|---|---|---|---|
+| 25867 | Gnoll Escape（湿地） | 钥匙能打开笼子（机关），但笼子的事件编号是 0 | 给笼子一个自定义事件 910001，事件脚本给开笼者计数 |
+| 26128 | The Battle of Thandol Span（湿地） | Calamoth Ashbeard 没有刷新点，模板还是占位数据（1 级、友好） | 改成黑铁阵营 24 级、3 倍血，刷在大桥那头的暮光信徒旁边（任务说明："逃向大桥的那个黑铁矮人"）。位置和等级是我们定的 |
+| 26546 | Razorbeak Friends（辛特兰） | 饲料没有目标限制，狮鹫没有反应 | 只能喂训练过的狮鹫，喂到就计数 |
+| 26739 | I Think She's Hungry（北荆棘谷） | 迅猛龙宝宝没有 AI，从来不吃 | 宝宝跟随主人；接了任务的玩家每杀一只水晶脊蜥蜴算宝宝吃 5 口（原版大约杀 8 只，共 40 口） |
+| 13913 | They Took Our Gnomes（灰谷） | Thundrak 和两个侏儒都在，就是没有完成触发 | 打死 Painmaster Thundrak，40 码内接了任务的玩家都算完成 |
+| 13928 | Recover the Fallen（灰谷） | 遗体物品没有任何来源 | 点笑面姐妹的遗体，直接放进背包，遗体消失后重刷 |
+| 14213、14358 | Ten Pounds of Flesh（凄凉之地，联盟/部落两版） | 献祭法术要的施法焦点 1626 没有物体，被献祭的火盆标记也没刷 | 在 Elune 火盆旁边新建隐形焦点 910102、刷出标记，标记被献祭就计数 |
+| 25662 | Free Our Sisters（石爪山脉） | 钥匙能开笼子（按钮类机关），笼子没有脚本 | 开锁时核心会先调用物体 AI 的 `GossipHello`，所以给 15 种笼子挂物体 SAI：被打开就计数，里面的女猎手离开 |
+| 25809 | Leave No Man Behind!（石爪山脉） | 67 个矿工带"不可选中"标志，点不到 | 去掉这个标志，加点击：矿工对点击者施放 77408 计数，然后跑掉 |
+| 24566 | Sowing a Solution（南贫瘠之地） | 种子没有目标限制，动物没反应 | 只能对异种恐牙/平原陆行鸟用，打中就计数 |
+| 24570 | Adder Subtraction（南贫瘠之地） | 衰弱毒蛇没法拾取 | 点击毒蛇 → 70441 → 毒蛇对玩家施放 70442（给物品）后消失 |
+| 13853、13886、13935 | Return Fire、Vortex、Defend the Tree!（灰谷） | 都靠载具战斗：投石车不能上、没技能；旋风和影子形态不可用；13935 要打的 50 个战歌入侵者根本没刷 | 跳过演出：接任务即给计数 |
+| 25891、24601、24939 | Last Ditch Effort、The Nightmare Scar、Run Out the Guns | 剧情、Naralex 的仪式、岸防炮载具都没有脚本 | 跳过演出：接任务即完成 |
+
+文件：`sql-custom/2026_11_13_29_dwarf_route_20_29.sql`、`2026_11_13_30_ashenvale_20_29.sql`、`2026_11_13_31_desolace_brazier.sql`、`2026_11_13_32_stonetalon_barrens_20_29.sql`，各自都有 `backup/*_20261113.tsv`。
+
+查 14213 时顺带确认了一件事：核心选法术目标时不检查"不可选中"标志（`SpellInfo::CheckTarget` 里没有），所以带这个标志的计数标记也能被打中。灭火任务那些标记就带这个标志，已经在游戏里确认能用。
+
+**没修的：** 荆棘谷海角的祖尔格拉布系列（26550–26555），要进入祖尔格拉布的一段幻象，后几环的发任务人（Jeklik、Venoxis）都没刷，链条中间就断了，先跳过；灰谷 13982 In a Bind 要的 Kaliva 没有刷新点，原版位置不知道；凄凉之地 5943 Gizelton Caravan 的发任务人和交任务人都没刷，玩家接不到。另外这一段还有一批部落任务（奥特兰克山脉的"植物大战僵尸"小游戏等），矮人路线用不到，暂时没管。
+
+### 4.15 接下来
+
+下一段是 30–39 级，流程不变。
 
 
 ## 还没解决的问题
