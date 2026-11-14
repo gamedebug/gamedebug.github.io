@@ -1828,7 +1828,17 @@ Solanian 那次误判以后，补了一个能看到"模型"的位置检查工具
 
 修法跟 Westfall 前面几条一样，保留结果、跳过演出：给触发器加一段 SmartAI，接了任务还没完成的玩家走进 15 码内（看得到）就直接记一次 42417。原版台词库里没有，所以没编台词。`sql-custom/2026_11_14_04_lous_parting_thoughts_trigger.sql`。触发器原来没有 AI，要重启 worldserver 才会换上，当时有 5 人在线，**等大家下线后再重启**，还没在游戏里实测。
 
-### 4.24 接下来
+### 4.24 实测反馈：Still Assessing the Threat 的地图标记挂错目标
+
+**26503 Still Assessing the Threat**（赤脊山）：要偷 Gnoll Battle Plans、Gnoll Orders、Gnoll Strategy Guide 三样东西。玩家拿到了 Battle Plans，另外两样找不到，以为没刷出来。
+
+- 三个箱子的刷新点都在，数据跟拿到的那个完全一样，没有相位，也没有脚本干扰。
+- 问题在任务地图标记：三块区域位置都对，但 `quest_poi.objIndex` 全是 0，都挂在第 1 个目标 Battle Plans 名下。拿到 Battle Plans 后，这个目标完成，三块区域一起收起来，Orders 和 Guide 在地图上就没有任何标记了。
+- 修法：把第 2、3 块区域改挂到目标 1、2 上（`sql-custom/2026_11_14_05_still_assessing_the_threat_poi.sql`），`.reload quest_poi` 热加载，不用重启。
+
+插曲：玩家照我给的坐标（Orders 28.0, 74.9；Guide 30.6, 62.7）去了一趟，说还是没有。我在服务器上把能查的都查了，找不出这两个箱子不在的理由，就请玩家用 GM 角色 `.go object` 过去看。GM 角色看到了，换回原角色也看到了。之前为什么没看到，没能复现，原因不明。可能当时站的位置还差一点，也可能是重新登录后客户端重新加载了周围的物体。
+
+### 4.25 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
