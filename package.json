@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@astrojs/markdown-remark": "7.3.5",
-    "astro": "7.4.5",
+    "astro": "7.4.7",
     "rehype-katex": "7.0.1",
     "remark-cjk-friendly": "2.3.4",
     "remark-math": "6.0.0",
