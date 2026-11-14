@@ -1826,7 +1826,17 @@ Solanian 那次误判以后，补了一个能看到"模型"的位置检查工具
 - 任务目标是 1 个 Furlbrow Murder Info 004（42417）的击杀记录，本该由法术 79184 Hobo Information 给出，但数据库和 C++ 里都没有东西会施放这个法术。
 - 农舍后面的 4 个 Thug（42387）围着一个隐形的 Lou's Parting Thoughts Trigger（42562），它显然是负责感应玩家、播对话、给记录的，可它没有 AI，Thug 也一句台词都没有。上游源码历史里也查不到，SkyFire 从来没做过这个事件。
 
-修法跟 Westfall 前面几条一样，保留结果、跳过演出：给触发器加一段 SmartAI，接了任务还没完成的玩家走进 15 码内（看得到）就直接记一次 42417。原版台词库里没有，所以没编台词。`sql-custom/2026_11_14_04_lous_parting_thoughts_trigger.sql`。触发器原来没有 AI，要重启 worldserver 才会换上，当时有 5 人在线，**等大家下线后再重启**，还没在游戏里实测。
+修法跟 Westfall 前面几条一样，保留结果、跳过演出：给触发器加一段 SmartAI，接了任务还没完成的玩家走进 15 码内（看得到）就直接记一次 42417。原版台词库里没有，所以没编台词。`sql-custom/2026_11_14_04_lous_parting_thoughts_trigger.sql`。触发器原来没有 AI，要重启 worldserver 才会换上，当时有 5 人在线，等大家下线后才重启。
+
+**第一版没生效。** 重启后脚本加载正常，玩家带着任务走到 Thug 中间，什么都没发生。我把这条链路从头查了一遍：AI 选择、反应状态（只有 REACT_AGGRESSIVE 的生物才会收到"有人进入视野"的通知）、视线、事件计时、条件表、给记录的动作，每一环单独看都没问题，但就是不触发，原因没找到。
+
+**第二版换了思路**，不再依赖视野通知：触发器每 2 秒扫一遍 20 码内的玩家（`SMART_EVENT_UPDATE_OOC` + `SMART_TARGET_PLAYER_DISTANCE`），给每个人记一次。没接任务或已经完成的玩家记了也没有任何效果，所以条件表那行也去掉了（`sql-custom/2026_11_14_06_lous_parting_thoughts_trigger_scan.sql`）。重启后实测通过。教训：隐形触发器要感应玩家，用定时扫描比 OOC_LOS 可靠。
+
+### 4.23b 实测反馈：Feeding the Hungry and the Hopeless 喂了没反应
+
+**26271 Feeding the Hungry and the Hopeless**：要用 Westfall Stew 喂 20 个流浪汉。物品会在面前召唤一碗炖肉（42617），但这碗炖肉没有 AI，流浪汉的 C++ 脚本 `npc_transient` 也只处理 26209（问谁杀了 Furlbrow 一家），所以没人给记录。
+
+修法同样是保留动作、跳过演出：炖肉被召唤时（`SMART_EVENT_JUST_SUMMONED`），如果 10 码内有三种流浪汉之一（条件表 type 29，ElseGroup 0/1/2 做"或"），就给召唤者记一次；不管有没有喂到，5 秒后炖肉消失（`sql-custom/2026_11_14_07_feeding_the_hungry_stew.sql`）。流浪汉走过来吃的演出没做，同一个流浪汉也能重复喂。炖肉是每次新召唤的，`.reload creature_template 42617`、`.reload smart_scripts`、`.reload conditions` 热加载就生效，不用重启。实测通过。
 
 ### 4.24 实测反馈：Still Assessing the Threat 的地图标记挂错目标
 
