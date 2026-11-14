@@ -1872,9 +1872,149 @@ Solanian 那次误判以后，补了一个能看到"模型"的位置检查工具
 
 处理：玩家下线后，在 `game_tele` 里加一个临时传送点，用控制台 `.tele name Frank <点名>` 把她挪到坡底（离线也能用，会直接改存档坐标），然后删掉临时点。
 
-玩家随后补充了关键线索：卡住是在骑过门口的机器人 Prototype Reaper（49208，载具）、下来之后才开始的，骑着机器人下坡是正常的。症状很像客户端在下载具后没恢复重力：服务器的 `Unit::_ExitVehicle` 会发恢复重力和解除定身的消息，相关消息编号看起来也都定义了，原因没查到。这台机器人只跟可选成就 Prototype Prodigy 有关，Foe Reaper 的脚本只定义了它的编号、没有用到，所以按玩家的意思直接删掉刷新点（`sql-custom/2026_11_14_10_deadmines_remove_prototype_reaper.sql`），等玩家打完副本再一起重启。别的载具可能也有同样的问题，记为未解决。
+玩家随后补充了关键线索：卡住是在骑过门口的机器人 Prototype Reaper（49208，载具）、下来之后才开始的，骑着机器人下坡是正常的。症状很像客户端在下载具后没恢复重力：服务器的 `Unit::_ExitVehicle` 会发恢复重力和解除定身的消息，相关消息编号看起来也都定义了，原因没查到。这台机器人只跟可选成就 Prototype Prodigy 有关，Foe Reaper 的脚本只定义了它的编号、没有用到，所以按玩家的意思直接删掉刷新点（`sql-custom/2026_11_14_10_deadmines_remove_prototype_reaper.sql`），玩家打完副本后重启生效。别的载具可能也有同样的问题，记为未解决。
 
-### 4.28 接下来
+### 4.28 实测反馈：In Search of Bravo Company 的 Messner 看不见
+
+**26586 In Search of Bravo Company**（赤脊山）：任务要你去 Alther's Mill 找 Messner（43270），玩家到了地方什么也没有。
+
+- Messner 有刷新点，但身上挂着 Apply Quest Invis Zone 5（81003），这是"任务隐身"：只有带着对应的 Detect: Quest Invis Zone 5（81004）的玩家才看得见。
+- 通常由 `spell_area` 在接了任务之后自动给玩家上这个探测光环。81004 一条 `spell_area` 都没有，所以 Messner 对谁都是隐形的。
+- 修法：区域 97 内，从接 26586 起到交 26587 为止，自动给玩家 81004（`sql-custom/2026_11_14_11_in_search_of_bravo_company_detect.sql`）。实测通过。
+
+这是一类通病：带 "Apply Quest Invis Zone N" 的 NPC，如果没有对应的 "Detect" 规则，就永远看不见。下一节马上又碰到了三个。
+
+### 4.29 实测反馈：Bravo 小队营救链断在第一环
+
+玩家交完 26587 Breaking Out is Hard to Do 之后，"赤脊山的任务突然就没了"。查下来是三处问题叠在一起：
+
+1. **救出来的人不会跟着你。** 这条链的设计是：救出笼子里的 Messner，他变成跟随者（43300），由跟随者给下一个任务 Jorgensen；救出 Jorgensen，跟随版 Jorgensen（43305）给 Krakauer，以此类推到 Danforth（43302）给 Return of the Bravo Company。四个跟随者都没有刷新点，召唤它们的法术（80893、80940、80941、80943）也没有任何东西施放，所以交完 26587 就没人给下一个任务。
+   修法：给四个笼子里的 NPC 加 SmartAI，交任务时让玩家施放对应的召唤法术。这里不能用 `spell_area` 的自动施放：服务器只用"身上有没有这个光环"判断要不要再放一次，召唤法术不留光环，每次换区域都会再召唤一个。
+2. **后面三个笼子里的人也看不见。** Jorgensen、Krakauer、Danforth 分别挂着 Quest Invis Zone 6/7/8（81009/81018/81079），跟 Messner 同一个毛病。补了 81010/81019/81080 三条 `spell_area`，各自从接任务到交任务期间生效。
+3. **John J. Keeshan 不存在。** 他是 26567 John J. Keeshan 和 26607 They Drew First Blood 的交任务人。11-13 的审计因为"没有能到达的交任务人"把这两个任务禁用了。任务文字说他在 Lakeshire 旅店地下室的地下格斗场，地图标记 (−9202, −2154) 正好落在地下室的两个格斗者 Dumpy 和 Big Earl 身上。于是把 Keeshan 刷在擂台边上，解除禁用。
+
+文件：`sql-custom/2026_11_14_12_bravo_company_rescue_chain.sql`、`sql-custom/2026_11_14_13_keeshan_lakeshire_inn_spawn.sql`。玩家交 26587 时还没有召唤脚本，所以在重启的空档直接把 26560 Jorgensen 加进了她的任务日志。重启后实测通过：三个营救任务和旅店的 Keeshan 都交了。
+
+留了一个已知问题，暂时不改：26563 Return of the Bravo Company 在数据里要求先交 Troteman 的 26571 Weapons of War，而它唯一的发放人是临时召唤的跟随版 Danforth，下线就消失。跳过 Weapons of War 的玩家实际上拿不到这个任务。好在它不挡主线（26607 也可以从 26573 进入）。
+
+### 4.30 赤脊山后半段重建（第一期）
+
+从 26616 It's Never Over 开始，赤脊山后半段的 NPC 基本都没有刷新点。我先去翻了 TrinityCore 的 Cataclysm Classic（4.4.2）世界数据库（TDB 442，赤脊山就是那个版本重做的），结果那边这一段也没做：只有旅店的 Keeshan 和 Foreman Oslow 有刷新点，其余没有刷新点，也没有脚本。所以位置只能自己定：交任务人放在任务地图标记的交任务点上，高度用寻路网格（mmaps）吸附。把起点和终点设成几乎同一点去寻路，返回的第一个点就是网格上的地面高度，建筑里面也能用。
+
+TDB 是 350 MB 的 SQL 文本。没导入数据库，写了个只读的小工具 `tools/tdbgrep.py`，直接在 SQL 文本里按表名和列值查行。
+
+第一期修了这些（`sql-custom/2026_11_14_14_redridge_second_half_phase1.sql`）：
+
+| 任务 | 问题 | 修法 |
+|---|---|---|
+| 26569 Surveying Equipment | Foreman Oslow 没刷；Blackrock Spyglass 没有掉落来源 | Oslow 按 TDB 位置刷；任务文字说望远镜在 Blackrock 追踪者身上，加到 Blackrock Tracker（615）掉落，50% |
+| 26616 It's Never Over | 坐 Keeshan 的船去 Camp Everstill，船和沿途触发法术全没脚本 | 保留"出发"这一步，省掉船：码头的 Keeshan 加对话选项，选了就算完成事件并传送到对岸营地 |
+| 26636–26640 | 营地的 Keeshan、Krakauer、Messner、Danforth 和 Brubaker 都没刷 | 刷在各自的交任务点上；Muckdweller 的掉落表编号是 0，补上 Muckdweller Gland |
+| 26646 Prisoners of War | 钥匙袋打开是空的；牢笼打开后没有进度 | 钥匙袋的掉落编号是 0。MoP 的宝箱类物体 data0 是锁、data1 才是掉落表，补上 Holding Pen Key。三个牢笼加 SmartAI：用钥匙打开时给 Prisoner of War 进度 |
+| 26651 To Win a War... | Field Kit 里的 Plant Seaforium 没有目标，也没人给进度 | 法术目标限定为军火库和塔；两个目标被它击中时给施法者进度 |
+| 26668 Detonation | 没有目标，"炸掉山谷"的事件没有脚本 | 接任务时直接完成事件（任务描述就是按一下按钮） |
+| 26693 / 26694 | Key of Ilgalar 没有掉落来源 | 任务文字说钥匙在 General Fangore 身上，加 100% 任务掉落；塔门 Ward of Ilgalar 的锁本来就认这把钥匙 |
+
+另外解除了 11-13 审计禁用的 26651、26694。重启后实测：坐船、营地四个任务、Brubaker 都正常，玩家已经做到 26640。
+
+### 4.31 赤脊山后半段重建（第二期）
+
+剩下的三个任务数据基本是空壳：入侵者和 Darkblaze 是友好的 1 级 NPC，攻城坦克不是载具，任务说要用的 Horn of Summoning 这个物品根本不存在。这一期是替代设计，动手前先定好了方案（`sql-custom/2026_11_14_15_redridge_second_half_phase2.sql`）：
+
+- **Colonel Troteman**（43733）刷两个：Shalewind Canyon 发 26708，Keeshan's Post 收 26708、26713、26714。
+- **26708 AHHHHHHHHHHHH! AHHHHHHHHH!!!**（开坦克杀 200 个 Blackrock 兵）：Bravo Company Siege Tank（43714）补上 TDB 的载具编号 987，接了任务才能上车，配两门炮：Heavy Cannon（79776，点地面，20 码，约 3000 伤害）和 Fiery Boulder（72051）。在两地之间的任务区域里随机刷了 40 个敌对的 Blackrock Invader（17–18 级普通怪，30 秒刷新），生成脚本 `tools/gen_invaders.py`。坦克如果有问题，步行杀也算进度。
+- **26713 Showdown at Stonewatch**：Tharil'zun 和 Gath'Ilzogg 刷在 Stonewatch Keep 的两个任务标记点上（原版就有的 20 级精英和技能脚本）。
+- **26714 Darkblaze**：在 Keeshan's Post 的 Troteman 那里接任务时，旁边召唤出 22 级精英的敌对 Darkblaze。打输了可以跟 Troteman 对话"吹号角"再叫一次。解除了 26714 的禁用。
+
+这一期上线了，还在等玩家做到这里。
+
+### 4.32 旅行者的猛犸象：商人被"留在原地"
+
+这一节是这次最有意思的一个 bug，前后改了四版才找到真正的原因，过程值得完整记下来。
+
+**现象。** 召唤 Traveler's Tundra Mammoth（联盟 61425）后，背上的两个商人 Hakmud of Argus 和 Gnimo 一出来就"掉下去"了：猛犸象走开，他们留在原地，走近了还能买东西。
+
+**数据。** 这个坐骑是"载具坐骑"：坐骑光环指向生物 32633，它的载具编号是 312，两个商人是 `vehicle_template_accessory` 里的乘客（1 号、2 号座位）。服务器在 `Unit::Mount` 里给玩家创建载具，再调用 `InstallAllAccessories` 把两个商人召唤出来、安排上车。顺带发现部落版（61447 → 32640）的载具编号是 0，等于根本不是载具，部落版的商人从来没出现过。按 TDB 补成 313（`sql-custom/2026_11_14_16_travelers_mammoth_horde_vehicle.sql`）。
+
+#### 第一步：服务器到底有没有把他们踢下去
+
+先打开载具调试日志（`Logger.entities.vehicle=2`）。这里还顺手发现：服务器的日志文件一直没写出来过，因为工作目录 `/opt/skyfire` 是 root 的，服务进程没权限建文件。把 `LogsDir` 改到容器的 `/tmp` 才有了日志。
+
+第一份日志看着像抓到了凶手：两个商人安排上车之后，紧接着出现 `Vehicle::Uninstall`，两人随之"下车"。但第二次召唤的日志里，只有上车，没有任何下车记录。回头一想，第一次的 Uninstall 其实是玩家测完下坐骑留下的。
+
+为了确认，我用宿主机上的 gdb 直接挂到 worldserver 进程上。正式版二进制没有剥离符号，函数名都在。在"乘客下车"和"拆载具"上下断点，命中时打印时间和调用栈，然后继续运行：
+
+```
+break Vehicle::RemovePassenger
+commands
+  silent
+  shell date +%T.%N
+  bt 12
+  continue
+end
+```
+
+时间线很干净：21:29:51 两个商人上车，21:30:12 玩家下坐骑，`Unit::Dismount` → `RemoveVehicleKit` → 两人下车。中间这 21 秒，服务器里两个商人一直好好坐在猛犸象上，跟着玩家移动。
+
+所以问题不在服务器逻辑，而是**客户端从来没把他们挂到坐骑上**。
+
+#### 第二步：三次失败的猜测
+
+**第一版：重新载入。** 推测是商人先被召唤出来、客户端已经收到一个"站在地上"的商人，之后上车只靠一个"走向座位"的移动包，客户端没认。那就在上车后让附近客户端重新载入商人（`DestroyForNearbyPlayers` + `UpdateObjectVisibility`），让初次显示的数据直接带上"坐在哪个载具几号座位"。没用。
+
+**第二版：等客户端确认。** 再用 gdb 把载具相关的收发包都打上时间戳：
+
+| 时间 | 事件 |
+|---|---|
+| 22.497 | 服务器发 `SMSG_MOVE_SET_VEHICLE_REC_ID`："你现在是 312 号载具" |
+| 22.517 / 22.529 | 两个商人上车（`VehicleJoinEvent::Execute`），发出走向座位的移动路径 |
+| 22.600 | 客户端回 `CMSG_SET_VEHICLE_REC_ID_ACK`："知道了" |
+
+商人上车比客户端确认早了 80 毫秒，而且客户端没发过任何"踢乘客"的请求。看起来非常像时序问题，于是把重新载入挪到收到确认之后。gdb 确认重新载入确实在确认后 10 毫秒发出去了，还是没用。
+
+**玩家的关键发现。** 这时玩家反复试了很多次，发现一个规律：**骑上去马上走，商人会跟上来坐好；原地站超过大约 1 秒，商人就永远留在地上。**
+
+这一下就清楚了：服务器让乘客上车时，发的是一段带 transport-enter 标志的移动路径（spline），客户端要过大约 1 秒才把它走完。路径还在进行中、坐骑又在动，客户端就把乘客挂上去了；路径走完时坐骑还没动，客户端就把乘客定在那个世界坐标上，之后再也不管。第二版的重新载入发生在路径还没走完的时候，初次显示数据里带的仍是这段路径，结果一样。
+
+**第三版：等路径走完再重新载入。** 想法是路径结束后再发初次显示数据，里面就只有"坐在几号座位"，跟生物载具上的乘客平常显示一样。结果更糟：连"马上走"也挂不上了。这反而是最有价值的一次失败，它证明了**对坐在玩家坐骑上的生物，5.4.8 客户端根本不认初次显示数据里的座位信息**，唯一认的就是"transport-enter 路径进行中 + 坐骑在动"。
+
+#### 第三步：顺着客户端的规律来
+
+第四版放弃重新载入。商人上车后，每 200 毫秒检查一次：
+
+- 上车路径已经走完、坐骑还没动过：再发一段走向座位的 transport-enter 路径，让它一直处在"进行中"。
+- 路径进行中、坐骑动了：客户端此刻会挂上乘客，停止检查。
+- 一直站着不动，最多坚持约 10 分钟，避免无限发包。
+
+```cpp
+bool moved = std::fabs(base->GetPositionX() - _lastX) > 0.1f || std::fabs(base->GetPositionY() - _lastY) > 0.1f;
+if (moved && !_passenger->movespline->Finalized())
+    return true; // 坐骑在上车路径进行中移动 -> 客户端已挂上乘客
+
+if (_passenger->movespline->Finalized())
+{
+    Movement::MoveSplineInit init(_passenger);
+    init.DisableTransportPathTransformations();
+    init.MoveTo(seat->m_attachmentOffsetX, seat->m_attachmentOffsetY, seat->m_attachmentOffsetZ, false, true);
+    init.SetFacing(0.0f);
+    init.SetTransportEnter();
+    init.Launch();
+}
+```
+
+只对"玩家载具上的生物乘客"生效（`Vehicle.cpp` 里的 `PlayerVehiclePassengerBoardEvent`），普通生物载具和玩家坐别人的载具都不受影响。实测：召唤后马上走、站 5 秒以上再走，两种情况商人都会跟上来坐好。
+
+#### 收尾：下马时别砸在玩家身上
+
+下坐骑时，乘客的落点直接用的是坐骑（玩家）的位置，三个人叠在一起落地。猛犸象两个座位的挂点偏移都是 0（位置由模型上的挂点 13/14 决定），所以按座位号分：单数座位往左、双数座位往右，各离玩家 3 码，落点高度取那里的地面；如果地面跟玩家脚下差 5 码以上（陡坡、悬崖），退回原来的落法（`Unit::_ExitVehicle`）。
+
+玩家同时测了另一个带商人的坐骑 Grand Expedition Yak（122708 → 62809，载具 2273）：它的商人上车本来就正常，下马也有同样的重叠问题。它的两个商人在 0 号和 1 号座位，同一条规则就把他们分到了两边，不用单独改。实测两个坐骑都通过。
+
+补丁：`patches/2026_11_14_01_vehicle_player_mount_passenger_keep_boarding.patch`（`Vehicle.cpp` + `Unit.cpp`）。
+
+回头看，这个 bug 能解决，一半靠工具，一半靠玩家。工具方面，正式版二进制带符号，gdb 挂上去打时间戳就能看清服务器的每一步，比加日志、重新编译快得多。但服务器日志只能证明"服务器没错"，客户端怎么想看不到。真正撬开问题的是玩家那句"马上走就能跟上"，三次失败的猜测都是在补这一块看不见的拼图。
+
+### 4.33 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
@@ -1884,6 +2024,8 @@ Solanian 那次误判以后，补了一个能看到"模型"的位置检查工具
 - **多人同时做同一个任务从没测过。** 每个修复都只用一个角色验证过，像 29799 这种全场共用的事件，中途加入或者几个人进度不同步，都还是未知数。
 - **其他种族已知做不了的任务：** 地精的 14113、14153 Life of the Party（派对客人一个刷新点都没有），14110 The New You（物品没有任何来源）。这些暂时搁置。
 - **攒着等下一批编译的小 bug：** 放弃 29423 后，Huo 还会一直跟着玩家，重新登录可以解决。
+- **赤脊山 26563 Return of the Bravo Company：** 前置任务和临时跟随者组合在一起，跳过 Weapons of War 的玩家拿不到（见 4.29），不挡主线，先不改。
+- **赤脊山第二期替代设计还没实测：** 坦克能不能开、炮能不能打、Darkblaze 的强度都还是未知数（见 4.31）。
 - **全局审计剩下的问题。** 联盟这边还有约 1000 个任务需要重建内容（第四章），按等级段从低到高逐批修。
 - **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
