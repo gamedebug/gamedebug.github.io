@@ -2113,7 +2113,20 @@ if (aura->GetUnitOwner() != this && !aura->GetUnitOwner()->InSamePhase(newPhase)
 - 交 14375 时让玩家施放原版的 Last Stand Complete（72799），学会种族技能并绑定炉石。14375 自带的奖励法术 68639 只有一个屏幕效果；
 - 交了 Last Stand 之后，Duskhaven 的各个子区域都启用 181 号相位。
 
-Duskhaven 后面还会用到 182、183 号相位（Hold the Line、Save the Children 那几段），目前都还没配，等角色走到再补。
+#### Kill or Be Killed：交任务的王子看不见
+
+Gwen Armstead 的 Kill or Be Killed（14336）要去镇外找 Prince Liam Greymane 交，但那里什么人都没有。这个 Liam（36140）在 182 号相位，也就是被遗忘者入侵 Duskhaven 的那一层：要杀的 Forsaken Invader、要炸的 Horrid Abomination、火药桶、Two By Sea 的两位船长、Save the Children 的三个孩子、Leader of the Pack 的 Dark Ranger Thyala 都在这一层，可它跟 179 一样没有配置。
+
+把后面紧接着要用的几层按任务顺序一起补上（`sql-custom/2026_11_15_04_gilneas_phases_182_183_184.sql`，181 原来的条件备份在 `backup/phase181_conditions_20261115.tsv`）：
+
+| 相位 | 内容 | 生效条件 |
+|---|---|---|
+| 181 | 地震前的 Duskhaven | 原来是"交了 14222"，现在加一条：还没接 As the Land Shatters（14396） |
+| 182 | 被遗忘者入侵 | 交了 Invasion（14321），还没接 14396 |
+| 183 | 地震以后（Liam 36451、Gwen 36452、Grandma Wahl、Hayward 兄弟、Lorna） | 接了、完成了或交了 14396 |
+| 184 | 灰鬃庄园（Queen Mia，To Greymane Manor 的交付人） | 接了、完成了或交了 To Greymane Manor（14465） |
+
+每层用到的子区域是把这一层所有刷新点的坐标放到地图文件里查出来的。183 什么时候结束要等配 186 号相位（Exodus 以后）时再定。这次同样只用 `reload conditions` 热加载，没有重启；角色身上挂着 14336，重新登录后应该就能看到 Liam。还没在游戏里验证。
 
 #### 下载具后不能跳
 
@@ -2134,7 +2147,7 @@ Duskhaven 后面还会用到 182、183 号相位（Hold the Line、Save the Chil
 - **赤脊山 26563 Return of the Bravo Company：** 前置任务和临时跟随者组合在一起，跳过 Weapons of War 的玩家拿不到（见 4.29），不挡主线，先不改。
 - **赤脊山第二期替代设计还没实测：** 坦克能不能开、炮能不能打、Darkblaze 的强度都还是未知数（见 4.31）。
 - **下载具后不能跳。** Deadmines 的机器人和吉尔尼斯的马都出现过：下来以后不能跳，也走不下斜坡，重新登录可以恢复。已经上线"下载具 1.5 秒后补发恢复重力"的修复，还没验证（见 4.33）。
-- **吉尔尼斯 182 号以后的相位没有配置。** Duskhaven 后半段和吉尔尼斯之战的任务很可能还会碰到 NPC 看不见的问题（见 4.33）。
+- **吉尔尼斯 186 号以后的相位没有配置。** 182～184 已经补上（见 4.33），吉尔尼斯之战往后的任务很可能还会碰到 NPC 看不见的问题。
 - **全局审计剩下的问题。** 联盟这边还有约 1000 个任务需要重建内容（第四章），按等级段从低到高逐批修。
 - **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
