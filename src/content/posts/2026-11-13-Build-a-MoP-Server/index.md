@@ -2211,6 +2211,14 @@ Exodus（24438）原版是在庄园下方坐马车离开，中途翻车，落在
 
 按 186 号相位全部刷新所在的 12 个区域配上相位，条件是接了 / 完成 / 交了 Exodus（`sql-custom/2026_11_15_18_gilneas_phase_186.sql`，热加载）。测试角色跑到翻车地点交了任务。马车剧情暂时不做；187～191、194 号相位也还没配置，做到时再补。
 
+#### Exodus 之后的三个任务
+
+- **Stranded at the Marsh（24468）**：要"救 5 个幸存者"，实际目标是杀 5 只 Swamp Crocolisk（37078）。11 个 Crash Survivor（37067）没有任何可交互标志和脚本，37078 一只都没刷（TDB 也一样）。改成：接了任务和幸存者对话，就在玩家身边召唤一只鳄鱼扑过来，幸存者 3 秒后离开、60 秒重刷（`sql-custom/2026_11_15_19_stranded_at_the_marsh.sql`）。第一版鳄鱼能出来却不计数：击杀计数要求玩家打出至少一半血量的伤害（`Creature::IsDamageEnoughForLootingAndReward`），旁边的 NPC 经常抢掉。按用户的意思改成"参与就算"：召唤一只复制出来的替身鳄鱼 910003，它死时（不管谁杀的）给 30 码内的玩家记 37078，替身本身不是任务目标，所以不会重复计数（`sql-custom/2026_11_15_20_stranded_at_the_marsh_shared_credit.sql`）。
+- **Preparations（24628）**：月叶（GO 201914）能采，读条结束却什么都没有。gdb 显示服务器生成了掉落、也走到了任务物品那一步，但月叶从没进过掉落列表：掉落表这一行的 `lootmode` 是 0，而 `LootTemplate::Process` 只放入 `lootmode & 1` 不为 0 的条目。全库查到 19 行同样问题（9 个游戏物件掉落，含奥特兰克 Frostwolf Maps、Dusty Journal、Borrowed Tabard；10 张感恩节食谱），全部改成 1 并热加载（`sql-custom/2026_11_15_21_lootmode0_rows.sql`）。
+- **Losing Your Tail（24616）**：要打的 Dark Scout（37953）没有刷新，也没有东西施放"召唤 Dark Scout"（70795），阵营还是友好的 35。阵营改成 TDB 的 118，接任务时在玩家身边召唤一个攻击玩家，死时给 30 码内的玩家计数（`sql-custom/2026_11_15_22_losing_your_tail.sql`）。原版用护符挣脱定身的一段没有重做。
+
+三个任务都已在游戏里完成。
+
 ### 4.34 夜色镇的缝合怪
 
 之前（4.9）给 The Embalmer's Revenge（26727）补的是简化版：接任务时 Lord Ello Ebonlocke 在镇子南面入口召唤 Stitches 攻击玩家。实际测试接了任务什么也没看到，只是人物进入战斗又马上脱离。原因是服务器的 `ThreatRadius`（60 码）：怪物的目标离它的出生点超过这个距离就立即放弃战斗。召唤点离市政厅里的玩家大约 95 码，Stitches 一出来就把玩家当目标、又立刻放弃，原地站 2 分钟后消失。
