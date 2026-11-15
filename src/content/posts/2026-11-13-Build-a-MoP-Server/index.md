@@ -2128,6 +2128,12 @@ Gwen Armstead 的 Kill or Be Killed（14336）要去镇外找 Prince Liam Greyma
 
 每层用到的子区域是把这一层所有刷新点的坐标放到地图文件里查出来的。183 什么时候结束要等配 186 号相位（Exodus 以后）时再定。这次同样只用 `reload conditions` 热加载，没有重启；角色身上挂着 14336，重新登录后应该就能看到 Liam。还没在游戏里验证。
 
+#### The Allens' Storm Cellar：地窖门是关着的
+
+下一个任务要去 Allen 农场的地窖找 Lord Godfrey（36290），但地窖门打不开。入口（-1880.5, 2545.8）在同一个位置、同一个朝向叠了两扇门：开着的 Basement Door（196404）和关着的 Doodad_Worgen_Cellar_Door_02（206693，默认就是关闭状态）。两扇都属于相位组 379，也就是城里的 169～172 号相位。这几个相位是按整个吉尔尼斯区域（4714）配的，所以在 Duskhaven 也会生效，关着的那扇就一直显示，把路堵死了。
+
+修法是删掉关着的那一扇（guid 90387），原来那一行备份在 `backup/gameobject_90387_20261115.tsv`，SQL 文件是 `sql-custom/2026_11_15_05_allens_storm_cellar_door.sql`。游戏物件没法热删除，所以这次重启了世界服。
+
 #### 下载具后不能跳
 
 这次在吉尔尼斯又遇到了：下马后不能跳，也走不下斜坡。Deadmines 的机器人下来也是同样的表现。gdb 显示下马时服务器发了 `SMSG_MOVE_GRAVITY_ENABLE`，客户端也回了确认（`CMSG_MOVE_GRAVITY_ENABLE_ACK`），而重新登录就能恢复，说明服务器这边的状态是对的，卡住的是客户端。
