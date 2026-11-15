@@ -2176,6 +2176,14 @@ Last Stand（14222）的奖励施法是 93477，这个法术有三个效果：�
 
 顺带记一个坑：`Player.cpp` 是 CRLF 换行，用 Python 文本模式改写会全部变成 LF，`git diff` 一下子变成四万多行。改这类文件要按字节读写。
 
+#### 地震后的两个收集任务
+
+- **I Can't Wear This（14400）**：Grandma's Good Clothes（GO 196472）刷在 181 号相位（地震前），而任务和 Grandma Wahl 都在地震后的 183 号相位，衣服对玩家来说根本不存在。改成 183 号相位。
+- **Not Quite Shipshape（14404）**：Coal Tar、Planks of Wood、Shipwright's Tools 三个 GO 都刷了，但掉落写的是普通 100% 掉落，不是任务掉落。服务器只在 GO 有"该玩家需要的任务掉落"时才让它闪光（`GameObject::ActivateToQuest`），所以三样东西都不闪，很难找。改成任务掉落（-100）。另外每样在同一位置重复刷了两份，删掉多余的。
+- 这几个 GO 原来要 2 小时才重刷，改成 120 秒。
+
+文件 `sql-custom/2026_11_15_09_wahl_hayward_quest_items.sql`，备份 `backup/duskhaven_quest_gos_20261115.tsv`。掉落表热加载，相位和刷新点经同意重启后生效，等游戏里验证。
+
 #### 下载具后不能跳
 
 这次在吉尔尼斯又遇到了：下马后不能跳，也走不下斜坡。Deadmines 的机器人下来也是同样的表现。gdb 显示下马时服务器发了 `SMSG_MOVE_GRAVITY_ENABLE`，客户端也回了确认（`CMSG_MOVE_GRAVITY_ENABLE_ACK`），而重新登录就能恢复，说明服务器这边的状态是对的，卡住的是客户端。
