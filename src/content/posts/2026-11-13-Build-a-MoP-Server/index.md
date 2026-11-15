@@ -2164,6 +2164,8 @@ Godfrey 和 Melinda Hammond 在地窖里给了 Save the Children!（14368）、U
 
 第一次重新登录还是不对。在 `WorldSession::SendSetPhaseShift` 下断点看实际发出的包：相位是 171/181/182，地形只有 638。原来测试角色还没接 As the Land Shatters，根本没进 183 号相位，日志里的 Gasping for Breath 是之前提前接的。地形配置本身没问题，等接了地震任务再验证。
 
+后来发现 Godfrey 不给 As the Land Shatters，是因为服务器的 `SatisfyQuestNextChain`：任务链里的下一个任务（14395）已经在日志里，就不让接上一个。这是之前给测试角色撤销 14396 时只删了交付记录、没把 14395 一起清掉留下的。放弃 14395、接 14396 之后，地形正确切换成塌陷的海岸，守卫可以点了；把守卫带到岸上 Prince Liam 身边 10 码内就计数，任务已在游戏里完成。个别守卫跟随时会卡住（服务器算高度和寻路用的还是地图 654 原始地形，不是 655），不影响进度，暂不处理。
+
 #### 每次登录都重放狼人 CG
 
 测试角色每次进游戏都会先放一段狼人剧情动画。同一次 gdb 抓到了来源：`Player::SendMovieStart(21)` ← `Spell::cast` ← `Player::learnQuestRewardedSpells` ← `Player::_LoadQuestStatusRewarded`。
