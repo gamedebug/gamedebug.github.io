@@ -2150,7 +2150,7 @@ Godfrey 和 Melinda Hammond 在地窖里给了 Save the Children!（14368）、U
 
 游戏里测下来的结果：Leader of the Pack 和 Unleash the Beast 都能做完；Save the Children! 只看到两个孩子，第三个 Ashley 刷在 Hammond 农舍二楼（脚下的地板在 12.7 码高，一楼在 3.6 码），这是原本的位置，不是缺刷新，所以不动。
 
-投石车上不去。六辆 Forsaken Catapult（36283）都带着 NOT_SELECTABLE 和 IMMUNE_TO_PC 标志，阵营还是敌对的 1735，客户端根本点不中。原版里投石车由 Forsaken Machinist（36292）驾驶，打掉驾驶员才能用，可这个生物在 SFDB 和 TDB 里都没有刷新点，也就永远没人来"释放"投石车。改成投石车直接可用：阵营改为友好的 35，去掉这两个标志，原有的点击上车法术 46598 不变（`sql-custom/2026_11_15_07_two_by_sea_catapult_clickable.sql`，备份 `backup/catapult_36283_template_20261115.tsv`）。生物模板要重启才生效。
+投石车上不去。六辆 Forsaken Catapult（36283）都带着 NOT_SELECTABLE 和 IMMUNE_TO_PC 标志，阵营还是敌对的 1735，客户端根本点不中。原版里投石车由 Forsaken Machinist（36292）驾驶，打掉驾驶员才能用，可这个生物在 SFDB 和 TDB 里都没有刷新点，也就永远没人来"释放"投石车。改成投石车直接可用：阵营改为友好的 35，去掉这两个标志，原有的点击上车法术 46598 不变（`sql-custom/2026_11_15_07_two_by_sea_catapult_clickable.sql`，备份 `backup/catapult_36283_template_20261115.tsv`）。生物模板要重启才生效，已在征得同意后重启，等游戏里验证。
 
 另外，测试角色任务日志里的 Gasping for Breath（14395）也看不到目标。这是地震后的任务，溺水守卫和交任务的 Liam 都在 183 号相位，要等接了 As the Land Shatters 才会出现。之前提前交了 14396 时顺手接了它，删掉 14396 的交付记录以后它就暂时没有目标了，这个不用修。
 
