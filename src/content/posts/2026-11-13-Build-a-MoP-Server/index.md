@@ -2219,6 +2219,14 @@ Exodus（24438）原版是在庄园下方坐马车离开，中途翻车，落在
 
 三个任务都已在游戏里完成。
 
+#### Emberstone 一带：掉率、钥匙和客户端缓存
+
+- **Last Meal（24675）**：Brown Stag 掉 Side of Stag Meat 原本 50%，按用户要求改成 100%（`sql-custom/2026_11_15_23_last_meal_drop_rate.sql`，热加载）。
+- **矿洞里空无一人**：Emberstone Mine 内部是 WMO 区域 4732，不在 186 号相位里，一进矿洞监工和村民全看不见。和庄园内部（4817）是同一类问题，这次把 4714 下所有漏掉的 33 个子区域都补进 186 号相位（`sql-custom/2026_11_15_25_gilneas_phase_186_all_subareas.sql`，热加载）。
+- **Liberation Day（24575）**：23 个 Ball and Chain（201775）的锁 1851 要 Slaver's Key（49881），但这把钥匙在 SFDB 和 TDB 里都没有任何掉落来源，Forsaken Slavedriver（37701）连掉落表编号都是 0。给监工加上必掉钥匙（`sql-custom/2026_11_15_24_liberation_day_slavers_key.sql`）。
+
+  有了钥匙，铁球还是点不动：鼠标指针会变，点下去服务器什么请求都没收到（gdb 在 GO 使用、施法、物品使用的处理函数上都没断到），而服务器给这些铁球发的是"可交互 + 闪光"（`ActivateToQuest` → `HasQuestForGO` 返回 1）。换做法：去掉钥匙锁，改用任务编号控制（data1 = 24575），用后 60 秒复原；村民被 Rescue Enslaved Villager（70354）命中后 3 秒离开、2 分钟重刷（`sql-custom/2026_11_15_26_liberation_day_ball_and_chain.sql`）。改完重启，小退也还是点不动，最后是**删掉客户端的 `Cache` 文件夹**才好：客户端把物件模板缓存在本地，不会重新向服务器要，服务器改了锁它也不知道。以后改了 `gameobject_template` 的锁、类型这类字段，都要让玩家清一次缓存。任务已完成。
+
 ### 4.34 夜色镇的缝合怪
 
 之前（4.9）给 The Embalmer's Revenge（26727）补的是简化版：接任务时 Lord Ello Ebonlocke 在镇子南面入口召唤 Stitches 攻击玩家。实际测试接了任务什么也没看到，只是人物进入战斗又马上脱离。原因是服务器的 `ThreatRadius`（60 码）：怪物的目标离它的出生点超过这个距离就立即放弃战斗。召唤点离市政厅里的玩家大约 95 码，Stitches 一出来就把玩家当目标、又立刻放弃，原地站 2 分钟后消失。
