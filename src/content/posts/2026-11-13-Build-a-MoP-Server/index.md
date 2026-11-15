@@ -2093,6 +2093,34 @@ if (aura->GetUnitOwner() != this && !aura->GetUnitOwner()->InSamePhase(newPhase)
 
 实测：Time to Regroup、Save Krennan Aranas、Sacrifices 都能完成。玩家的评价是"路线有点奇怪"，因为路线是按寻路网格和路障手工定的，不是原版的路线。
 
+#### Last Stand 和去 Duskhaven
+
+再往下两步又卡住了。
+
+**Last Stand（14222）找不到要杀的怪。** 8 只 Frenzied Stalker（35627，共 39 个刷新点）和几个 Northgate Rebel 都在 179 号相位，分布在大教堂周围（子区域 4761），这个相位没有配置。补了一条规则：接了 Last Stand 还没交的时候生效（`sql-custom/2026_11_15_02_gilneas_phase_179_last_stand.sql`）。这次没有重启，用控制台 `reload conditions` 热加载：这个命令会顺带重新读取 `phase_area`，玩家重新登录后就生效了。
+
+**交完 Last Stand 走不了。** 原版流程是：交任务时播放变身动画，玩家在 Duskhaven 的 Krennan 家醒来，找国王交掉没有目标的 Last Chance at Humanity（14375），学会 Darkflight 等狼人种族技能，炉石绑定到 Duskhaven。我们这里只剩动画：
+
+- 没有任何东西把玩家传送到 Krennan 家；
+- 14375 的发放人兼交付人 King Genn Greymane（36332）没有刷新点；
+- 传送和绑定法术（68630、72788、72799）都没有目标坐标；
+- Duskhaven 的 181 号相位没有配置。
+
+补法（`sql-custom/2026_11_15_03_gilneas_last_stand_to_duskhaven.sql`）：
+
+- 交 Last Stand 时，Crowley 的 SmartAI 把玩家传送到 Krennan 家，坐标取自 TDB 4.4.2 的 `spell_target_position`；
+- 在屋里放一个 Genn，负责 14375；
+- 交 14375 时让玩家施放原版的 Last Stand Complete（72799），学会种族技能并绑定炉石。14375 自带的奖励法术 68639 只有一个屏幕效果；
+- 交了 Last Stand 之后，Duskhaven 的各个子区域都启用 181 号相位。
+
+Duskhaven 后面还会用到 182、183 号相位（Hold the Line、Save the Children 那几段），目前都还没配，等角色走到再补。
+
+#### 下载具后不能跳
+
+这次在吉尔尼斯又遇到了：下马后不能跳，也走不下斜坡。Deadmines 的机器人下来也是同样的表现。gdb 显示下马时服务器发了 `SMSG_MOVE_GRAVITY_ENABLE`，客户端也回了确认（`CMSG_MOVE_GRAVITY_ENABLE_ACK`），而重新登录就能恢复，说明服务器这边的状态是对的，卡住的是客户端。
+
+我的猜测是：`Unit::_ExitVehicle` 先发"恢复重力"，紧接着给玩家启动一段"从载具上下来"的移动路径，客户端在这段路径结束时，又把开始时的无重力状态还原了回去。按这个猜测加了一个保险：玩家下载具 1.5 秒后，如果没有坐上别的载具，也没有悬浮或飞行光环，就再发一次"恢复重力"（`patches/2026_11_15_02_unit_cumulative_incl_exit_vehicle_gravity_resend.patch`）。还要等下次骑载具来验证。
+
 ### 4.34 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
@@ -2105,8 +2133,8 @@ if (aura->GetUnitOwner() != this && !aura->GetUnitOwner()->InSamePhase(newPhase)
 - **攒着等下一批编译的小 bug：** 放弃 29423 后，Huo 还会一直跟着玩家，重新登录可以解决。
 - **赤脊山 26563 Return of the Bravo Company：** 前置任务和临时跟随者组合在一起，跳过 Weapons of War 的玩家拿不到（见 4.29），不挡主线，先不改。
 - **赤脊山第二期替代设计还没实测：** 坦克能不能开、炮能不能打、Darkblaze 的强度都还是未知数（见 4.31）。
-- **下载具后不能跳。** Deadmines 的机器人和吉尔尼斯的马都出现过：下来以后不能跳，也走不下斜坡。gdb 显示服务器下马时发了"恢复重力"，客户端也回了确认，原因还没找到。
-- **吉尔尼斯 179～194 号相位没有配置。** Duskhaven 以后的任务很可能还会碰到 NPC 看不见的问题（见 4.33）。
+- **下载具后不能跳。** Deadmines 的机器人和吉尔尼斯的马都出现过：下来以后不能跳，也走不下斜坡，重新登录可以恢复。已经上线"下载具 1.5 秒后补发恢复重力"的修复，还没验证（见 4.33）。
+- **吉尔尼斯 182 号以后的相位没有配置。** Duskhaven 后半段和吉尔尼斯之战的任务很可能还会碰到 NPC 看不见的问题（见 4.33）。
 - **全局审计剩下的问题。** 联盟这边还有约 1000 个任务需要重建内容（第四章），按等级段从低到高逐批修。
 - **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
