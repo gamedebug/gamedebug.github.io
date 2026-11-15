@@ -2303,6 +2303,13 @@ Against the Wind（13542）要从风元素 Frenzied Cyclone（32985）身上拿 
 
 护腕能掉了，但站在月井边上用不掉。护腕的技能要的施法焦点是 1594（`SpellCastingRequirements` 4658），只有 194110 "Auberdine Moonwell" 提供；奥伯丁废墟那口月井上的焦点物件 177280 提供的是通用月井焦点 883，不算数。194110 在这边连模板都没有，TDB 4.4.2 也只有模板、没有刷新点。补了模板，放在 177280 同一个位置，沿用它的模型 1407，画面上不多出东西（`sql-custom/2026_11_15_41_auberdine_moonwell_focus.sql`）。物件模板只在启动时加载，经同意重启后生效。
 
+重启后还是用不掉：没有读条，也没有红字。用 gdb 在 `HandleUseItemOpcode` 下断点，发现请求到了，但连物品查找都没走到。服务器日志里每用一次都有一条 `ByteBufferException ... CMSG_USE_ITEM ... Skipped packet`，也就是包解析越界、整个被丢掉。再用 gdb 把包的 44 个字节转出来，用 Python 按解析代码逐位解码，发现 `ReadUseItemRequest` 处理客户端附带的移动信息时有两处错误：
+
+- 移动标志 30 位的读取条件写成了 `if (hasMovement)`，应为 `if (hasMovementFlags)`，不带标志时多读 30 位。
+- 移动者 GUID 的字节读进了 `movementTransportGuid`（掩码全为 0），角色 GUID 的字节被漏读。
+
+两处一改，44 个字节刚好读完，法术 62081、施法计数 5 都对上了。同一段里运输工具 GUID 的位读取把第 3 字节写成了第 4 字节，一并改掉（`patches/2026_11_15_07_use_item_movement_parse.patch`）。施法包 `CMSG_CAST_SPELL` 的同类代码是对的。这个 bug 影响所有带着移动信息发出的使用物品请求，不只是这个任务。编译后经同意重启上线。
+
 ### 4.38 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
