@@ -2182,7 +2182,9 @@ Last Stand（14222）的奖励施法是 93477，这个法术有三个效果：�
 - **Not Quite Shipshape（14404）**：Coal Tar、Planks of Wood、Shipwright's Tools 三个 GO 都刷了，但掉落写的是普通 100% 掉落，不是任务掉落。服务器只在 GO 有"该玩家需要的任务掉落"时才让它闪光（`GameObject::ActivateToQuest`），所以三样东西都不闪，很难找。改成任务掉落（-100）。另外每样在同一位置重复刷了两份，删掉多余的。
 - 这几个 GO 原来要 2 小时才重刷，改成 120 秒。
 
-文件 `sql-custom/2026_11_15_09_wahl_hayward_quest_items.sql`，备份 `backup/duskhaven_quest_gos_20261115.tsv`。掉落表热加载，相位和刷新点经同意重启后生效，等游戏里验证。
+文件 `sql-custom/2026_11_15_09_wahl_hayward_quest_items.sql`，备份 `backup/duskhaven_quest_gos_20261115.tsv`。掉落表热加载，相位和刷新点经同意重启后生效，游戏里确认衣服找到、三样东西都在闪光。
+
+- **Washed Up（14412）**：13 个 Forsaken Castaway 刷新时间 2 小时，其中一半就站在 Sebastian Hayward 和卫兵身边，被 NPC 打死不给玩家计数，结果整片营地 2 小时空着。刷新改成 60 秒，并清掉当时的刷新倒计时（`sql-custom/2026_11_15_10_washed_up_castaway_respawn.sql`，备份 `backup/forsaken_castaway_respawn_20261115.tsv`）。刷新数据缓存在内存里，经同意重启后生效。
 
 #### 下载具后不能跳
 
