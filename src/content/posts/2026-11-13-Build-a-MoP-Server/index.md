@@ -2301,6 +2301,8 @@ Against the Wind（13542）要从风元素 Frenzied Cyclone（32985）身上拿 
 
 修复（`sql-custom/2026_11_15_39_against_the_wind_bracers_loot.sql`、`2026_11_15_40_restore_missing_quest_drops.sql`）：按 TDB 4.4.2 的几率补回这 378 条掉落（去掉 6 条挂在 GM 路点生物上的），全部设成负几率，也就是只给身上有这个任务的玩家掉；279 种 `lootid` 为 0 的怪设成 `lootid = entry`（它们原本都没有掉落记录，不会多出别的东西）。用控制台的 `reload creature_loot_template` 和逐个 `reload creature_template <entry>` 热加载，没有重启。
 
+护腕能掉了，但站在月井边上用不掉。护腕的技能要的施法焦点是 1594（`SpellCastingRequirements` 4658），只有 194110 "Auberdine Moonwell" 提供；奥伯丁废墟那口月井上的焦点物件 177280 提供的是通用月井焦点 883，不算数。194110 在这边连模板都没有，TDB 4.4.2 也只有模板、没有刷新点。补了模板，放在 177280 同一个位置，沿用它的模型 1407，画面上不多出东西（`sql-custom/2026_11_15_41_auberdine_moonwell_focus.sql`）。物件模板只在启动时加载，经同意重启后生效。
+
 ### 4.38 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
