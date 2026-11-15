@@ -2154,6 +2154,26 @@ Godfrey 和 Melinda Hammond 在地窖里给了 Save the Children!（14368）、U
 
 另外，测试角色任务日志里的 Gasping for Breath（14395）也看不到目标。这是地震后的任务，溺水守卫和交任务的 Liam 都在 183 号相位，要等接了 As the Land Shatters 才会出现。之前提前交了 14396 时顺手接了它，删掉 14396 的交付记录以后它就暂时没有目标了，这个不用修。
 
+投石车改完后在游戏里确认能上车，两个船长也打掉了；Ashley 在二楼找到了，四个任务都已交付。
+
+#### 地震后的地形从来没切换过
+
+查 Gasping for Breath 时发现，溺水守卫（36440，50 个）的刷新高度在 -2～-25 码，而地图 654 在这些位置的地面是 1 码左右，等于把他们埋在地下 12～25 码。客户端隔着地面能看到人，一点却点在地面上：用 gdb 在 `WorldSession::HandleSpellClick` 下断点，玩家怎么点都没有触发，说明客户端根本没发点击请求。
+
+原因是地震后应该换成塌陷的海岸地形。这类"地形替换"在 Map.dbc 里是独立的地图：638 是地震前的默认地形（`terrain_swap_defaults` 里配了），655（Gilneas_terrain1）是地震后塌陷、被水淹的地形，在 655 上这些守卫正好漂在海床上方的水里。而 `terrain_phase_info`（哪个相位用哪块替换地形）整张表是空的，所以不管进到哪个相位，服务器发给客户端的永远只有 638。补上"183 号相位 → 655"（`sql-custom/2026_11_15_08_gilneas_quake_terrain_swap.sql`）。`reload conditions` 会顺带重载这张表，不用重启；玩家要重新登录。服务器自己算高度时不看替换地形，只有客户端显示和寻路会用到。
+
+第一次重新登录还是不对。在 `WorldSession::SendSetPhaseShift` 下断点看实际发出的包：相位是 171/181/182，地形只有 638。原来测试角色还没接 As the Land Shatters，根本没进 183 号相位，日志里的 Gasping for Breath 是之前提前接的。地形配置本身没问题，等接了地震任务再验证。
+
+#### 每次登录都重放狼人 CG
+
+测试角色每次进游戏都会先放一段狼人剧情动画。同一次 gdb 抓到了来源：`Player::SendMovieStart(21)` ← `Spell::cast` ← `Player::learnQuestRewardedSpells` ← `Player::_LoadQuestStatusRewarded`。
+
+Last Stand（14222）的奖励施法是 93477，这个法术有三个效果：学会 94293（Enable Worgen Altered Form，狼人/人形切换）、播放 21 号动画、还有一个相位效果。登录时服务器会对每个已交付任务检查一遍：奖励法术要教的技能还没学会，就把整个法术重新施放一次（本意是补学技能）。而 94293 同时也是狼人的种族默认技能（`playercreateinfo_spell`），这类技能不存进 `character_spell`，每次登录由 `learnDefaultSpells()` 重新学。问题出在 `Player::LoadFromDB` 的顺序：先检查任务奖励，后学默认技能。检查那一刻角色总是"没学会 94293"，于是每次登录都重放一遍动画。所有做过 Last Stand 的狼人都会这样。
+
+修法：在加载任务状态之前先调用一次 `learnDefaultSpells()`（原来那次保留，重复调用不会重复学）。补丁 `patches/2026_11_15_04_player_cumulative_incl_default_spells_before_quest_rewards.patch`。编译后经同意重启，等游戏里验证。
+
+顺带记一个坑：`Player.cpp` 是 CRLF 换行，用 Python 文本模式改写会全部变成 LF，`git diff` 一下子变成四万多行。改这类文件要按字节读写。
+
 #### 下载具后不能跳
 
 这次在吉尔尼斯又遇到了：下马后不能跳，也走不下斜坡。Deadmines 的机器人下来也是同样的表现。gdb 显示下马时服务器发了 `SMSG_MOVE_GRAVITY_ENABLE`，客户端也回了确认（`CMSG_MOVE_GRAVITY_ENABLE_ACK`），而重新登录就能恢复，说明服务器这边的状态是对的，卡住的是客户端。
