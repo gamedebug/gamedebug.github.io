@@ -2314,7 +2314,11 @@ Against the Wind（13542）要从风元素 Frenzied Cyclone（32985）身上拿 
 
 13558 要用码头尽头仪式平台上的 Aetherion Ritual Orb（194145）把元素领主 Aetherion（33041）召下来打。实测没看到 Boss。Aetherion 其实一直在：站在码头外约 70 码、高约 55 码的一处结构上，带着"对玩家免疫"。宝珠被使用时会触发事件 20898，但这个事件在这边和 TDB 4.4.2 里都没有任何脚本，用了宝珠什么也不发生。
 
-补了一个简化版事件（`sql-custom/2026_11_15_42_call_down_the_thunder_aetherion.sql`）：宝珠的 SmartAI 在事件 20898 时通知 Aetherion；Aetherion 解除免疫，飞到宝珠旁边的平台上（落点用 vmap 查过，平台地面约 21 码高），攻击最近的玩家；脱战时恢复免疫飞回原位。战斗技能 Blast of Air（击退）按 TDB 4.4.2 的间隔保留。经同意重启后生效，等游戏里验证。
+补了一个简化版事件（`sql-custom/2026_11_15_42_call_down_the_thunder_aetherion.sql`）：宝珠的 SmartAI 在事件 20898 时通知 Aetherion；Aetherion 解除免疫，飞到宝珠旁边的平台上（落点用 vmap 查过，平台地面约 21 码高），攻击最近的玩家；脱战时恢复免疫飞回原位。战斗技能 Blast of Air（击退）按 TDB 4.4.2 的间隔保留。
+
+第一次实测仍然没反应。gdb 跟踪显示宝珠的 `SmartGameObjectAI::EventInform` 触发了，但 Aetherion 的 `SetData` 没被调用：`SMART_TARGET_CREATURE_GUID` 按 GUID 找生物时，搜索半径取的是发起者的格子激活范围，普通游戏物件这个值是 0，所以从宝珠出发永远找不到。改成 `SMART_TARGET_CLOSEST_CREATURE`（entry 33041，100 码内）。另外，宝珠带"仅任务需要时可交互"标志，"使用宝珠"一旦计数客户端就不让再点，所以重启时趁角色离线把这一项进度清零。
+
+第二次实测：宝珠事件、`SetData`、`SetFly` 都走到了，Aetherion 解除免疫可以打，打完掉落 Aetherion's Essence，任务能完成。但他没有飞到平台上，还停在原来的高处，玩家 20 级可以飞上去打。用户决定能跑通就不再动这一处。
 
 ### 4.39 接下来
 
