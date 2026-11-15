@@ -2134,6 +2134,20 @@ Gwen Armstead 的 Kill or Be Killed（14336）要去镇外找 Prince Liam Greyma
 
 修法是删掉关着的那一扇（guid 90387），原来那一行备份在 `backup/gameobject_90387_20261115.tsv`，SQL 文件是 `sql-custom/2026_11_15_05_allens_storm_cellar_door.sql`。游戏物件没法热删除，所以这次重启了世界服。
 
+#### 地窖里的四个任务：地震任务能提前接
+
+Godfrey 和 Melinda Hammond 在地窖里给了 Save the Children!（14368）、Unleash the Beast（14369）、Two By Sea（14382）、Leader of the Pack（14386），结果一个都做不了：怪、孩子、投石车全都不见了。原因是 Godfrey 同时还给出了 As the Land Shatters（14396）。这个任务一接就进入地震后的 183 号相位，入侵那一层（182）随之关闭。数据库里它没有任何前置任务，所以可以抢先接了交掉，后面四个任务的目标就都没了。
+
+把四个任务做完前其实还有几处是坏的，一起修了（`sql-custom/2026_11_15_06_duskhaven_invasion_quests.sql`）：
+
+- **14396 加前置**：用条件（类型 19/20）要求四个任务都已交付，才能看到和接 As the Land Shatters。
+- **Save the Children!**：点孩子用的三个法术（68596～68598）只有 SCRIPT/DUMMY 效果，没有脚本，点了不给进度。改成孩子被这个法术命中时给点击者记一次，然后消失，60 秒后重刷；只有接了任务才能点。
+- **Leader of the Pack**：Dark Ranger Thyala 和召唤出来的獒犬没有 AI。照 TDB 4.4.2 补上 SmartAI，獒犬的攻击目标从 TDB 写死的生物 guid 改成"100 码内最近的 Thyala"。
+- **Two By Sea**：船长站在海上的船里（脚下的地形在水下 15～35 码），只能坐投石车过去。投石车的 Launch（68659）只有一个 DUMMY 效果，加上一个"让 0 号乘客施放 96114"的强制施法，实际什么也不做。在 `gilneas.cpp` 里加了法术脚本 `spell_two_by_sea_catapult_launch`：发射时把玩家从投石车上放下来，0.2 秒后按瞄准点做一次约 3 秒的抛物线跳跃。落点由玩家自己瞄，打偏了就掉进海里，这一点保持原样。源码改动在 `patches/2026_11_15_03_gilneas_cumulative_incl_two_by_sea_catapult.patch`。
+- **重复刷新**：三个孩子、两个船长和一辆投石车各在同一位置刷了两份，删掉多出来的（备份 `backup/duskhaven_dup_spawns_20261115.tsv`）。孩子重刷改成 60 秒，船长改成 120 秒（原来是 2 小时）。
+
+测试角色已经提前交了 14396，把这条交付记录删掉（备份 `backup/shen_q14396_rewarded_20261115.tsv`）后，它就回到了入侵相位。服务器在 0 人在线时重新编译并重启。还没在游戏里验证。
+
 #### 下载具后不能跳
 
 这次在吉尔尼斯又遇到了：下马后不能跳，也走不下斜坡。Deadmines 的机器人下来也是同样的表现。gdb 显示下马时服务器发了 `SMSG_MOVE_GRAVITY_ENABLE`，客户端也回了确认（`CMSG_MOVE_GRAVITY_ENABLE_ACK`），而重新登录就能恢复，说明服务器这边的状态是对的，卡住的是客户端。
