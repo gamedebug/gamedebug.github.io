@@ -2172,7 +2172,7 @@ Godfrey 和 Melinda Hammond 在地窖里给了 Save the Children!（14368）、U
 
 Last Stand（14222）的奖励施法是 93477，这个法术有三个效果：学会 94293（Enable Worgen Altered Form，狼人/人形切换）、播放 21 号动画、还有一个相位效果。登录时服务器会对每个已交付任务检查一遍：奖励法术要教的技能还没学会，就把整个法术重新施放一次（本意是补学技能）。而 94293 同时也是狼人的种族默认技能（`playercreateinfo_spell`），这类技能不存进 `character_spell`，每次登录由 `learnDefaultSpells()` 重新学。问题出在 `Player::LoadFromDB` 的顺序：先检查任务奖励，后学默认技能。检查那一刻角色总是"没学会 94293"，于是每次登录都重放一遍动画。所有做过 Last Stand 的狼人都会这样。
 
-修法：在加载任务状态之前先调用一次 `learnDefaultSpells()`（原来那次保留，重复调用不会重复学）。补丁 `patches/2026_11_15_04_player_cumulative_incl_default_spells_before_quest_rewards.patch`。编译后经同意重启，等游戏里验证。
+修法：在加载任务状态之前先调用一次 `learnDefaultSpells()`（原来那次保留，重复调用不会重复学）。补丁 `patches/2026_11_15_04_player_cumulative_incl_default_spells_before_quest_rewards.patch`。编译后经同意重启，游戏里确认登录不再重放动画。
 
 顺带记一个坑：`Player.cpp` 是 CRLF 换行，用 Python 文本模式改写会全部变成 LF，`git diff` 一下子变成四万多行。改这类文件要按字节读写。
 
