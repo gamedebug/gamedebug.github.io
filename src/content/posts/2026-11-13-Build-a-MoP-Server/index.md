@@ -117,6 +117,8 @@ docker attach --detach-keys="ctrl-x" mop-worldserver-1
 
   这里有个意外发现：`playercreateinfo_spell` 不只在创建角色时生效，**每次登录都会重新学一遍**（`Player::LoadFromDB` → `learnDefaultSpells`），所以老角色也都拿到了。我们觉得这样挺好，就保留了。
 - 每个出生点放了一个自制的装备商人（Newcomer Watcher），按职业只卖对应的装备。
+
+  11 月 16 日发现锁甲头盔挑得不好。战士/圣骑那顶 Golden Helm 只有 36 装等：数据里根本没有 0 级需求、带力量的高装等锁甲头盔，挑选程序退而求其次选了它。猎人那顶只有 288，萨满干脆没有锁甲头盔。现在三个职业都换成了 318 装等的绿色头盔，服务器 `item_template` 和客户端 `Item-sparse.db2` 里的等级需求都是 0：战士/圣骑用 Helm of Furious Uprising（敏捷/耐力/命中/急速，没有力量，但耐力和护甲远高于原来那顶），猎人用 Nature-Crush Helm，萨满用 Shard-Keeper Helm（智力/耐力/暴击/急速）。`reload npc_vendor` 和 `reload conditions` 热加载就生效，不用重启。
 - 顺手修了沙石幼龙：它的 `VehicleId` 是 0，不能带乘客。根据 Vehicle.dbc 选了一个空闲的双座载具 ID 填上，现在队友也能坐上去了。
 
 ### 1.8 崩溃排查
