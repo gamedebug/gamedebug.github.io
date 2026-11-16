@@ -2350,7 +2350,15 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 
 修复（`patches/2026_11_16_02_quest_autocomplete_flag_details.patch`）：三处都只在 `IsAutoComplete()` 时直接发交任务窗口，其余发接任务窗口。任务数据没动，完成后的远程交任务提示不受影响。编译后经同意重启上线，等游戏里验证。
 
-### 4.43 接下来
+实测可以正常接任务了。
+
+### 4.43 Consumed：湖底的东西点不了
+
+13881 要调查熊喝水的湖。湖底能看到 Devouring Artifact（195057），但它是类型 5 的纯装饰物件，本来就不能点。这一项目标在这边是 DUMMY 类型（`quest_objective` type 10，对象 0）；TDB 4.4.2 的 `quest_objectives` 里它是"进入区域触发器 5449"，5449 就在湖底那件物品旁边，半径 12 码。这边进入区域触发器后靠 `areatrigger_involvedrelation` 找关联任务、给 DUMMY 目标记完成，可这张表里没有 13881。
+
+顺着查了全库：TDB 4.4.2 里靠区域触发器完成、这边也有 DUMMY 目标的现存任务 87 个，缺关联的 52 个。补了 49 条（`sql-custom/2026_11_16_03_restore_areatrigger_quest_links.sql`）；另外 3 条的触发器已经关联了别的任务（171、4200、4201），这张表一个触发器只能对应一个任务，保留原样。14482 和 28732 在参考库里各有两个触发器，这边只有一个 DUMMY 目标，两个都关联上，进任意一个算完成，和客户端显示的目标一致。用 `reload areatrigger_involvedrelation` 热加载，没有重启。
+
+### 4.44 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
