@@ -2320,7 +2320,15 @@ Against the Wind（13542）要从风元素 Frenzied Cyclone（32985）身上拿 
 
 第二次实测：宝珠事件、`SetData`、`SetFly` 都走到了，Aetherion 解除免疫可以打，打完掉落 Aetherion's Essence，任务能完成。但他没有飞到平台上，还停在原来的高处，玩家 20 级可以飞上去打。用户决定能跑通就不再动这一处。
 
-### 4.39 接下来
+### 4.39 Elune's Fire：Horoo 是绿名
+
+13582 要从 Horoo the Flamekeeper（34385）身上拿 Elune's Torch。火炬是他的任务掉落（4.37 批量补回的那批里就有），也就是要把他打死。实测 Horoo 是绿名，打不了。
+
+Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"），对玩家本来是敌对的。但同一位 NPC 给的 The Wildkin's Oath（13583）奖励一个永久光环 Force Reaction 1（61899），把阵营 1065 对玩家强制改成友好，好让枭兽变成盟友。先交了 13583 的玩家，Horoo 就跟着变成友好，任务卡死。TDB 4.4.2 也是这样配置的。
+
+修复（`sql-custom/2026_11_16_01_horoo_hostile_faction.sql`）：Horoo 单独改用普通敌对怪物阵营 14，等级、技能、掉落不变；黑海岸其他用 1924 的只有 Wildkin Spirit，本来就该在立誓后变友好，不动。经同意重启后生效。
+
+### 4.40 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
