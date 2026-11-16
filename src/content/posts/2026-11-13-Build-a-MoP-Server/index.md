@@ -2377,7 +2377,13 @@ The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。
 
 这张表只说"会掉"，没有掉率，参考库里也没有。掉率影响难度，由用户决定：只刷 1–2 只的怪（稀有、首领）100%，成群的怪 40%，都只给有任务的玩家掉。修复（`sql-custom/2026_11_16_05_fleetfoot_tailfeathers.sql`、`2026_11_16_06_restore_quest_drops_from_questitem.sql`）共 134 条怪物掉落（同一物品可能由几种怪掉），24 种原来没有掉落表的怪设成 `lootid = entry`。热加载，没有重启。另外 114 条的物品已经能从别处拿到，暂不处理。
 
-### 4.46 接下来
+### 4.46 Cleansing the Afflicted：灵魂是友方
+
+13545 要先对 Blackwood Hold 的熊怪用 Blessed Herb Bundle（44889），再杀掉出现的 Spirit of Corruption（33000）7 只。灵魂能刷出来，但任务不计数。法术 62092 的召唤没问题；问题在灵魂的模板：阵营 35（友方）、1 级，玩家打不了它，也就拿不到击杀。TDB 4.4.2 里它是阵营 14（敌对）。
+
+修复（`sql-custom/2026_11_16_07_spirit_of_corruption_hostile.sql`）：阵营改成 14，等级改成和 Blackwood Furbolg（33084）一样的 17–18。热加载 `creature_template`，没有重启。已经刷出来的友方灵魂不会变，之后新召唤的才是敌对的。等游戏里验证。
+
+### 4.47 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
