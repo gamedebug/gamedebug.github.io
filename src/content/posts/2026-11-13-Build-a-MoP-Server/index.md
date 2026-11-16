@@ -2340,7 +2340,17 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 
 修复（`sql-custom/2026_11_16_02_jagged_reef_focus_position.sql`）：焦点移到标记点和坡顶之间（5552, 478, 24），范围改成实际 30 码，模型改用其他焦点物件的 1407。经同意重启后生效，等游戏里验证。这是第二个因为估位置出错的任务（另一个是 4.36）。
 
-### 4.42 接下来
+实测图腾放出来了，两波元素之后仪式完成，任务计数。
+
+### 4.42 Leave No Tracks：接任务窗口里只有"完成任务"
+
+13892 的 NPC 打开后是任务窗口，但按钮是"完成任务"，点了没反应。gdb 跟踪显示，一点 NPC，服务器就直接发了交任务的 `SendQuestGiverRequestItems`，玩家点按钮后发来的是 `CMSG_QUESTGIVER_CHOOSE_REWARD`，而这个任务根本没接。
+
+原因在 `Player::SendPreparedQuest`：NPC 身上只有一个可接任务时服务器会直接打开它，条件里有 `|| quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE)`，任务带 0x10000 标志就打开交任务窗口而不是接任务窗口。这个写法来自 TrinityCore 早年的代码，当时 `IsAutoComplete()` 也看这个标志；SkyFire 后来把 `IsAutoComplete()` 改成只看 Method 0（接了就算完成），注释也写明 0x10000 只管完成后的远程交任务提示，但这几处没跟着改。库里带这个标志的普通任务有 380 个。同样的写法还在 `HandleQuestgiverQueryQuestOpcode`（从任务列表里点任务）和组队共享任务里。
+
+修复（`patches/2026_11_16_02_quest_autocomplete_flag_details.patch`）：三处都只在 `IsAutoComplete()` 时直接发交任务窗口，其余发接任务窗口。任务数据没动，完成后的远程交任务提示不受影响。编译后经同意重启上线，等游戏里验证。
+
+### 4.43 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
