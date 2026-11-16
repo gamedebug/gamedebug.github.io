@@ -2381,9 +2381,44 @@ The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。
 
 13545 要先对 Blackwood Hold 的熊怪用 Blessed Herb Bundle（44889），再杀掉出现的 Spirit of Corruption（33000）7 只。灵魂能刷出来，但任务不计数。法术 62092 的召唤没问题；问题在灵魂的模板：阵营 35（友方）、1 级，玩家打不了它，也就拿不到击杀。TDB 4.4.2 里它是阵营 14（敌对）。
 
-修复（`sql-custom/2026_11_16_07_spirit_of_corruption_hostile.sql`）：阵营改成 14，等级改成和 Blackwood Furbolg（33084）一样的 17–18。热加载 `creature_template`，没有重启。已经刷出来的友方灵魂不会变，之后新召唤的才是敌对的。等游戏里验证。
+修复（`sql-custom/2026_11_16_07_spirit_of_corruption_hostile.sql`）：阵营改成 14，等级改成和 Blackwood Furbolg（33084）一样的 17–18。热加载 `creature_template`，没有重启。已经刷出来的友方灵魂不会变，之后新召唤的才是敌对的。已在游戏里确认能计数。
 
-### 4.47 接下来
+### 4.47 In Defense of Darkshore：Orseus 的选项看不见
+
+13885 原本要找 Orseus（34392）借一只角鹰兽，从空中保护鹿、熊和夜刃豹各 8 只。空中场景从来没实现过，11 月 13 日的处理是跳过场景：选他的对话选项"Orseus, Kathrena sent me to borrow one of your Hippogryphs."直接给全部 24 个计数（见 4.12）。但在游戏里和他说话只有一段文字，没有这个选项。
+
+原因和 4.44 的 Onu 一样：选项的 `OptionType` 和 `OptionNpcflag` 都是 0，服务器只显示 `OptionNpcflag` 和 NPC 标志有交集的选项，所以它永远不出现，SmartAI 也就等不到玩家选择。修复（`sql-custom/2026_11_16_08_orseus_gossip_visible.sql`）：改成 1 / 1，热加载 `gossip_menu_option`，没有重启。已在游戏里确认，任务完成。
+
+顺便查了全库"有 SmartAI 等玩家选、选项却被隐藏"的情况：除了旅店老板的重复选项，只剩 Grek（纳格兰）、暗月马戏团传送法师和一个游戏物体的对话，都不在现在的路线上，暂不处理。
+
+### 4.48 The Devourer of Darkshore：树苗用不了
+
+13891 要在 Grove of the Ancients 南边浅湖的岸边用 Lifebringer Sapling（46370），召出湖底 Devouring Artifact 的守护者 Yoth'al the Devourer（34331）并打死它。树苗的法术 65207 要求附近有施法焦点 1608，然后发送事件 21674。三块都缺：焦点物体 Consumed Watering Hole（195028）没有模板也没有刷新点（TDB 4.4.2 只有模板），事件 21674 没有脚本，Yoth'al 没有刷新点，模板还是友方阵营 35、1 级、没有 AI。
+
+修复（`sql-custom/2026_11_16_09_devourer_of_darkshore.sql`）：
+
+- 焦点模板照参考库补上（`data1` 改成 60，这个核心的施法范围是 `data1 / 2`，即 30 码），刷在湖心水面 (4809, 106, 48.9)，正好在 Devouring Artifact 上方，位置检查通过。
+- 事件 21674 在湖心召唤 Yoth'al，5 分钟后消失。
+- Yoth'al 改成敌对（16）、19 级，加上参考库里的三个技能（暗影箭、暗影新星、精神鞭笞），出现后直接攻击召唤者。
+- 树苗只在任务未完成、80 码内没有 Yoth'al 时能用，避免连用叠出好几个。
+
+新加了物体模板，经同意重启后生效。已在游戏里确认，任务完成。
+
+### 4.49 The Titans' Terminal：哪里都 "Requires %"
+
+13918 要在 Remtravel 挖掘点附近的海滩上用 Buried Artifact Detector（46388）找 5 个 Ancient Device Fragment（46702），右键合成 Ancient Slotted Device。探测器在哪里用都提示 "Requires %"：法术 65300 Ping for Artifact 要求施法焦点 1612，焦点物体 Remtravel Excavation Beach（195085）没有模板也没有刷新点，客户端连它的名字都查不到，于是只剩一个 `%`。
+
+后面的环节也是空的：海滩上有 90 个看不见的 Buried Treasure Bunny（34356），没有任何脚本；掉碎片的 Buried Debris（195055，掉落表 27251）一个刷新点都没有。DBC 里能看出原版的连法（65300 → 65305 Artifact Pings Back → 65306 Summon Buried Treasure Pile），但参考库里同样没有实现。
+
+修复（`sql-custom/2026_11_16_10_titans_terminal.sql`）：
+
+- 焦点模板照参考库补上（`data1` 140，即 70 码），在海滩上刷 10 个，位置用贪心算法选出，盖住全部 90 个 Bunny。
+- 65300 的作用范围（20 码）限定到 Bunny；被扫到的 Bunny 在原地冒出一堆 Buried Debris，60 秒后消失，同一个 Bunny 2 分钟内只冒一次。土堆本身只有接了任务的人看得见。
+- 经同意重启后生效。
+
+测试时土堆能冒，但开出来只有灰色垃圾。原因是碎片设成了"只有任务需要时才掉"（`-100`），而服务器判断"任务需要"只看任务目标和任务的来源物品，碎片两样都不是（目标是合成后的装置）。第二个修复（`sql-custom/2026_11_16_11_titans_terminal_fragment_source.sql`）：碎片改成 100% 掉落（参考库也是 100%），热加载；同时把碎片登记为任务来源物品，需要 5 个，这一项要改任务表，热加载 `quest_template` 会删掉所有任务对象，有人在线时不安全，等下次重启生效。已在游戏里确认：碎片进背包，合成后任务完成。
+
+### 4.50 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
