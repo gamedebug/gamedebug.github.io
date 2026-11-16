@@ -2369,7 +2369,15 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 
 同一次还确认了 The Bear's Blessing（13544）的 Ancient Bear Statue 有刷出来，位置和参考库一致，只是离任务标记约 26 码、施法范围 5 码。
 
-### 4.45 接下来
+### 4.45 Fleetfoot 不掉羽毛：再补 134 条任务掉落
+
+The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。鼠标指向陆行鸟 Fleetfoot（32997）时客户端显示它会掉任务物品，打死却什么都没有：它的 `lootid` 是 0，TDB 4.4.2 里也没有它的掉落。客户端之所以显示，是因为 `creature_questitem`（客户端缓存里的"这只怪会掉哪些任务物品"）记着它掉 44886。4.37 那次只对比了参考库的掉落表，参考库自己缺的就漏掉了。
+
+这次用参考库的 `creature_questitem` 再对一遍：现存任务需要、表里记着某种怪会掉、而这边那种怪不掉的有 803 条，涉及 174 个任务；其中 74 个"物品-任务"组合（65 个任务）的物品在这边没有任何怪或宝箱能拿到，任务做不了，例如 Oil Change、Hand-me-downs、Rokar's Test、Pro-liberation、The Forest Heart。
+
+这张表只说"会掉"，没有掉率，参考库里也没有。掉率影响难度，由用户决定：只刷 1–2 只的怪（稀有、首领）100%，成群的怪 40%，都只给有任务的玩家掉。修复（`sql-custom/2026_11_16_05_fleetfoot_tailfeathers.sql`、`2026_11_16_06_restore_quest_drops_from_questitem.sql`）共 134 条怪物掉落（同一物品可能由几种怪掉），24 种原来没有掉落表的怪设成 `lootid = entry`。热加载，没有重启。另外 114 条的物品已经能从别处拿到，暂不处理。
+
+### 4.46 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
