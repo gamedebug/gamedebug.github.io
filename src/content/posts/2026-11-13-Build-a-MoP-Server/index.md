@@ -2499,7 +2499,13 @@ Cry For The Moon 之后查 Frank 的暮色森林完成度，发现 Morbent Fel �
 
 修复（`sql-custom/2026_11_17_08_mosh_ogg_bounty_exclusive.sql`，备份 `backup/mosh_ogg_bounty_20261117.tsv`）：部落那对照 TDB 设互斥组 26399，联盟那对设 26782，每个阵营只能接、只能做其中一份。等下次重启生效；已经两份都接了的玩家照常交掉第二份就行。
 
-### 4.59 接下来
+### 4.59 See Raptor / Be Raptor：女祭司的对话选项不显示
+
+荆棘谷 Fort Livingston 的 Priestess Thaalia（44017）要主持两个仪式：26773 See Raptor（Mind Vision，计数 42840）和 26775 Be Raptor（Mind Control，计数 42881–42884）。她的对话菜单 11785 里两个选项都在，但选项类型和 NPC 标记都是 0，客户端根本不显示；而且选了也什么都不会发生，我们的库、TDB 4.4.2 和 C++ 里都没有对应脚本。原版是两段祖尔格拉布剧情：See Raptor 被传送进去看一段过场，Be Raptor 变成被抓的迅猛龙逃出来。传送、召唤迅猛龙和曼多基尔这些法术都还在，但没有东西把它们串起来。
+
+按用户决定做了简单替代（`sql-custom/2026_11_17_09_see_raptor_be_raptor.sql`，备份 `backup/thaalia_rituals_20261117.tsv`）：两个选项只在接了对应任务时显示，选了直接给这个任务的全部计数并关闭对话。See Raptor 原本就只是看过场；Be Raptor 的逃跑玩法是用户要求简化的。部落版（Priestess Hu'rala 的 26359/26362）没有改。已在玩家下线后重启，等游戏里验证。
+
+### 4.60 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
