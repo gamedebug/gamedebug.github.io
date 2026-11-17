@@ -2476,7 +2476,18 @@ Cry For The Moon 之后查 Frank 的暮色森林完成度，发现 Morbent Fel �
 
 修复（`sql-custom/2026_11_17_01_win_a_war_seaforium_focus.sql`）：补上模板 204448，在两个计数 NPC 的原始位置（小屋里、塔顶）各刷一个焦点物体，作用半径 10 码，和法术射程一致。位置检查通过。新刷的物体要重启后才出现，已在玩家下线后重启。已在游戏里确认：塔顶和弹药小屋的炸药都能放下，任务完成。
 
-### 4.56 接下来
+### 4.56 Spared from Madness：营地里一个囚犯都没有
+
+荆棘谷 26736 要在 Kurzen's Compound 里救出三个人：Berrin Burnquill、Emerine Junis、Osborn Obnoticus。到了营地一个都找不到：三个囚犯（计数用的 43919/43920/43921）在我们的库和 TDB 4.4.2 里都没有刷新点，也没有任何营救脚本。不光这个任务做不了，三人被救回叛军营地后各自发的任务链（Water Elementals 等 26729–26731、Bloodscalp Insight 等 26742–26743、A Nose for This Sort of Thing 等 26746–26747、26749）也全接不到，因为营地版本的三个人（43884/43885/43886）同样没有刷新点。
+
+修复（`sql-custom/2026_11_17_05_spared_from_madness.sql`，备份 `backup/spared_from_madness_20261117.tsv`）：
+
+- 三个囚犯刷在任务地图标记的营地小屋里，高度取自寻路网格，位置检查通过。和他们对话选"You're free. Head for the Rebel Camp."就给对应的营救计数（只在接了 26736 时出现），之后人消失，30 秒后重新出现。
+- 叛军营地按交任务标记点刷出三人，发后续任务。几条链的第一个任务都加了条件：交了 Spared from Madness 才能接。
+
+新刷了 NPC，要重启后生效。
+
+### 4.57 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
