@@ -2466,7 +2466,15 @@ Cry For The Moon 之后查 Frank 的暮色森林完成度，发现 Morbent Fel �
 
 修复（`patches/2026_11_17_02_questhandler_cumulative_incl_abandon_unsummon_huo.patch`，备份 `backup/QuestHandler.cpp.bak-20261117`）：`HandleQuestLogRemoveQuest` 放弃任务后，查一张"任务 → 跟随者 → 召唤光环"的小表：去掉召唤光环，并收回 200 码内由这个玩家召出的同 ID 生物。表里目前只有 29423 / Huo，以后碰到同类问题往里加一行就行。只改了 `QuestHandler.cpp`，和 4.53 一起在 11 月 17 日编译上线，等游戏里验证。
 
-### 4.55 接下来
+### 4.55 To Win a War, You Gotta Become War：炸药放不下去
+
+赤脊山 26651 要用 Bravo Company Field Kit 在 Blackrock 弹药小屋和塔里各放一个炸药。拿出工具包后，"Plant Seaforium"（82585）一按就报 "Requires %s"。
+
+11 月 14 日重建赤脊山后半段时（4.30），我给 82585 加了目标条件（只能对弹药小屋 43589 / 塔 43590 这两个计数 NPC 放），也加了"被命中就计数"的脚本，但漏了一点：这个法术还要求附近有法术焦点 1676（`SpellCastingRequirements` 5800）。我们的库里没有任何带这个焦点的物体；TDB 4.4.2 里只有模板 204448 "Plant Seaforium Here"，也没有刷新点。所以无论站在哪里都放不了，和 4.49 的 Titans' Terminal 是同一类问题。
+
+修复（`sql-custom/2026_11_17_01_win_a_war_seaforium_focus.sql`）：补上模板 204448，在两个计数 NPC 的原始位置（小屋里、塔顶）各刷一个焦点物体，作用半径 10 码，和法术射程一致。位置检查通过。新刷的物体要重启后才出现。
+
+### 4.56 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
