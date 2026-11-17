@@ -1925,6 +1925,8 @@ TDB 是 350 MB 的 SQL 文本。没导入数据库，写了个只读的小工具
 - **26713 Showdown at Stonewatch**：Tharil'zun 和 Gath'Ilzogg 刷在 Stonewatch Keep 的两个任务标记点上（原版就有的 20 级精英和技能脚本）。
 - **26714 Darkblaze**：在 Keeshan's Post 的 Troteman 那里接任务时，旁边召唤出 22 级精英的敌对 Darkblaze。打输了可以跟 Troteman 对话"吹号角"再叫一次。解除了 26714 的禁用。
 
+  **11 月 17 日补记：**实际玩到这里时龙没出来。26713 是远程完成任务（`QUEST_FLAGS_AUTOCOMPLETE`），交完会顺着 `NextQuestIdChain` 当场弹出 26714；26714 又带自动接受标记（0x80000），于是直接进了任务日志，根本没经过 Troteman，挂在"从 Troteman 接任务"上的召唤也就没触发。玩家回 Troteman 那里重接后完成了。按用户要求改成必须找 Troteman 接（`sql-custom/2026_11_17_03_darkblaze_accept_at_troteman.sql`）：26713 的 `NextQuestIdChain` 清零，不再远程弹出 26714（前置关系靠 26714 的 `PrevQuestId` 保留）；26714 去掉自动接受标记。下次重启后生效。
+
 这一期上线了，还在等玩家做到这里。
 
 ### 4.32 旅行者的猛犸象：商人被"留在原地"
