@@ -2505,7 +2505,13 @@ Cry For The Moon 之后查 Frank 的暮色森林完成度，发现 Morbent Fel �
 
 按用户决定做了简单替代（`sql-custom/2026_11_17_09_see_raptor_be_raptor.sql`，备份 `backup/thaalia_rituals_20261117.tsv`）：两个选项只在接了对应任务时显示，选了直接给这个任务的全部计数并关闭对话。See Raptor 原本就只是看过场；Be Raptor 的逃跑玩法是用户要求简化的。部落版（Priestess Hu'rala 的 26359/26362）没有改。已在玩家下线后重启，等游戏里验证。
 
-### 4.60 接下来
+### 4.60 Backdoor Dealings：图腾点了没反应
+
+Cape of Stranglethorn 的 Backdoor Dealings（联盟 26809 / 部落 26550）要把 Gurubashi Incense 放在 Totem of Hir'eek（物体 204361）前面，再偷听 Zanzil 的计划（计数 43252 + 43245）。图腾是"任务给予者"类型的物体，对话菜单 11711 里有 "Place the incense at the foot of the statue." 这个选项，但选项类型是 0；物体身上的对话选项只有"普通对话"类型才会显示，所以点了图腾什么都看不到。选了也没有任何脚本（我们的库、TDB 4.4.2、C++ 都没有）。原版是放下香后蝙蝠 Wings of Hir'eek 带玩家飞去看一段剧情。背包里的香本身没有使用效果，只是任务要带在身上的物品，所以用不了是正常的。
+
+照 4.59 的做法替代（`sql-custom/2026_11_17_11_backdoor_dealings.sql`，备份 `backup/backdoor_dealings_20261117.tsv`）：接了任意一个版本时，图腾的放香选项才会显示，选了两个计数一次给满并关闭对话。图腾挂上 SmartGameObjectAI，经同意重启，等游戏里验证。
+
+### 4.61 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
