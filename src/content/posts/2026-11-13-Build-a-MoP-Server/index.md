@@ -12,14 +12,20 @@ description: "用 SkyFire_548 在 AWS 上搭一台 5.4.8 熊猫人服务器，�
 
 几年前我搭过一台巫妖王之怒（3.3.5）的服务器。这次换成熊猫人之谜（5.4.8），主要给家里的小朋友玩，所以用的是英文客户端，英文她读起来比中文顺。整个过程是我和 Claude Code 一起完成的：我负责在游戏里测试、提问题和做决定，它负责查源码、改配置、写补丁。
 
-本文记录了从 2026-11-08 开始的工作，一共四章：
+本文记录了从 2026-11-08 开始的工作，一共十章：
 
 1. 服务器选型、基础设施搭建、服务端部署
-2. 全局修复：全库任务审计、批量修复，以及之后各区域逐个任务的修复
-3. 熊猫人新手岛（Wandering Isle）任务修复
-4. 矮人新手村（Coldridge Valley / Dun Morogh）任务修复
+2. 全局修复：全库任务审计和批量修复，以及影响全服的问题
+3. 熊猫人新手岛（Wandering Isle）
+4. 矮人新手村（Coldridge Valley / Dun Morogh）
+5. 艾尔文森林与西部荒野
+6. 赤脊山
+7. 吉尔尼斯
+8. 黑海岸
+9. 暮色森林
+10. 荆棘谷
 
-第三、四章是最早逐个任务修的记录，时间上在第二章之前；第二章的全局审计就是从这两章的经验里总结出来的。
+第三、四章是最早逐个任务修的记录，时间上在第二章之前，第二章的全局审计就是从这两章的经验里总结出来的。第五章起是全局修复之后，在游戏里实际玩到哪里、就按地图逐个修的记录。
 
 ## 第一章　选型、基础设施与服务端部署
 
@@ -1585,147 +1591,7 @@ Solanian 那次误判以后，补了一个能看到"模型"的位置检查工具
 
 结果：这 469 张表平均每只怪的期望掉落从 6.6 件降到 0.67 件（不算任务物品和金币），最高的一张约 1.45 件。原数据整表备份在 `backup/creature_loot_overflow_20261113.tsv`。掉落表支持热加载（`reload creature_loot_template`），不用重启。
 
-### 2.21 实测反馈：Pie for Billy 掉率太低
-
-艾尔文森林的 **86 Pie for Billy** 要 4 块 Chunk of Boar Meat（60401），只有接了任务才掉。数据库里的掉率：
-
-| 怪 | 等级 | 刷新点 | 原掉率 | 现掉率 |
-|---|---|---|---|---|
-| Stonetusk Boar（113） | 5 | 47 | 21% | 50% |
-| Rockhide Boar（524） | 7 | 87 | 12% | 50% |
-
-原来平均要杀 19–33 只，现在约 8 只。这不算 bug，是按玩家要求调的。`sql-custom/2026_11_14_01_pie_for_billy_drop_rate.sql`，原值备份在 `backup/pie_for_billy_loot_20261114.tsv`，`reload creature_loot_template` 热加载，不用重启。
-
-### 2.22 实测反馈：Livin' the Life 的施法点放错了（又一次是我的错）
-
-**26228 Livin' the Life**：玩家走到 Jangolode 矿洞尽头，道具 Two-Shoed Lou's Old House 用不了，客户端红字提示 "Requires you to be at the end of the Jangolode Mine."（这句话就是施法焦点 1672 在客户端里的名字）。
-
-原因在我们自己：这个焦点物体（模板 910100，刷新点 9100101）是批次六新建的，2.19 复查时又"挪到最深处那只狗头人的位置"——但我挑的是**高度最低**的那只（−9942.6, 1473.2），不是**走得最远**的那只。这次用寻路工具（navpath）从洞口算到每只狗头人挖掘者的步行距离：旧位置只有约 212 码，矿道后面还有一个洞室（x −9985 到 −10026，y 1435 到 1497），最远处约 265 码。玩家站在真正的尽头，离焦点 50–85 码，半径 15 码当然够不着。
-
-修复：焦点挪到最后那个洞室的中心（−10003, 1463, 41.1，高度取自寻路网格的地面），半径 15 → 20 码，盖住整个洞室。`sql-custom/2026_11_14_02_livin_the_life_focus_end_of_mine.sql`，刷新点的移动要重启才生效，已重启。
-
-**结果还是报错，而且这次错得更离谱。** 玩家两次都站在 (−9850, 1388)，就在精英怪 Master Digger 旁边。查了每个点比头顶地表低多少：
-
-| 位置 | 比地表低 |
-|---|---|
-| 玩家站的地方（Master Digger 洞室） | 13.5 码 |
-| 第一次放的点 (−9943, 1473) | 31 码（矿洞中段） |
-| 第二次放的点 (−10003, 1463) | 0 码，**在洞外** |
-
-我把洞口和尽头搞反了：西边那片"洞室"其实是入口外的空地，矿道从西往东延伸，尽头是 Master Digger 守着的洞室。第三次改到 (−9846, 1393, 38.3)，半径 20 码（`sql-custom/2026_11_14_03_livin_the_life_focus_master_digger.sql`），重启生效。教训：判断"尽头"之前，先用"比地表低多少"确认哪边是洞口；玩家实际站的位置比我推算的更可信。
-
-### 2.23 实测反馈：Lou's Parting Thoughts 的偷听事件是空壳
-
-**26232 Lou's Parting Thoughts**：任务要求去农舍后面偷听几个暴徒说话，玩家走到 NPC 旁边什么都没发生。
-
-- 任务目标是 1 个 Furlbrow Murder Info 004（42417）的击杀记录，本该由法术 79184 Hobo Information 给出，但数据库和 C++ 里都没有东西会施放这个法术。
-- 农舍后面的 4 个 Thug（42387）围着一个隐形的 Lou's Parting Thoughts Trigger（42562），它显然是负责感应玩家、播对话、给记录的，可它没有 AI，Thug 也一句台词都没有。上游源码历史里也查不到，SkyFire 从来没做过这个事件。
-
-修法跟 Westfall 前面几条一样，保留结果、跳过演出：给触发器加一段 SmartAI，接了任务还没完成的玩家走进 15 码内（看得到）就直接记一次 42417。原版台词库里没有，所以没编台词。`sql-custom/2026_11_14_04_lous_parting_thoughts_trigger.sql`。触发器原来没有 AI，要重启 worldserver 才会换上，当时有 5 人在线，等大家下线后才重启。
-
-**第一版没生效。** 重启后脚本加载正常，玩家带着任务走到 Thug 中间，什么都没发生。我把这条链路从头查了一遍：AI 选择、反应状态（只有 REACT_AGGRESSIVE 的生物才会收到"有人进入视野"的通知）、视线、事件计时、条件表、给记录的动作，每一环单独看都没问题，但就是不触发，原因没找到。
-
-**第二版换了思路**，不再依赖视野通知：触发器每 2 秒扫一遍 20 码内的玩家（`SMART_EVENT_UPDATE_OOC` + `SMART_TARGET_PLAYER_DISTANCE`），给每个人记一次。没接任务或已经完成的玩家记了也没有任何效果，所以条件表那行也去掉了（`sql-custom/2026_11_14_06_lous_parting_thoughts_trigger_scan.sql`）。重启后实测通过。教训：隐形触发器要感应玩家，用定时扫描比 OOC_LOS 可靠。
-
-### 2.23b 实测反馈：Feeding the Hungry and the Hopeless 喂了没反应
-
-**26271 Feeding the Hungry and the Hopeless**：要用 Westfall Stew 喂 20 个流浪汉。物品会在面前召唤一碗炖肉（42617），但这碗炖肉没有 AI，流浪汉的 C++ 脚本 `npc_transient` 也只处理 26209（问谁杀了 Furlbrow 一家），所以没人给记录。
-
-修法同样是保留动作、跳过演出：炖肉被召唤时（`SMART_EVENT_JUST_SUMMONED`），如果 10 码内有三种流浪汉之一（条件表 type 29，ElseGroup 0/1/2 做"或"），就给召唤者记一次；不管有没有喂到，5 秒后炖肉消失（`sql-custom/2026_11_14_07_feeding_the_hungry_stew.sql`）。流浪汉走过来吃的演出没做，同一个流浪汉也能重复喂。炖肉是每次新召唤的，`.reload creature_template 42617`、`.reload smart_scripts`、`.reload conditions` 热加载就生效，不用重启。实测通过。
-
-### 2.24 实测反馈：Still Assessing the Threat 的地图标记挂错目标
-
-**26503 Still Assessing the Threat**（赤脊山）：要偷 Gnoll Battle Plans、Gnoll Orders、Gnoll Strategy Guide 三样东西。玩家拿到了 Battle Plans，另外两样找不到，以为没刷出来。
-
-- 三个箱子的刷新点都在，数据跟拿到的那个完全一样，没有相位，也没有脚本干扰。
-- 问题在任务地图标记：三块区域位置都对，但 `quest_poi.objIndex` 全是 0，都挂在第 1 个目标 Battle Plans 名下。拿到 Battle Plans 后，这个目标完成，三块区域一起收起来，Orders 和 Guide 在地图上就没有任何标记了。
-- 修法：把第 2、3 块区域改挂到目标 1、2 上（`sql-custom/2026_11_14_05_still_assessing_the_threat_poi.sql`），`.reload quest_poi` 热加载，不用重启。
-
-插曲：玩家照我给的坐标（Orders 28.0, 74.9；Guide 30.6, 62.7）去了一趟，说还是没有。我在服务器上把能查的都查了，找不出这两个箱子不在的理由，就请玩家用 GM 角色 `.go object` 过去看。GM 角色看到了，换回原角色也看到了。之前为什么没看到，没能复现，原因不明。可能当时站的位置还差一点，也可能是重新登录后客户端重新加载了周围的物体。
-
-### 2.25 实测反馈：Secrets of the Tower 塔顶是空的
-
-**26290 Secrets of the Tower**：任务要你进 Mortwake's Tower "找到 Helix Gearbreaker"，玩家爬到塔顶，什么都没有。塔顶那段剧情的 NPC（Helix 42655、Glubtok 42755、Oaf 42654）一个刷新点都没有，脚本和台词也没有。11-13 的修法是"在塔里喝下 Potion of Shrouding 就完成"，但这要靠服务器判断出玩家在塔的建筑区域 5289 里，这一点从没验证过，玩家的药水也还没喝。
-
-这次换成不依赖药水和区域判断的做法：
-
-- 先找塔。区域 5289 在地形网格里一格都没有，只存在于建筑模型内部。解析 vmap 地图块，找到 `Westfall_Magetower.wmo` 放在 (−11127, 570)，范围大约是 x −11182..−11098、y 505..594、z 31..108。玩家之前报的两个位置其实都在塔外。
-- 再找塔顶。在塔的范围内取点，从上往下探测碰撞地板：最高那些点呈圆锥形分布，是尖顶屋面；尖顶下面那层地板在 z≈88.4，塔中心是空的，一直通到 z 66 那层。
-- 复制 Lou's Parting Thoughts 的触发器模板，建了一个新的隐形触发器 910002，放在 (−11138, 550, 88.6)：每 2 秒对 16 码内的玩家触发一次任务事件 26290（`sql-custom/2026_11_14_08_secrets_of_the_tower_top_trigger.sql`）。重启后实测通过。
-
-### 2.26 实测反馈：The Dawning of a New Day 的集会没有开始
-
-**26297 The Dawning of a New Day**：去 Moonbrook 偷听流浪汉集会。任务要 1 个 Shadowy Figure（42680）的记录，它没有刷新点，召唤它的法术 79551 也没有任何东西施放；演讲的人、台词、脚本全没有。只剩 Moonbrook 流浪汉人群中间一个没有 AI 的隐形触发器 Moonbrook Player Trigger（43515），周围是流浪汉、Thug 和推车，这就是集会的位置。
-
-给它加同样的 2 秒扫描，20 码内的玩家记一次 42680（`sql-custom/2026_11_14_09_dawning_of_a_new_day_rally.sql`），没有演讲。重启后实测通过。
-
-**26320 A Vision of the Past** 顺带实测通过：Incense Burner 要在死亡矿井副本里、施法点 "Entrance of the Deadmines"（204039）30 码内使用，这个施法点离进副本的落点只有约 9 码。11-13 加的"用了就完成"实测有效。
-
-### 2.27 实测反馈：死亡矿井熔炉的坡走不下去
-
-玩家在大熔炉上层走道往下走，坡下不去，也跳不起来。服务器的碰撞数据里这条坡是连续的（沿东边往南，再沿南墙往西，从 z 51 降到熔炉底层 z 21），玩家身上也没有定身之类的效果。
-
-处理：玩家下线后，在 `game_tele` 里加一个临时传送点，用控制台 `.tele name Frank <点名>` 把她挪到坡底（离线也能用，会直接改存档坐标），然后删掉临时点。
-
-玩家随后补充了关键线索：卡住是在骑过门口的机器人 Prototype Reaper（49208，载具）、下来之后才开始的，骑着机器人下坡是正常的。症状很像客户端在下载具后没恢复重力：服务器的 `Unit::_ExitVehicle` 会发恢复重力和解除定身的消息，相关消息编号看起来也都定义了，原因没查到。这台机器人只跟可选成就 Prototype Prodigy 有关，Foe Reaper 的脚本只定义了它的编号、没有用到，所以按玩家的意思直接删掉刷新点（`sql-custom/2026_11_14_10_deadmines_remove_prototype_reaper.sql`），玩家打完副本后重启生效。别的载具可能也有同样的问题，记为未解决。
-
-### 2.28 实测反馈：In Search of Bravo Company 的 Messner 看不见
-
-**26586 In Search of Bravo Company**（赤脊山）：任务要你去 Alther's Mill 找 Messner（43270），玩家到了地方什么也没有。
-
-- Messner 有刷新点，但身上挂着 Apply Quest Invis Zone 5（81003），这是"任务隐身"：只有带着对应的 Detect: Quest Invis Zone 5（81004）的玩家才看得见。
-- 通常由 `spell_area` 在接了任务之后自动给玩家上这个探测光环。81004 一条 `spell_area` 都没有，所以 Messner 对谁都是隐形的。
-- 修法：区域 97 内，从接 26586 起到交 26587 为止，自动给玩家 81004（`sql-custom/2026_11_14_11_in_search_of_bravo_company_detect.sql`）。实测通过。
-
-这是一类通病：带 "Apply Quest Invis Zone N" 的 NPC，如果没有对应的 "Detect" 规则，就永远看不见。下一节马上又碰到了三个。
-
-### 2.29 实测反馈：Bravo 小队营救链断在第一环
-
-玩家交完 26587 Breaking Out is Hard to Do 之后，"赤脊山的任务突然就没了"。查下来是三处问题叠在一起：
-
-1. **救出来的人不会跟着你。** 这条链的设计是：救出笼子里的 Messner，他变成跟随者（43300），由跟随者给下一个任务 Jorgensen；救出 Jorgensen，跟随版 Jorgensen（43305）给 Krakauer，以此类推到 Danforth（43302）给 Return of the Bravo Company。四个跟随者都没有刷新点，召唤它们的法术（80893、80940、80941、80943）也没有任何东西施放，所以交完 26587 就没人给下一个任务。
-   修法：给四个笼子里的 NPC 加 SmartAI，交任务时让玩家施放对应的召唤法术。这里不能用 `spell_area` 的自动施放：服务器只用"身上有没有这个光环"判断要不要再放一次，召唤法术不留光环，每次换区域都会再召唤一个。
-2. **后面三个笼子里的人也看不见。** Jorgensen、Krakauer、Danforth 分别挂着 Quest Invis Zone 6/7/8（81009/81018/81079），跟 Messner 同一个毛病。补了 81010/81019/81080 三条 `spell_area`，各自从接任务到交任务期间生效。
-3. **John J. Keeshan 不存在。** 他是 26567 John J. Keeshan 和 26607 They Drew First Blood 的交任务人。11-13 的审计因为"没有能到达的交任务人"把这两个任务禁用了。任务文字说他在 Lakeshire 旅店地下室的地下格斗场，地图标记 (−9202, −2154) 正好落在地下室的两个格斗者 Dumpy 和 Big Earl 身上。于是把 Keeshan 刷在擂台边上，解除禁用。
-
-文件：`sql-custom/2026_11_14_12_bravo_company_rescue_chain.sql`、`sql-custom/2026_11_14_13_keeshan_lakeshire_inn_spawn.sql`。玩家交 26587 时还没有召唤脚本，所以在重启的空档直接把 26560 Jorgensen 加进了她的任务日志。重启后实测通过：三个营救任务和旅店的 Keeshan 都交了。
-
-留了一个已知问题，暂时不改：26563 Return of the Bravo Company 在数据里要求先交 Troteman 的 26571 Weapons of War，而它唯一的发放人是临时召唤的跟随版 Danforth，下线就消失。跳过 Weapons of War 的玩家实际上拿不到这个任务。好在它不挡主线（26607 也可以从 26573 进入）。
-
-### 2.30 赤脊山后半段重建（第一期）
-
-从 26616 It's Never Over 开始，赤脊山后半段的 NPC 基本都没有刷新点。我先去翻了 TrinityCore 的 Cataclysm Classic（4.4.2）世界数据库（TDB 442，赤脊山就是那个版本重做的），结果那边这一段也没做：只有旅店的 Keeshan 和 Foreman Oslow 有刷新点，其余没有刷新点，也没有脚本。所以位置只能自己定：交任务人放在任务地图标记的交任务点上，高度用寻路网格（mmaps）吸附。把起点和终点设成几乎同一点去寻路，返回的第一个点就是网格上的地面高度，建筑里面也能用。
-
-TDB 是 350 MB 的 SQL 文本。没导入数据库，写了个只读的小工具 `tools/tdbgrep.py`，直接在 SQL 文本里按表名和列值查行。
-
-第一期修了这些（`sql-custom/2026_11_14_14_redridge_second_half_phase1.sql`）：
-
-| 任务 | 问题 | 修法 |
-|---|---|---|
-| 26569 Surveying Equipment | Foreman Oslow 没刷；Blackrock Spyglass 没有掉落来源 | Oslow 按 TDB 位置刷；任务文字说望远镜在 Blackrock 追踪者身上，加到 Blackrock Tracker（615）掉落，50% |
-| 26616 It's Never Over | 坐 Keeshan 的船去 Camp Everstill，船和沿途触发法术全没脚本 | 保留"出发"这一步，省掉船：码头的 Keeshan 加对话选项，选了就算完成事件并传送到对岸营地 |
-| 26636–26640 | 营地的 Keeshan、Krakauer、Messner、Danforth 和 Brubaker 都没刷 | 刷在各自的交任务点上；Muckdweller 的掉落表编号是 0，补上 Muckdweller Gland |
-| 26646 Prisoners of War | 钥匙袋打开是空的；牢笼打开后没有进度 | 钥匙袋的掉落编号是 0。MoP 的宝箱类物体 data0 是锁、data1 才是掉落表，补上 Holding Pen Key。三个牢笼加 SmartAI：用钥匙打开时给 Prisoner of War 进度 |
-| 26651 To Win a War... | Field Kit 里的 Plant Seaforium 没有目标，也没人给进度 | 法术目标限定为军火库和塔；两个目标被它击中时给施法者进度 |
-| 26668 Detonation | 没有目标，"炸掉山谷"的事件没有脚本 | 接任务时直接完成事件（任务描述就是按一下按钮） |
-| 26693 / 26694 | Key of Ilgalar 没有掉落来源 | 任务文字说钥匙在 General Fangore 身上，加 100% 任务掉落；塔门 Ward of Ilgalar 的锁本来就认这把钥匙 |
-
-另外解除了 11-13 审计禁用的 26651、26694。重启后实测：坐船、营地四个任务、Brubaker 都正常，玩家已经做到 26640。
-
-### 2.31 赤脊山后半段重建（第二期）
-
-剩下的三个任务数据基本是空壳：入侵者和 Darkblaze 是友好的 1 级 NPC，攻城坦克不是载具，任务说要用的 Horn of Summoning 这个物品根本不存在。这一期是替代设计，动手前先定好了方案（`sql-custom/2026_11_14_15_redridge_second_half_phase2.sql`）：
-
-- **Colonel Troteman**（43733）刷两个：Shalewind Canyon 发 26708，Keeshan's Post 收 26708、26713、26714。
-- **26708 AHHHHHHHHHHHH! AHHHHHHHHH!!!**（开坦克杀 200 个 Blackrock 兵）：Bravo Company Siege Tank（43714）补上 TDB 的载具编号 987，接了任务才能上车，配两门炮：Heavy Cannon（79776，点地面，20 码，约 3000 伤害）和 Fiery Boulder（72051）。在两地之间的任务区域里随机刷了 40 个敌对的 Blackrock Invader（17–18 级普通怪，30 秒刷新），生成脚本 `tools/gen_invaders.py`。坦克如果有问题，步行杀也算进度。
-- **26713 Showdown at Stonewatch**：Tharil'zun 和 Gath'Ilzogg 刷在 Stonewatch Keep 的两个任务标记点上（原版就有的 20 级精英和技能脚本）。
-- **26714 Darkblaze**：在 Keeshan's Post 的 Troteman 那里接任务时，旁边召唤出 22 级精英的敌对 Darkblaze。打输了可以跟 Troteman 对话"吹号角"再叫一次。解除了 26714 的禁用。
-
-  **11 月 17 日补记：**实际玩到这里时龙没出来。26713 是远程完成任务（`QUEST_FLAGS_AUTOCOMPLETE`），交完会顺着 `NextQuestIdChain` 当场弹出 26714；26714 又带自动接受标记（0x80000），于是直接进了任务日志，根本没经过 Troteman，挂在"从 Troteman 接任务"上的召唤也就没触发。玩家回 Troteman 那里重接后完成了。按用户要求改成必须找 Troteman 接（`sql-custom/2026_11_17_03_darkblaze_accept_at_troteman.sql`）：26713 的 `NextQuestIdChain` 清零，不再远程弹出 26714（前置关系靠 26714 的 `PrevQuestId` 保留）；26714 去掉自动接受标记。下次重启后生效。
-
-这一期上线了，还在等玩家做到这里。
-
-### 2.32 旅行者的猛犸象：商人被"留在原地"
+### 2.21 旅行者的猛犸象：商人被"留在原地"
 
 这一节是这次最有意思的一个 bug，前后改了四版才找到真正的原因，过程值得完整记下来。
 
@@ -1811,7 +1677,426 @@ if (_passenger->movespline->Finalized())
 
 回头看，这个 bug 能解决，一半靠工具，一半靠玩家。工具方面，正式版二进制带符号，gdb 挂上去打时间戳就能看清服务器的每一步，比加日志、重新编译快得多。但服务器日志只能证明"服务器没错"，客户端怎么想看不到。真正撬开问题的是玩家那句"马上走就能跟上"，三次失败的猜测都是在补这一块看不见的拼图。
 
-### 2.33 吉尔尼斯城：两段骑马任务和一个相位 bug
+### 2.22 职业训练师谁都能学
+
+德鲁伊找法师训练师居然能学技能。查下来是全服性的：SkyFire 上游提交 `a7ca56e00c`（"Remove some no longer needed gossip code"）删掉了训练师的职业检查（原来的 `Creature::isCanTrainingOf`），`WorldSession::SendTrainerList` 和 `HandleTrainerBuySpellOpcode` 都不再看玩家职业；买技能时检查"等级够不够、学没学过、前置技能有没有"的那一行（`GetTrainerSpellState != TRAINER_SPELL_GREEN`）也被注释掉了。列表里倒是有一层 `IsSpellFitByClassAndRace` 过滤，但它挡不住这些技能，所以 1 级德鲁伊能在法师训练师那里直接买 24 级的传送术、42 级的传送门。数据库里 693 个职业训练师全都这样。
+
+查了全部角色：另一位玩家的一个圣骑士已经买了 17 个德鲁伊技能（猎豹、熊、旅行形态、复生等）和 2 个术士技能，测试角色都没有。
+
+修复（`patches/2026_11_15_06_trainer_class_check.patch`）：设了职业的职业训练师只给本职业打开技能列表，买的时候再查一次；把状态检查恢复，不是"可学"的一律拒绝。专业、骑术这类训练师，以及没设职业的训练师不受影响。那位圣骑士身上的 19 个外职业技能和指向它们的 3 个动作条按钮，经用户决定在角色离线时删掉（`sql-custom/2026_11_15_36_char39_remove_cross_class_spells.sql`，有备份）。编译后经同意重启上线，还没在游戏里试过。
+
+### 2.23 任务物品打不出来：378 条缺失的任务掉落
+
+Against the Wind（13542）要从风元素 Frenzied Cyclone（32985）身上拿 8 副护腕，再到月井用掉。打了一堆风元素一副都没掉。护腕的使用技能 62081 没问题（在月井旁给 32986 的击杀计数），问题在掉落：32985 的 `lootid` 是 0，掉落表里一条记录也没有。TDB 4.4.2 里它有一条 100% 的任务掉落。
+
+顺着查了全库：把 TDB 4.4.2 里所有"任务专属"的生物掉落和这边比，只看现存任务还需要的物品（任务目标里的物品或任务的起始物品），有 384 条缺失，涉及 232 个任务、338 种怪，其中 196 个任务的物品在这边完全没有其他来源，也就是根本做不了。比如 Robbing Hoods、The Heads of the SI:7、Guts and Gore、Seek and Destroy、Freedom for Lydon 这些。
+
+修复（`sql-custom/2026_11_15_39_against_the_wind_bracers_loot.sql`、`2026_11_15_40_restore_missing_quest_drops.sql`）：按 TDB 4.4.2 的几率补回这 378 条掉落（去掉 6 条挂在 GM 路点生物上的），全部设成负几率，也就是只给身上有这个任务的玩家掉；279 种 `lootid` 为 0 的怪设成 `lootid = entry`（它们原本都没有掉落记录，不会多出别的东西）。用控制台的 `reload creature_loot_template` 和逐个 `reload creature_template <entry>` 热加载，没有重启。
+
+护腕能掉了，但站在月井边上用不掉。护腕的技能要的施法焦点是 1594（`SpellCastingRequirements` 4658），只有 194110 "Auberdine Moonwell" 提供；奥伯丁废墟那口月井上的焦点物件 177280 提供的是通用月井焦点 883，不算数。194110 在这边连模板都没有，TDB 4.4.2 也只有模板、没有刷新点。补了模板，放在 177280 同一个位置，沿用它的模型 1407，画面上不多出东西（`sql-custom/2026_11_15_41_auberdine_moonwell_focus.sql`）。物件模板只在启动时加载，经同意重启后生效。
+
+重启后还是用不掉：没有读条，也没有红字。用 gdb 在 `HandleUseItemOpcode` 下断点，发现请求到了，但连物品查找都没走到。服务器日志里每用一次都有一条 `ByteBufferException ... CMSG_USE_ITEM ... Skipped packet`，也就是包解析越界、整个被丢掉。再用 gdb 把包的 44 个字节转出来，用 Python 按解析代码逐位解码，发现 `ReadUseItemRequest` 处理客户端附带的移动信息时有两处错误：
+
+- 移动标志 30 位的读取条件写成了 `if (hasMovement)`，应为 `if (hasMovementFlags)`，不带标志时多读 30 位。
+- 移动者 GUID 的字节读进了 `movementTransportGuid`（掩码全为 0），角色 GUID 的字节被漏读。
+
+两处一改，44 个字节刚好读完，法术 62081、施法计数 5 都对上了。同一段里运输工具 GUID 的位读取把第 3 字节写成了第 4 字节，一并改掉（`patches/2026_11_15_07_use_item_movement_parse.patch`）。施法包 `CMSG_CAST_SPELL` 的同类代码是对的。这个 bug 影响所有带着移动信息发出的使用物品请求，不只是这个任务。编译后经同意重启上线。实测 8 副护腕都销毁了，任务完成。
+
+### 2.24 骑着坐骑下线，上线后速度变回步行
+
+骑在坐骑上下线，再上线时人还在坐骑上，但移动速度和步行一样，下来重新召唤才正常。坐骑速度来自单独的速度光环（比如 86461 "Mount Speed Mod"），`Unit::UpdateSpeed` 只在 `IsMounted()`（单位带 `UNIT_FLAG_MOUNT`）时才把它算进跑速和飞行速度。下线时坐骑光环和速度光环都会存进 `character_aura`，上线时按主键也就是法术 ID 从小到大加载：速度光环 86461 先生效，那时还没骑上，速度按步行算；坐骑光环（这里是 163025）随后挂上，`Unit::Mount` 只设置坐骑模型和标志，不重算速度。
+
+修复（`patches/2026_11_16_01_mount_speed_after_login.patch`）：`Unit::Mount` 和 `Unit::Dismount` 结束时各重算一次跑速和飞行速度。正常召唤坐骑时速度值不变，`SetSpeed` 会直接返回。编译后经同意重启上线，等游戏里验证。
+
+### 2.25 Fleetfoot 不掉羽毛：再补 134 条任务掉落
+
+The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。鼠标指向陆行鸟 Fleetfoot（32997）时客户端显示它会掉任务物品，打死却什么都没有：它的 `lootid` 是 0，TDB 4.4.2 里也没有它的掉落。客户端之所以显示，是因为 `creature_questitem`（客户端缓存里的"这只怪会掉哪些任务物品"）记着它掉 44886。2.23 那次只对比了参考库的掉落表，参考库自己缺的就漏掉了。
+
+这次用参考库的 `creature_questitem` 再对一遍：现存任务需要、表里记着某种怪会掉、而这边那种怪不掉的有 803 条，涉及 174 个任务；其中 74 个"物品-任务"组合（65 个任务）的物品在这边没有任何怪或宝箱能拿到，任务做不了，例如 Oil Change、Hand-me-downs、Rokar's Test、Pro-liberation、The Forest Heart。
+
+这张表只说"会掉"，没有掉率，参考库里也没有。掉率影响难度，由用户决定：只刷 1–2 只的怪（稀有、首领）100%，成群的怪 40%，都只给有任务的玩家掉。修复（`sql-custom/2026_11_16_05_fleetfoot_tailfeathers.sql`、`2026_11_16_06_restore_quest_drops_from_questitem.sql`）共 134 条怪物掉落（同一物品可能由几种怪掉），24 种原来没有掉落表的怪设成 `lootid = entry`。热加载，没有重启。另外 114 条的物品已经能从别处拿到，暂不处理。
+
+### 2.26 打完怪脱不了战斗
+
+很多地方都碰到过：打完怪以后人一直处在战斗状态，不能骑马、不回血，只有小退重登才恢复，和是哪种怪没关系。
+
+这次是在赤脊山碰到的，角色在 Everstill 湖边卡住。服务器是 Release 版，没有调试信息，所以先用同样的编译参数编了一个小程序，打印出 `Unit`、`HostileReference` 等结构里各字段的偏移，再用 gdb 挂上正在运行的 worldserver（断在 `Player::Update`，读完立刻脱离，前后不到一秒），顺着玩家的 `m_HostileRefManager` 把"谁的仇恨列表上还有她"列出来：
+
+- 两只豺狼人（Redridge Mystic 430、Redridge Basher 446）还记着她，各 0.5 点仇恨。它们在 Lakeshire 旁边，离她大约 590 码。
+- 两只都在打她的 Bravo 小队随从 Jorgensen（43305，见 6.3），随从被留在了那里。
+- 隔 6 秒再读一次，三个单位的血量和位置一点都没变：那片区域已经不更新了。
+
+原因：大陆地图的可视距离只有 90 码（`Visibility.Distance.Continents`），`Map::Update` 只更新玩家（和少数常驻对象）附近的格子。怪只有在自己被更新的时候才会判断脱战、回家；玩家这边，`Unit::Update` 只在仇恨引用全部清空后才倒计时退出战斗。于是只要一只记着你的怪被甩在一百多码以外（法师冰环、变羊之后跑开，或者随从留在原地打架），它就冻在战斗里，永远不会脱战，你也一直下不了战斗。小退时服务器会删掉玩家身上的所有仇恨引用，所以重登就好了。
+
+修复（`patches/2026_11_17_01_unit_cumulative_incl_far_hostile_ref_drop.patch`，备份 `backup/Unit.cpp.bak-20261117`）：玩家在战斗中时，`Unit::Update` 检查每条仇恨引用，如果来源是非玩家控制的生物，而且离玩家超过可视距离加 100 码（大陆上是 190 码），就删掉这条引用。正常追着你打的怪不会离这么远；被删掉的怪下次被更新时仇恨列表是空的，会自己回家。没有改头文件，下次编译是增量的。和第三章末尾补记的 Huo 修复一起在 11 月 17 日编译（这次因为编译环境的基础层重建过，是全量重编，约 17 分钟），0 人在线时重启上线，等游戏里验证。
+
+## 第三章　熊猫人新手岛任务修复
+
+熊猫人新手岛（Wandering Isle）是这个服务器里问题最集中的地方。查了很久才找到根源：上游的 **commit `2f8c98dc67`（"Drop dead code"）把新手岛的一大批 NPC 脚本当成死代码删掉了**，但数据库里这些 NPC 的 `ScriptName` 还留着。结果就是 NPC 站在那里，什么都不做。之后再遇到"有 ScriptName 却找不到代码"的新手岛 NPC，第一步就是 `git show 2f8c98dc67`，把原来的代码找回来。
+
+第二个大问题是**相位（phase）**，后面好几个任务都栽在这上面。
+
+### 29423 The Passion of Shen-zin Su：Huo 下线就丢，相位不刷新
+
+- **现象：** 要护送火精灵 Huo 回神庙，下线再上线 Huo 就没了，任务卡住。
+- **原因：**
+  1. Huo 是法术 128700 召唤出来的临时守护者，下线时会消失，但 128700 的光环还保存在角色身上，所以系统不会再召唤一次。
+  2. 交付进度靠区域触发器 AT 7835 的一次性脚本，要求 Huo 在 15 码以内，很容易错过。
+  3. **核心的相位 bug：** `UpdateAreaPhase` 只会在进入区域时加上 `phase_area` 定义的相位，离开时从不移除；接任务、交任务时也不会重新计算区域相位，只有重新登录才会。
+- **修复：**
+  - 新增一个 PlayerScript，登录时如果有 128700 光环就重新召唤 Huo；
+  - 把交付逻辑抽成一个共用函数，判定半径放宽到 40 码，再加一个"看见 Shang Xi 就交付"的兜底；
+  - 在 `Object.cpp` 里补上离开区域时移除相位的逻辑，并在接任务、设置任务状态、交任务、放弃任务时重新计算区域相位。注意不能放进 `UpdatePhasing`：移除相位光环时会调用它，结果又会把相位加回来。
+
+### 29663 Lesson of the Balanced Rock：被删掉的脚本
+
+站在木桩上的 Tushui 武僧（55019）的脚本被上游删掉了。我把它恢复了：武僧会自动站上 8 码内最近的空木桩，被打败后消失；同时把它们的游荡改成原地不动。顺带一提，同一组的 29661 Lesson of Dry Fur 其实没坏，只是没找到那口铃铛。
+
+### 31450 A New Fate：选阵营的灵魂不能对话，交任务的 NPC 不存在
+
+- **对话：** Master Shang Xi 的灵魂（56013）的 `npcflag` 只有任务标记，没有对话标记。任务图标消失后，玩家就点不出对话了。补上对话标记后，选阵营的界面能弹出来，传送去暴风城或奥格瑞玛也正常。
+- **交任务：** 两边负责交任务的 Aysa（60566，联盟）和 Ji（60570，部落）**在数据库里根本没有刷新点**。我把他们刷在传送落地点前方 4 码处。暴风城的落地点在城市建筑模型（WMO）上面，地形高度比实际站立高度低了将近 30 码，所以 z 坐标要用建筑表面的高度。
+
+### 29678 Shu, the Spirit of Water：跳石头跳回原地
+
+河里的跳石是陷阱型游戏对象，踩上去会强制施放 Rock Jump A/B/C。脚本里调用了 `MoveJump`，但法术默认的 `EffectJumpDest` 效果会在之后执行。因为 DEST_DB 类型的目标在 `spell_target_position` 表里没有数据，默认效果就把玩家"跳到自己身上"，覆盖掉了脚本的跳跃。在三个法术脚本里加上 `PreventHitDefaultEffect` 就好了。
+
+### 29770 Still Good!：不是 bug
+
+要收集的南瓜（Pilfered Pumpkins，17 个）在地鼠洞（Virmen Grotto）里，不在旁边那片装饰用的南瓜田。这个算"难但能做"，保持原样，最后靠自己找到了。
+
+### 29792 Bidden to Greatness：护送脚本被删
+
+原来的护送脚本 `mob_mandori_escort` 被删掉了。我没有完整还原护送过程，而是写了一个区域触发器脚本：任务未完成时走到 Mandori 门口给一个进度，走到 Pei-Wu 门口再给一个。流程比原版简单，但任务能完成了。
+
+### 29794 None Left Behind：背伤员
+
+- 恢复了受伤水手（55999）的脚本：右键水手，他会坐上玩家的"载具位"让你背着走；送到 Delora 旁边，任务进度加一，水手道谢后消失。
+- 第一次测试时水手背上了，但交付点没反应。原因是**玩家处于载具状态时，客户端似乎不发送 `CMSG_AREATRIGGER`**。于是改成由水手的 AI 自己判断：离交付点 15 码以内就算送到。
+
+### 30767 Risking It All：没有路径点的护送
+
+原版的护送 NPC 和对话都被删掉了，数据库里也没有路径点。我做了个简化版：玩家任务未完成、走到坠毁的飞艇边时，直接给进度，播放动画（movie 117），1 秒后把玩家传送到坡下交任务的 Ji 身边。没有原版的对话。
+
+### 29799 The Healing of Shen-zin Su：治疗事件
+
+恢复了 Ji（57739）的事件脚本和治疗者（60878/60896）。附近有任务未完成的玩家时，持续召唤治疗者和来捣乱的鱼人（Deepscale Fleshrippers）。每 3 秒按存活的治疗者数量累计进度，通过替代能量条显示，到 700 就完成，大约 3 到 5 分钟。
+
+### 29786 Battle for the Skies：Boss 看不见，还卡在 Evade
+
+- **看不见：** 接任务后，Aysa 把玩家放进了相位 524（为了显示炮台），而 Zhao-Ren 在相位 0。按 `WorldObject::IsPhased` 的规则，玩家的相位列表必须为空或包含 169，才看得见相位 0 的对象。重新登录能看见 Zhao-Ren，但炮台又没了。修复方法是：接任务时同时加上相位 169，再用 `phase_area` 规则保证任务期间该区域是 169 + 524。
+- **Evade：** 所有攻击都显示 "Evade"。`EnterEvadeMode` 先设置 `UNIT_STATE_EVADE`，然后让它飞回出生点；但 `Reset()` 清掉了移动，回家的移动没到终点就结束了，Evade 状态也就永远不会被清除。修复是：在 `Reset` 里清除这个状态，并重写 `EnterEvadeMode`，让它不再飞回出生点。
+
+### 29421 Only the Worthy Shall Pass：一刀秒杀导致 NPC 消失
+
+- **现象：** 打完 Li Fei，负责交任务的 Li Fei 不见了，要重新登录才出来。
+- **原因：** 我们的装备太好，一下就把 Li Fei 从 20% 以上的血量直接打死了。智能脚本（SAI）里"血量在 1%–20% 之间时给进度并切换相位"的事件根本没有触发。击杀本身让任务完成了，但玩家还留在旧相位 631 里。
+- **修复：** 纯 SQL，加了两个死亡事件，在 Li Fei 死亡时给击杀者切换相位；顺便修了一条接反了的事件链接。SAI 在生物创建时就复制了脚本，热重载对已经刷出来的 Li Fei 无效，所以要重启。
+
+### 29679 A New Friend：水精跳到远处就停了（实测抽检）
+
+这一段是跟着水精 Shu 在倒影池里追水柱：Shu 随机跳到 4 个池边位置之一，2 秒后在身边召出水柱，7 秒后喷发，踩在上面的玩家计数。脚本（`npc_shu_pool_of_reflection`）是在的，问题在它的"还有没有人在玩"检查：每轮水柱消失后只在 Shu 周围 **20 码**内找接了任务的玩家，找不到就停；重新启动也要求玩家走进这 20 码。可 4 个跳点之间隔着 20–50 码，玩家只要没紧贴着 Shu，它跳到远处就停住了——实测时角色在池子西边缘，离最近的跳点也有 28 码。把半径改成 60 码，覆盖整个池子（补丁 `patches/2026_11_13_05_zone_wandering_island_cumulative_incl_shu_pool_radius.patch`）。
+
+### 29775 The Spirit and Body of Shen-zin Su：牛车点了没反应（实测抽检）
+
+任务说"路边有辆车等着送你去神庙"。车就在 Dai-Lo 农场，鼠标移上去有上车的箭头，但点了没反应。新手岛一共有三个这样的牛车站：Singing Pools → Dai-Lo 农场、Dai-Lo 农场 → 神庙、天火号坠毁点 → 神庙。三个站的问题完全一样：
+
+- **点击法术不对。**路边那辆车点击时施放的是通用的"骑乘载具"（46598），可它本身不是载具，所以什么都不发生。法术数据里其实有正确的法术，比如 114453 "Summon Ox Cart, Farmlands -> Temple"：在路边那辆车的位置召出一辆能坐人的车（59496），把点击的人放上车，再触发 114454 在旁边那头牦牛的位置召出一头会走路的牦牛（59498）；
+- **召唤位置缺条件。**这两个法术的目标类型是"附近某个 NPC"（46），必须用条件指明是哪个 NPC，没有条件就找不到目标、什么都不召。补上：车召在路边那辆车的位置，牦牛召在旁边那头牦牛的位置；
+- **没有路线。**上游原来的脚本（`spell_grab_carriage`、`npc_nourished_yak`）已经被当作死代码删掉了，而且从来没有路线数据（`script_waypoint` 是空的）。
+
+路线我没有手画，而是又写了一个小工具 **navpath**（`tools/navpath/`），做法和 vmapcheck 一样：用服务端自带的 Detour 寻路库，直接读服务端的寻路网格（mmaps），算出两点之间真正能走的路，每 5 码取一个点，每个点都贴到网格表面上。三条路线分别是 488、554、699 码（101、124、145 个路点），只走地面不走水。去神庙的两条都停在神庙大台阶脚下。
+
+行为全部用 SmartAI 实现：牦牛被召出来就沿路线走；车 0.5 秒后跟在牦牛后面；牦牛走到终点时把车收掉（乘客自动下车），自己再消失。召唤物只存在 5 分钟，最长那条按默认步行速度要 280 秒，太紧，所以牦牛和车的步行速度加倍，最长约 140 秒。文件是 `sql-custom/2026_11_13_42_wandering_isle_ox_carts.sql`，由 `tools/gen_ox_carts.py` 生成。
+
+实测：Dai-Lo 农场这一站可以上车，牦牛拉着车一路走到神庙台阶下放人。
+
+### 再回到 29423：相位 632 一直不走
+
+上面那段 Li Fei 脚本会把玩家放进相位 632，但没有任何地方再把它移除。结果是所有相位 0 的 NPC 都看不见，包括神庙里的 Shang Xi，所以 Huo 交付不了，任务也交不了。修复方法是：在 Huo 的接任务回调里先移除 632 并刷新相位，再给祝福、召唤 Huo。
+
+### 29423 补记：放弃任务后 Huo 还一直跟着
+
+熊猫人岛 29423 The Passion of Shen-zin Su 接任务时，脚本 `npc_huo` 给玩家放 128700 Summon Spirit of Fire，召出跟随的 Huo（54958）。这个召唤（SummonProperties 3277）走的是普通临时召唤，和任务没有关联；放弃任务时服务器只删任务，不管 Huo，于是他会一直跟着，直到重新登录。
+
+修复（`patches/2026_11_17_02_questhandler_cumulative_incl_abandon_unsummon_huo.patch`，备份 `backup/QuestHandler.cpp.bak-20261117`）：`HandleQuestLogRemoveQuest` 放弃任务后，查一张"任务 → 跟随者 → 召唤光环"的小表：去掉召唤光环，并收回 200 码内由这个玩家召出的同 ID 生物。表里目前只有 29423 / Huo，以后碰到同类问题往里加一行就行。只改了 `QuestHandler.cpp`，和 2.26 一起在 11 月 17 日编译上线，等游戏里验证。
+
+### 小结
+
+| 类别 | 任务 |
+|---|---|
+| 上游误删脚本，已恢复或简化重写 | 29663、29792、29794、30767、29799 |
+| 相位问题 | 29423（两处）、29786、29421 |
+| 核心通用 bug | 区域相位不刷新、跳石法术默认效果、Evade 状态卡住 |
+| 数据缺失 | 31450（对话标记、两个交任务 NPC 没有刷新点） |
+| 不是 bug | 29770、29661 |
+
+## 第四章　矮人新手村任务修复
+
+矮人这条线的问题，比熊猫人岛的"零散"：很少有整段脚本被删，多数是**某个 NPC、某条条件、某个阵营值缺了**。大部分改 SQL 就够了，只有两个任务要写 C++。
+
+### 24477 Dwarven Artifacts：箱子"已被使用"（全服修复）
+
+- **现象：** 点矮人文物的箱子，客户端提示 "That is already being used"。
+- **原因：** 全库有 **126 个宝箱类游戏对象（type 3）的刷新状态 `state` 是 0**，而客户端把 0 理解成"正在被使用"。潘达利亚的矿点、草点也在其中。
+- **修复：** 统一改成 1。这是本服务器的第一个数据修复，对全服生效。
+
+### 24489 Trolling for Information：偷听不到巨魔说话
+
+任务要求站在巨魔祭司旁边偷听。偷听靠的是区域光环 69991，但它在 `spell_area` 里的 `autocast` 是 0，而所有任务相关的行里只有这一行是 0。改成 1 以后就正常了。这个光环是隐藏的，没有增益图标，需要站在祭司 10 码以内。
+
+**教训：** 一开始我用 `reload spell_area` 热重载，读了源码才发现它不会清空内部映射表，会留下悬空指针。之后凡是改 spell_area，一律重启 worldserver。
+
+### 412 Operation Recombobulation：地图标错了位置
+
+任务本身没坏：要收集的齿轮（Gyromechanic Gear）是 Frostmane Scavenger 100% 掉落的任务物品。但 `quest_poi_points` 里的地图标记指向了 New Tinkertown，那是侏儒任务 26222 收集零件的区域，数据被抄错了。我把 POI 重画到 Frostmane Front，用 `reload quest_poi` 热重载就生效了。后来发现当时看错位置，主要是地图插件标错了，但服务端的数据确实是错的，所以修复保留。SFDB 里可能还有别的任务 POI 也是这样抄错的。
+
+### 25839 The Ultrasafe Personnel Launcher：发射器点了没反应
+
+- **原因：** 两台发射器（41398）没有 `npcflag`，没有右键施法，也没有任何脚本，点了什么都不会发生。这个任务没有任务目标，只能靠法术 77393 完成：它会把玩家击飞，空中给一个降落伞，最后直接完成任务。
+- **难点：** 77393 是对自己施放的击退。核心对"击退自己"会**随机挑一个方向**（`Position::GetSinCos`），玩家可能被弹到任何地方。
+- **修复：**
+  - SQL：给发射器加上右键施法，条件是接了任务且未完成；
+  - C++：新增法术脚本 `spell_q25839_ultrasafe_personnel_launcher`，击飞方向取最近那台发射器的朝向。两台发射器本来就朝着目的地，这样每次都能飞到对的地方。
+
+### 28868 The View from Down Here：把自己缩小了
+
+望远镜道具（Viewpoint Equalizer）施放的法术 93773 能把目标缩小 55%，但它的目标类型是"任意单位"，又没有任何限制。没选中目标时，就把玩家自己缩小了，而且这个光环是永久的（持续时间 -1，会存进 `character_aura`）。修复方法是加一条条件，限定目标只能是 Frostmane Builder。至于已经缩小的角色，要在离线时删掉那条光环记录。
+
+### 25841 Strike From Above：信号弹打不出效果
+
+信号弹（Signal Flare）施放的法术 77488 是"附近指定 NPC"类型，但缺了限定目标的条件（conditions 类型 13），南北两个标记点的 NPC 也没有任何 AI。补上条件后，再用 SAI 写成"被法术命中 → 给施法者击杀进度"。原版的飞机飞过轰炸动画没有重做。
+
+### 25905 Rams on the Lam：吹口哨唤不回山羊
+
+走失的山羊（Stolen Ram，26 只）没有 AI。用 SAI 补上：收到 `/whistle` 表情时给进度，跟着玩家走 4 秒后消失。注意表情只会发给当前选中的目标，所以要先选中山羊再吹口哨。
+
+### 25932 It's Raid Night Every Night：整个事件不存在
+
+这个任务完全没有事件数据：负责计数的 NPC 一个刷新点都没有，也没有 AI；相关的法术没有被任何地方用到；数据库里那个突袭者（41603）只是一个 1 级友好的占位 NPC。只能自己写：
+
+- 新建 `zone_dun_morogh.cpp`，加进 CMakeLists 和 ScriptLoader；
+- Sergeant Flinthammer（41578）：玩家接任务时，或者带着这个任务走到他 30 码以内时，就开始事件。一共 3 波，每波 3 个巨魔，从西边营地方向出来攻击玩家；一波死光 8 秒后来下一波，三波都打完，就给 150 码内的参与者计数；
+- 如果附近已经没有有效的参与者，或者事件超过 6 分钟，就收场清理。
+
+波数和每波人数是我们估计的，原版的数值查不到。
+
+### 25997 Dark Iron Scheming：掉任务物品的队长不存在
+
+图纸是 Captain Beld 100% 掉落的，但 Beld **一个刷新点都没有**。我参考任务 POI 和旁边黑铁间谍的位置，把他刷在了建筑里面。
+
+### 25978 Entombed in Ice：冰块打不动
+
+被冻住的山地人会召唤一个冰块（Icy Tomb 41768），任务要你把冰块打碎。但召唤属性沿用了模板阵营 35（友好），冰块打不动。把它的阵营改成 7（中立，可以攻击）就好了。
+
+### 26078 Extinguish the Fires：大部分火点扑不灭
+
+- **现象：** 铁炉堡机场一共 15 个起火点，只扑灭了两个。
+- **机制：** 灭火装备放出的法术 78369 是"面前 10 码扇形"的空效果（DUMMY），命中隐形的计数 NPC（Burning Bomber Credit 42046）后，由它的 SAI 给进度。
+- **排除过的方向：** 法术的区域限制（所有火点都在允许的区域里），以及命中数量上限（没有设）。
+- **原因：** 大部分计数 NPC 离地 1–4 码，正好嵌在燃烧的轰炸机残骸模型里。核心在 `Spell::CheckEffectTarget` 里会做视线（LOS）检查，残骸模型挡住了视线，法术就跳过它们。能扑灭的正好是贴在地面上的那两三个。
+- **修复：** 在 `disables` 表里只给这一个法术关掉视线检查（flags 64 = `SPELL_DISABLE_LOS`，法术本身不受影响），用 `reload disables` 热加载。库里本来就有同样的写法，注释是"bunnies sit inside the towers"。
+
+### 26085 Rallying the Defenders：插完旗人物和镜头卡一下
+
+- **现象：** 旗子能插，任务也能完成，但每次插完人物和镜头都会卡一下。
+- **原因：** 插旗法术 78395 有三个效果：在目标物体（雪堆 Loose Snow，也是施法焦点）上立旗、碰一下雪堆、触发计数。核心按顺序处理效果，立旗（效果 0，`TRANS_DOOR`）时，雪堆的位置还没被记成目的地（要到效果 2 才设），于是 `EffectTransmitted` 退回用施法者的位置——**旗子直接立在了角色身上**，角色卡进旗子的碰撞模型，镜头也撞上去。
+- **修复（C++）：** 效果的目标如果是一个游戏物体，就把旗子立在那个物体的位置上。我把整个法术库扫了一遍，用"在目标物体上生成物体"这种写法的只有这一个法术，改动不会波及别的法术。补丁：`patches/2026_11_13_03_plant_banner_on_snow.patch`。
+
+### 26094 Striking Back：轰炸机点了没反应
+
+- **原因：** 跑道起点那架修好的轰炸机（Repaired Bomber 42092）没有右键施法，点上去什么都不会发生。按原设计，点它会放法术 78510，把玩家送上一条绕机场一圈的专用航线（2203，起点终点都是节点 575，坐骑是 42097）。飞行中用任务给的炸弹（Iron Hammer Bomb，78499）炸地面上的黑铁矮人。
+- **还有两个坑：**
+  1. 炸弹是"落点 10 码内所有指定 NPC"类型，却没有任何条件，会把机场上友方的卫兵、山地人一起炸到；
+  2. 我们开的 `InstantFlightPaths` 对这条航线也生效：起点和终点是同一个点，玩家会被直接传回原地，根本飞不起来。
+- **修复：**
+  - SQL：轰炸机加右键施法（条件：接了任务且未完成），炸弹只对黑铁一方生效（火焰术士、入侵者、两种魔像、General Grimaxe）；
+  - C++：`Player::ActivateTaxiPathTo` 里，瞬间飞行只对普通航线生效。由法术触发的航线是任务演出，要真正飞完全程（补丁 `patches/2026_11_13_04_instant_taxi_not_for_spell_flights.patch`）。
+
+顺带一提：`Player.cpp` 是 CRLF 换行，第一次用 Python 打补丁时整个文件被转成了 LF，diff 有四万多行。退回后改用 `open(..., newline="")` 重新打，最终改动只有 3 行。
+
+### 26102 Grimaxe's Demise：将军打不动
+
+General Grimaxe（42010）站在他的黑铁魔像（42008）头顶上，模板里带着"对玩家免疫"的标志（`IMMUNE_TO_PC | IMMUNE_TO_NPC`），而魔像、Grimaxe 和配套的控制 NPC 都**没有任何脚本**，所以他永远打不动。修法是用 SAI 重建一个流程：先打死魔像，Grimaxe 解除免疫，喊一句话后冲向最近的玩家。
+
+这个"先打魔像"的流程是我们根据数据推测的，原版细节查不到。
+
+### 26118 Seize the Ambassador：带不走大使
+
+- **机制：** 对大使（Ambassador Slaghammer 42146）使用手铐，法术 78628 会召唤一个"被押解的大使"（42153）。任务是事件型的，完成要靠法术 78642（Credit for Arresting Slaghammer，目标是"召唤者"）。
+- **原因：** 召唤属性 2967 在核心里落到普通召唤分支，被押解的大使只会站着不动；整个库里也没有任何东西会施放 78642，任务永远完成不了。原来那个大使也不会消失，会出现两个。
+- **修复（SQL + SAI）：**
+  - 手铐只能对大使用，并且要接了任务；
+  - 原来的大使被铐住后消失（2 分钟后刷新，别人也能做）；
+  - 被押解的大使跟着玩家走，走到 Moira Thaurissan 10 码以内时，自己施放 78642（玩家拿到完成），说一句话后消失。
+
+### 小结
+
+| 类别 | 任务 |
+|---|---|
+| 缺 NPC 刷新点 | 25997 |
+| 缺 AI 或脚本，用 SAI 补 | 25841、25905、26102、26118 |
+| 缺整段事件，用 C++ 重写 | 25932 |
+| 法术目标、条件不对 | 28868、25841、25839（加 C++ 定方向）、26094 |
+| 核心通用 bug | 26085（目标物体上生成物体）、26094（瞬间飞行吃掉任务航线） |
+| 视线被模型挡住 | 26078 |
+| 数据值写错 | 24477（全服 126 个箱子）、24489、25978、412 |
+
+## 第五章　艾尔文森林与西部荒野
+
+### 5.1 实测反馈：Pie for Billy 掉率太低
+
+艾尔文森林的 **86 Pie for Billy** 要 4 块 Chunk of Boar Meat（60401），只有接了任务才掉。数据库里的掉率：
+
+| 怪 | 等级 | 刷新点 | 原掉率 | 现掉率 |
+|---|---|---|---|---|
+| Stonetusk Boar（113） | 5 | 47 | 21% | 50% |
+| Rockhide Boar（524） | 7 | 87 | 12% | 50% |
+
+原来平均要杀 19–33 只，现在约 8 只。这不算 bug，是按玩家要求调的。`sql-custom/2026_11_14_01_pie_for_billy_drop_rate.sql`，原值备份在 `backup/pie_for_billy_loot_20261114.tsv`，`reload creature_loot_template` 热加载，不用重启。
+
+### 5.2 实测反馈：Livin' the Life 的施法点放错了（又一次是我的错）
+
+**26228 Livin' the Life**：玩家走到 Jangolode 矿洞尽头，道具 Two-Shoed Lou's Old House 用不了，客户端红字提示 "Requires you to be at the end of the Jangolode Mine."（这句话就是施法焦点 1672 在客户端里的名字）。
+
+原因在我们自己：这个焦点物体（模板 910100，刷新点 9100101）是批次六新建的，2.19 复查时又"挪到最深处那只狗头人的位置"——但我挑的是**高度最低**的那只（−9942.6, 1473.2），不是**走得最远**的那只。这次用寻路工具（navpath）从洞口算到每只狗头人挖掘者的步行距离：旧位置只有约 212 码，矿道后面还有一个洞室（x −9985 到 −10026，y 1435 到 1497），最远处约 265 码。玩家站在真正的尽头，离焦点 50–85 码，半径 15 码当然够不着。
+
+修复：焦点挪到最后那个洞室的中心（−10003, 1463, 41.1，高度取自寻路网格的地面），半径 15 → 20 码，盖住整个洞室。`sql-custom/2026_11_14_02_livin_the_life_focus_end_of_mine.sql`，刷新点的移动要重启才生效，已重启。
+
+**结果还是报错，而且这次错得更离谱。** 玩家两次都站在 (−9850, 1388)，就在精英怪 Master Digger 旁边。查了每个点比头顶地表低多少：
+
+| 位置 | 比地表低 |
+|---|---|
+| 玩家站的地方（Master Digger 洞室） | 13.5 码 |
+| 第一次放的点 (−9943, 1473) | 31 码（矿洞中段） |
+| 第二次放的点 (−10003, 1463) | 0 码，**在洞外** |
+
+我把洞口和尽头搞反了：西边那片"洞室"其实是入口外的空地，矿道从西往东延伸，尽头是 Master Digger 守着的洞室。第三次改到 (−9846, 1393, 38.3)，半径 20 码（`sql-custom/2026_11_14_03_livin_the_life_focus_master_digger.sql`），重启生效。教训：判断"尽头"之前，先用"比地表低多少"确认哪边是洞口；玩家实际站的位置比我推算的更可信。
+
+### 5.3 实测反馈：Lou's Parting Thoughts 的偷听事件是空壳
+
+**26232 Lou's Parting Thoughts**：任务要求去农舍后面偷听几个暴徒说话，玩家走到 NPC 旁边什么都没发生。
+
+- 任务目标是 1 个 Furlbrow Murder Info 004（42417）的击杀记录，本该由法术 79184 Hobo Information 给出，但数据库和 C++ 里都没有东西会施放这个法术。
+- 农舍后面的 4 个 Thug（42387）围着一个隐形的 Lou's Parting Thoughts Trigger（42562），它显然是负责感应玩家、播对话、给记录的，可它没有 AI，Thug 也一句台词都没有。上游源码历史里也查不到，SkyFire 从来没做过这个事件。
+
+修法跟 Westfall 前面几条一样，保留结果、跳过演出：给触发器加一段 SmartAI，接了任务还没完成的玩家走进 15 码内（看得到）就直接记一次 42417。原版台词库里没有，所以没编台词。`sql-custom/2026_11_14_04_lous_parting_thoughts_trigger.sql`。触发器原来没有 AI，要重启 worldserver 才会换上，当时有 5 人在线，等大家下线后才重启。
+
+**第一版没生效。** 重启后脚本加载正常，玩家带着任务走到 Thug 中间，什么都没发生。我把这条链路从头查了一遍：AI 选择、反应状态（只有 REACT_AGGRESSIVE 的生物才会收到"有人进入视野"的通知）、视线、事件计时、条件表、给记录的动作，每一环单独看都没问题，但就是不触发，原因没找到。
+
+**第二版换了思路**，不再依赖视野通知：触发器每 2 秒扫一遍 20 码内的玩家（`SMART_EVENT_UPDATE_OOC` + `SMART_TARGET_PLAYER_DISTANCE`），给每个人记一次。没接任务或已经完成的玩家记了也没有任何效果，所以条件表那行也去掉了（`sql-custom/2026_11_14_06_lous_parting_thoughts_trigger_scan.sql`）。重启后实测通过。教训：隐形触发器要感应玩家，用定时扫描比 OOC_LOS 可靠。
+
+### 5.4 实测反馈：Feeding the Hungry and the Hopeless 喂了没反应
+
+**26271 Feeding the Hungry and the Hopeless**：要用 Westfall Stew 喂 20 个流浪汉。物品会在面前召唤一碗炖肉（42617），但这碗炖肉没有 AI，流浪汉的 C++ 脚本 `npc_transient` 也只处理 26209（问谁杀了 Furlbrow 一家），所以没人给记录。
+
+修法同样是保留动作、跳过演出：炖肉被召唤时（`SMART_EVENT_JUST_SUMMONED`），如果 10 码内有三种流浪汉之一（条件表 type 29，ElseGroup 0/1/2 做"或"），就给召唤者记一次；不管有没有喂到，5 秒后炖肉消失（`sql-custom/2026_11_14_07_feeding_the_hungry_stew.sql`）。流浪汉走过来吃的演出没做，同一个流浪汉也能重复喂。炖肉是每次新召唤的，`.reload creature_template 42617`、`.reload smart_scripts`、`.reload conditions` 热加载就生效，不用重启。实测通过。
+
+### 5.5 实测反馈：Secrets of the Tower 塔顶是空的
+
+**26290 Secrets of the Tower**：任务要你进 Mortwake's Tower "找到 Helix Gearbreaker"，玩家爬到塔顶，什么都没有。塔顶那段剧情的 NPC（Helix 42655、Glubtok 42755、Oaf 42654）一个刷新点都没有，脚本和台词也没有。11-13 的修法是"在塔里喝下 Potion of Shrouding 就完成"，但这要靠服务器判断出玩家在塔的建筑区域 5289 里，这一点从没验证过，玩家的药水也还没喝。
+
+这次换成不依赖药水和区域判断的做法：
+
+- 先找塔。区域 5289 在地形网格里一格都没有，只存在于建筑模型内部。解析 vmap 地图块，找到 `Westfall_Magetower.wmo` 放在 (−11127, 570)，范围大约是 x −11182..−11098、y 505..594、z 31..108。玩家之前报的两个位置其实都在塔外。
+- 再找塔顶。在塔的范围内取点，从上往下探测碰撞地板：最高那些点呈圆锥形分布，是尖顶屋面；尖顶下面那层地板在 z≈88.4，塔中心是空的，一直通到 z 66 那层。
+- 复制 Lou's Parting Thoughts 的触发器模板，建了一个新的隐形触发器 910002，放在 (−11138, 550, 88.6)：每 2 秒对 16 码内的玩家触发一次任务事件 26290（`sql-custom/2026_11_14_08_secrets_of_the_tower_top_trigger.sql`）。重启后实测通过。
+
+### 5.6 实测反馈：The Dawning of a New Day 的集会没有开始
+
+**26297 The Dawning of a New Day**：去 Moonbrook 偷听流浪汉集会。任务要 1 个 Shadowy Figure（42680）的记录，它没有刷新点，召唤它的法术 79551 也没有任何东西施放；演讲的人、台词、脚本全没有。只剩 Moonbrook 流浪汉人群中间一个没有 AI 的隐形触发器 Moonbrook Player Trigger（43515），周围是流浪汉、Thug 和推车，这就是集会的位置。
+
+给它加同样的 2 秒扫描，20 码内的玩家记一次 42680（`sql-custom/2026_11_14_09_dawning_of_a_new_day_rally.sql`），没有演讲。重启后实测通过。
+
+**26320 A Vision of the Past** 顺带实测通过：Incense Burner 要在死亡矿井副本里、施法点 "Entrance of the Deadmines"（204039）30 码内使用，这个施法点离进副本的落点只有约 9 码。11-13 加的"用了就完成"实测有效。
+
+### 5.7 实测反馈：死亡矿井熔炉的坡走不下去
+
+玩家在大熔炉上层走道往下走，坡下不去，也跳不起来。服务器的碰撞数据里这条坡是连续的（沿东边往南，再沿南墙往西，从 z 51 降到熔炉底层 z 21），玩家身上也没有定身之类的效果。
+
+处理：玩家下线后，在 `game_tele` 里加一个临时传送点，用控制台 `.tele name Frank <点名>` 把她挪到坡底（离线也能用，会直接改存档坐标），然后删掉临时点。
+
+玩家随后补充了关键线索：卡住是在骑过门口的机器人 Prototype Reaper（49208，载具）、下来之后才开始的，骑着机器人下坡是正常的。症状很像客户端在下载具后没恢复重力：服务器的 `Unit::_ExitVehicle` 会发恢复重力和解除定身的消息，相关消息编号看起来也都定义了，原因没查到。这台机器人只跟可选成就 Prototype Prodigy 有关，Foe Reaper 的脚本只定义了它的编号、没有用到，所以按玩家的意思直接删掉刷新点（`sql-custom/2026_11_14_10_deadmines_remove_prototype_reaper.sql`），玩家打完副本后重启生效。别的载具可能也有同样的问题，记为未解决。
+
+## 第六章　赤脊山
+
+### 6.1 实测反馈：Still Assessing the Threat 的地图标记挂错目标
+
+**26503 Still Assessing the Threat**（赤脊山）：要偷 Gnoll Battle Plans、Gnoll Orders、Gnoll Strategy Guide 三样东西。玩家拿到了 Battle Plans，另外两样找不到，以为没刷出来。
+
+- 三个箱子的刷新点都在，数据跟拿到的那个完全一样，没有相位，也没有脚本干扰。
+- 问题在任务地图标记：三块区域位置都对，但 `quest_poi.objIndex` 全是 0，都挂在第 1 个目标 Battle Plans 名下。拿到 Battle Plans 后，这个目标完成，三块区域一起收起来，Orders 和 Guide 在地图上就没有任何标记了。
+- 修法：把第 2、3 块区域改挂到目标 1、2 上（`sql-custom/2026_11_14_05_still_assessing_the_threat_poi.sql`），`.reload quest_poi` 热加载，不用重启。
+
+插曲：玩家照我给的坐标（Orders 28.0, 74.9；Guide 30.6, 62.7）去了一趟，说还是没有。我在服务器上把能查的都查了，找不出这两个箱子不在的理由，就请玩家用 GM 角色 `.go object` 过去看。GM 角色看到了，换回原角色也看到了。之前为什么没看到，没能复现，原因不明。可能当时站的位置还差一点，也可能是重新登录后客户端重新加载了周围的物体。
+
+### 6.2 实测反馈：In Search of Bravo Company 的 Messner 看不见
+
+**26586 In Search of Bravo Company**（赤脊山）：任务要你去 Alther's Mill 找 Messner（43270），玩家到了地方什么也没有。
+
+- Messner 有刷新点，但身上挂着 Apply Quest Invis Zone 5（81003），这是"任务隐身"：只有带着对应的 Detect: Quest Invis Zone 5（81004）的玩家才看得见。
+- 通常由 `spell_area` 在接了任务之后自动给玩家上这个探测光环。81004 一条 `spell_area` 都没有，所以 Messner 对谁都是隐形的。
+- 修法：区域 97 内，从接 26586 起到交 26587 为止，自动给玩家 81004（`sql-custom/2026_11_14_11_in_search_of_bravo_company_detect.sql`）。实测通过。
+
+这是一类通病：带 "Apply Quest Invis Zone N" 的 NPC，如果没有对应的 "Detect" 规则，就永远看不见。下一节马上又碰到了三个。
+
+### 6.3 实测反馈：Bravo 小队营救链断在第一环
+
+玩家交完 26587 Breaking Out is Hard to Do 之后，"赤脊山的任务突然就没了"。查下来是三处问题叠在一起：
+
+1. **救出来的人不会跟着你。** 这条链的设计是：救出笼子里的 Messner，他变成跟随者（43300），由跟随者给下一个任务 Jorgensen；救出 Jorgensen，跟随版 Jorgensen（43305）给 Krakauer，以此类推到 Danforth（43302）给 Return of the Bravo Company。四个跟随者都没有刷新点，召唤它们的法术（80893、80940、80941、80943）也没有任何东西施放，所以交完 26587 就没人给下一个任务。
+   修法：给四个笼子里的 NPC 加 SmartAI，交任务时让玩家施放对应的召唤法术。这里不能用 `spell_area` 的自动施放：服务器只用"身上有没有这个光环"判断要不要再放一次，召唤法术不留光环，每次换区域都会再召唤一个。
+2. **后面三个笼子里的人也看不见。** Jorgensen、Krakauer、Danforth 分别挂着 Quest Invis Zone 6/7/8（81009/81018/81079），跟 Messner 同一个毛病。补了 81010/81019/81080 三条 `spell_area`，各自从接任务到交任务期间生效。
+3. **John J. Keeshan 不存在。** 他是 26567 John J. Keeshan 和 26607 They Drew First Blood 的交任务人。11-13 的审计因为"没有能到达的交任务人"把这两个任务禁用了。任务文字说他在 Lakeshire 旅店地下室的地下格斗场，地图标记 (−9202, −2154) 正好落在地下室的两个格斗者 Dumpy 和 Big Earl 身上。于是把 Keeshan 刷在擂台边上，解除禁用。
+
+文件：`sql-custom/2026_11_14_12_bravo_company_rescue_chain.sql`、`sql-custom/2026_11_14_13_keeshan_lakeshire_inn_spawn.sql`。玩家交 26587 时还没有召唤脚本，所以在重启的空档直接把 26560 Jorgensen 加进了她的任务日志。重启后实测通过：三个营救任务和旅店的 Keeshan 都交了。
+
+留了一个已知问题，暂时不改：26563 Return of the Bravo Company 在数据里要求先交 Troteman 的 26571 Weapons of War，而它唯一的发放人是临时召唤的跟随版 Danforth，下线就消失。跳过 Weapons of War 的玩家实际上拿不到这个任务。好在它不挡主线（26607 也可以从 26573 进入）。
+
+### 6.4 赤脊山后半段重建（第一期）
+
+从 26616 It's Never Over 开始，赤脊山后半段的 NPC 基本都没有刷新点。我先去翻了 TrinityCore 的 Cataclysm Classic（4.4.2）世界数据库（TDB 442，赤脊山就是那个版本重做的），结果那边这一段也没做：只有旅店的 Keeshan 和 Foreman Oslow 有刷新点，其余没有刷新点，也没有脚本。所以位置只能自己定：交任务人放在任务地图标记的交任务点上，高度用寻路网格（mmaps）吸附。把起点和终点设成几乎同一点去寻路，返回的第一个点就是网格上的地面高度，建筑里面也能用。
+
+TDB 是 350 MB 的 SQL 文本。没导入数据库，写了个只读的小工具 `tools/tdbgrep.py`，直接在 SQL 文本里按表名和列值查行。
+
+第一期修了这些（`sql-custom/2026_11_14_14_redridge_second_half_phase1.sql`）：
+
+| 任务 | 问题 | 修法 |
+|---|---|---|
+| 26569 Surveying Equipment | Foreman Oslow 没刷；Blackrock Spyglass 没有掉落来源 | Oslow 按 TDB 位置刷；任务文字说望远镜在 Blackrock 追踪者身上，加到 Blackrock Tracker（615）掉落，50% |
+| 26616 It's Never Over | 坐 Keeshan 的船去 Camp Everstill，船和沿途触发法术全没脚本 | 保留"出发"这一步，省掉船：码头的 Keeshan 加对话选项，选了就算完成事件并传送到对岸营地 |
+| 26636–26640 | 营地的 Keeshan、Krakauer、Messner、Danforth 和 Brubaker 都没刷 | 刷在各自的交任务点上；Muckdweller 的掉落表编号是 0，补上 Muckdweller Gland |
+| 26646 Prisoners of War | 钥匙袋打开是空的；牢笼打开后没有进度 | 钥匙袋的掉落编号是 0。MoP 的宝箱类物体 data0 是锁、data1 才是掉落表，补上 Holding Pen Key。三个牢笼加 SmartAI：用钥匙打开时给 Prisoner of War 进度 |
+| 26651 To Win a War... | Field Kit 里的 Plant Seaforium 没有目标，也没人给进度 | 法术目标限定为军火库和塔；两个目标被它击中时给施法者进度 |
+| 26668 Detonation | 没有目标，"炸掉山谷"的事件没有脚本 | 接任务时直接完成事件（任务描述就是按一下按钮） |
+| 26693 / 26694 | Key of Ilgalar 没有掉落来源 | 任务文字说钥匙在 General Fangore 身上，加 100% 任务掉落；塔门 Ward of Ilgalar 的锁本来就认这把钥匙 |
+
+另外解除了 11-13 审计禁用的 26651、26694。重启后实测：坐船、营地四个任务、Brubaker 都正常，玩家已经做到 26640。
+
+### 6.5 赤脊山后半段重建（第二期）
+
+剩下的三个任务数据基本是空壳：入侵者和 Darkblaze 是友好的 1 级 NPC，攻城坦克不是载具，任务说要用的 Horn of Summoning 这个物品根本不存在。这一期是替代设计，动手前先定好了方案（`sql-custom/2026_11_14_15_redridge_second_half_phase2.sql`）：
+
+- **Colonel Troteman**（43733）刷两个：Shalewind Canyon 发 26708，Keeshan's Post 收 26708、26713、26714。
+- **26708 AHHHHHHHHHHHH! AHHHHHHHHH!!!**（开坦克杀 200 个 Blackrock 兵）：Bravo Company Siege Tank（43714）补上 TDB 的载具编号 987，接了任务才能上车，配两门炮：Heavy Cannon（79776，点地面，20 码，约 3000 伤害）和 Fiery Boulder（72051）。在两地之间的任务区域里随机刷了 40 个敌对的 Blackrock Invader（17–18 级普通怪，30 秒刷新），生成脚本 `tools/gen_invaders.py`。坦克如果有问题，步行杀也算进度。
+- **26713 Showdown at Stonewatch**：Tharil'zun 和 Gath'Ilzogg 刷在 Stonewatch Keep 的两个任务标记点上（原版就有的 20 级精英和技能脚本）。
+- **26714 Darkblaze**：在 Keeshan's Post 的 Troteman 那里接任务时，旁边召唤出 22 级精英的敌对 Darkblaze。打输了可以跟 Troteman 对话"吹号角"再叫一次。解除了 26714 的禁用。
+
+  **11 月 17 日补记：**实际玩到这里时龙没出来。26713 是远程完成任务（`QUEST_FLAGS_AUTOCOMPLETE`），交完会顺着 `NextQuestIdChain` 当场弹出 26714；26714 又带自动接受标记（0x80000），于是直接进了任务日志，根本没经过 Troteman，挂在"从 Troteman 接任务"上的召唤也就没触发。玩家回 Troteman 那里重接后完成了。按用户要求改成必须找 Troteman 接（`sql-custom/2026_11_17_03_darkblaze_accept_at_troteman.sql`）：26713 的 `NextQuestIdChain` 清零，不再远程弹出 26714（前置关系靠 26714 的 `PrevQuestId` 保留）；26714 去掉自动接受标记。下次重启后生效。
+
+这一期上线了，还在等玩家做到这里。
+
+### 6.6 To Win a War, You Gotta Become War：炸药放不下去
+
+赤脊山 26651 要用 Bravo Company Field Kit 在 Blackrock 弹药小屋和塔里各放一个炸药。拿出工具包后，"Plant Seaforium"（82585）一按就报 "Requires %s"。
+
+11 月 14 日重建赤脊山后半段时（6.4），我给 82585 加了目标条件（只能对弹药小屋 43589 / 塔 43590 这两个计数 NPC 放），也加了"被命中就计数"的脚本，但漏了一点：这个法术还要求附近有法术焦点 1676（`SpellCastingRequirements` 5800）。我们的库里没有任何带这个焦点的物体；TDB 4.4.2 里只有模板 204448 "Plant Seaforium Here"，也没有刷新点。所以无论站在哪里都放不了，和 8.11 的 Titans' Terminal 是同一类问题。
+
+修复（`sql-custom/2026_11_17_01_win_a_war_seaforium_focus.sql`）：补上模板 204448，在两个计数 NPC 的原始位置（小屋里、塔顶）各刷一个焦点物体，作用半径 10 码，和法术射程一致。位置检查通过。新刷的物体要重启后才出现，已在玩家下线后重启。已在游戏里确认：塔顶和弹药小屋的炸药都能放下，任务完成。
+
+## 第七章　吉尔尼斯
+
+### 7.1 吉尔尼斯城：两段骑马任务和一个相位 bug
 
 狼人新手村之前只修过零散的几个任务（`2026_11_13_24`）。这次用狼人角色 Shen 实际往下玩，卡在三个地方：交不了 Time to Regroup（14294），Save Krennan Aranas（14293）接了没有马，Sacrifices（14212）的马骑不上去。后两个都是"骑在马上沿街跑"的任务，修的过程中又挖出一个服务器核心的 bug。
 
@@ -2066,48 +2351,13 @@ Exodus（24438）原版是在庄园下方坐马车离开，中途翻车，落在
 - 在一个最后回滚的事务里插入四个假角色测试：狼人战士、地精盗贼正确改到 12 级和主城，各写入 105/106 个已完成任务；狼人死亡骑士和人类没有变化。还没有用客户端真正新建角色验证。已有的三个角色（Shen、Murphy、Grax）按用户意思不动。
 - 注意：触发器在角色库里，重新导入角色库会丢，要重跑这个文件。
 
-### 2.34 夜色镇的缝合怪
+## 第八章　黑海岸
 
-之前（2.9）给 The Embalmer's Revenge（26727）补的是简化版：接任务时 Lord Ello Ebonlocke 在镇子南面入口召唤 Stitches 攻击玩家。实际测试接了任务什么也没看到，只是人物进入战斗又马上脱离。原因是服务器的 `ThreatRadius`（60 码）：怪物的目标离它的出生点超过这个距离就立即放弃战斗。召唤点离市政厅里的玩家大约 95 码，Stitches 一出来就把玩家当目标、又立刻放弃，原地站 2 分钟后消失。
-
-这次按原版事件重做（`sql-custom/2026_11_15_12_stitches_road_event.sql`，备份 `backup/stitches_event_20261115.tsv`）：
-
-- **接任务立刻触发**：召唤点改到市政厅门前的广场，离 Ebonlocke 约 38 码。
-- **平时也有**：乌鸦岭墓地加一个常驻的 Stitches（guid 9100141，5 分钟重刷），只给这个刷新点写的 SmartAI：刷出后设为常驻激活（没人在附近也继续走）、3 秒后沿 412 号路线走、到最后一个点在广场上游荡，由夜色镇守卫迎战。路线用的是 AzerothCore 里原版事件的 91 个路点，逐个和 MoP 地形核对过，高度差都在 3 码以内。
-- Stitches 原来的阵营 29 是一个部落阵营，改成 TDB 4.4.2 的 93（对玩家敌对的怪物）。做任务的玩家在路上截住常驻的这只，杀掉同样计数（KillCredit 43862）。
-
-经同意重启后生效，启动日志没有报错，等游戏里验证。
-
-### 2.35 职业训练师谁都能学
-
-德鲁伊找法师训练师居然能学技能。查下来是全服性的：SkyFire 上游提交 `a7ca56e00c`（"Remove some no longer needed gossip code"）删掉了训练师的职业检查（原来的 `Creature::isCanTrainingOf`），`WorldSession::SendTrainerList` 和 `HandleTrainerBuySpellOpcode` 都不再看玩家职业；买技能时检查"等级够不够、学没学过、前置技能有没有"的那一行（`GetTrainerSpellState != TRAINER_SPELL_GREEN`）也被注释掉了。列表里倒是有一层 `IsSpellFitByClassAndRace` 过滤，但它挡不住这些技能，所以 1 级德鲁伊能在法师训练师那里直接买 24 级的传送术、42 级的传送门。数据库里 693 个职业训练师全都这样。
-
-查了全部角色：另一位玩家的一个圣骑士已经买了 17 个德鲁伊技能（猎豹、熊、旅行形态、复生等）和 2 个术士技能，测试角色都没有。
-
-修复（`patches/2026_11_15_06_trainer_class_check.patch`）：设了职业的职业训练师只给本职业打开技能列表，买的时候再查一次；把状态检查恢复，不是"可学"的一律拒绝。专业、骑术这类训练师，以及没设职业的训练师不受影响。那位圣骑士身上的 19 个外职业技能和指向它们的 3 个动作条按钮，经用户决定在角色离线时删掉（`sql-custom/2026_11_15_36_char39_remove_cross_class_spells.sql`，有备份）。编译后经同意重启上线，还没在游戏里试过。
-
-### 2.36 黑海岸：找不到的幸存者
+### 8.1 黑海岸：找不到的幸存者
 
 The Last Wave of Survivors（13518）要找海岸边的 4 个幸存者，实测沿海岸跑了一个来回一个都没看到。原因是 11 月 13 日补刷新点时位置是我估的，放在了奥伯丁废墟里，离任务地图标记差了大约 1000 码。改成把每个幸存者放到对应目标的 `quest_poi` 标记点上（`sql-custom/2026_11_15_38_last_wave_of_survivors_positions.sql`），重启后 4 个都能找到并计数。以后补刷新点一律先看任务标记，不再估位置。
 
-### 2.37 任务物品打不出来：378 条缺失的任务掉落
-
-Against the Wind（13542）要从风元素 Frenzied Cyclone（32985）身上拿 8 副护腕，再到月井用掉。打了一堆风元素一副都没掉。护腕的使用技能 62081 没问题（在月井旁给 32986 的击杀计数），问题在掉落：32985 的 `lootid` 是 0，掉落表里一条记录也没有。TDB 4.4.2 里它有一条 100% 的任务掉落。
-
-顺着查了全库：把 TDB 4.4.2 里所有"任务专属"的生物掉落和这边比，只看现存任务还需要的物品（任务目标里的物品或任务的起始物品），有 384 条缺失，涉及 232 个任务、338 种怪，其中 196 个任务的物品在这边完全没有其他来源，也就是根本做不了。比如 Robbing Hoods、The Heads of the SI:7、Guts and Gore、Seek and Destroy、Freedom for Lydon 这些。
-
-修复（`sql-custom/2026_11_15_39_against_the_wind_bracers_loot.sql`、`2026_11_15_40_restore_missing_quest_drops.sql`）：按 TDB 4.4.2 的几率补回这 378 条掉落（去掉 6 条挂在 GM 路点生物上的），全部设成负几率，也就是只给身上有这个任务的玩家掉；279 种 `lootid` 为 0 的怪设成 `lootid = entry`（它们原本都没有掉落记录，不会多出别的东西）。用控制台的 `reload creature_loot_template` 和逐个 `reload creature_template <entry>` 热加载，没有重启。
-
-护腕能掉了，但站在月井边上用不掉。护腕的技能要的施法焦点是 1594（`SpellCastingRequirements` 4658），只有 194110 "Auberdine Moonwell" 提供；奥伯丁废墟那口月井上的焦点物件 177280 提供的是通用月井焦点 883，不算数。194110 在这边连模板都没有，TDB 4.4.2 也只有模板、没有刷新点。补了模板，放在 177280 同一个位置，沿用它的模型 1407，画面上不多出东西（`sql-custom/2026_11_15_41_auberdine_moonwell_focus.sql`）。物件模板只在启动时加载，经同意重启后生效。
-
-重启后还是用不掉：没有读条，也没有红字。用 gdb 在 `HandleUseItemOpcode` 下断点，发现请求到了，但连物品查找都没走到。服务器日志里每用一次都有一条 `ByteBufferException ... CMSG_USE_ITEM ... Skipped packet`，也就是包解析越界、整个被丢掉。再用 gdb 把包的 44 个字节转出来，用 Python 按解析代码逐位解码，发现 `ReadUseItemRequest` 处理客户端附带的移动信息时有两处错误：
-
-- 移动标志 30 位的读取条件写成了 `if (hasMovement)`，应为 `if (hasMovementFlags)`，不带标志时多读 30 位。
-- 移动者 GUID 的字节读进了 `movementTransportGuid`（掩码全为 0），角色 GUID 的字节被漏读。
-
-两处一改，44 个字节刚好读完，法术 62081、施法计数 5 都对上了。同一段里运输工具 GUID 的位读取把第 3 字节写成了第 4 字节，一并改掉（`patches/2026_11_15_07_use_item_movement_parse.patch`）。施法包 `CMSG_CAST_SPELL` 的同类代码是对的。这个 bug 影响所有带着移动信息发出的使用物品请求，不只是这个任务。编译后经同意重启上线。实测 8 副护腕都销毁了，任务完成。
-
-### 2.38 Call Down the Thunder：Boss 不下来
+### 8.2 Call Down the Thunder：Boss 不下来
 
 13558 要用码头尽头仪式平台上的 Aetherion Ritual Orb（194145）把元素领主 Aetherion（33041）召下来打。实测没看到 Boss。Aetherion 其实一直在：站在码头外约 70 码、高约 55 码的一处结构上，带着"对玩家免疫"。宝珠被使用时会触发事件 20898，但这个事件在这边和 TDB 4.4.2 里都没有任何脚本，用了宝珠什么也不发生。
 
@@ -2117,29 +2367,23 @@ Against the Wind（13542）要从风元素 Frenzied Cyclone（32985）身上拿 
 
 第二次实测：宝珠事件、`SetData`、`SetFly` 都走到了，Aetherion 解除免疫可以打，打完掉落 Aetherion's Essence，任务能完成。但他没有飞到平台上，还停在原来的高处，玩家 20 级可以飞上去打。用户决定能跑通就不再动这一处。
 
-### 2.39 Elune's Fire：Horoo 是绿名
+### 8.3 Elune's Fire：Horoo 是绿名
 
-13582 要从 Horoo the Flamekeeper（34385）身上拿 Elune's Torch。火炬是他的任务掉落（2.37 批量补回的那批里就有），也就是要把他打死。实测 Horoo 是绿名，打不了。
+13582 要从 Horoo the Flamekeeper（34385）身上拿 Elune's Torch。火炬是他的任务掉落（2.23 批量补回的那批里就有），也就是要把他打死。实测 Horoo 是绿名，打不了。
 
 Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"），对玩家本来是敌对的。但同一位 NPC 给的 The Wildkin's Oath（13583）奖励一个永久光环 Force Reaction 1（61899），把阵营 1065 对玩家强制改成友好，好让枭兽变成盟友。先交了 13583 的玩家，Horoo 就跟着变成友好，任务卡死。TDB 4.4.2 也是这样配置的。
 
 修复（`sql-custom/2026_11_16_01_horoo_hostile_faction.sql`）：Horoo 单独改用普通敌对怪物阵营 14，等级、技能、掉落不变；黑海岸其他用 1924 的只有 Wildkin Spirit，本来就该在立誓后变友好，不动。经同意重启后生效。
 
-### 2.40 骑着坐骑下线，上线后速度变回步行
-
-骑在坐骑上下线，再上线时人还在坐骑上，但移动速度和步行一样，下来重新召唤才正常。坐骑速度来自单独的速度光环（比如 86461 "Mount Speed Mod"），`Unit::UpdateSpeed` 只在 `IsMounted()`（单位带 `UNIT_FLAG_MOUNT`）时才把它算进跑速和飞行速度。下线时坐骑光环和速度光环都会存进 `character_aura`，上线时按主键也就是法术 ID 从小到大加载：速度光环 86461 先生效，那时还没骑上，速度按步行算；坐骑光环（这里是 163025）随后挂上，`Unit::Mount` 只设置坐骑模型和标志，不重算速度。
-
-修复（`patches/2026_11_16_01_mount_speed_after_login.patch`）：`Unit::Mount` 和 `Unit::Dismount` 结束时各重算一次跑速和飞行速度。正常召唤坐骑时速度值不变，`SetSpeed` 会直接返回。编译后经同意重启上线，等游戏里验证。
-
-### 2.41 Soothing the Elements：图腾放不出来
+### 8.4 Soothing the Elements：图腾放不出来
 
 13580 要在 Jagged Reef 顶上放 Energized Soothing Totem。放图腾的技能 65361 需要施法焦点 1610。TDB 4.4.2 有这个焦点的模板（195059），但没有刷新点，所以 11 月 13 日我补了一个自定义焦点 910101。当时的位置是估的，离任务地图标记（5558, 492）大约 32 码；范围填的是 20，而核心代码会除以 2，实际只有 10 码。站在标记点放不出来。
 
-修复（`sql-custom/2026_11_16_02_jagged_reef_focus_position.sql`）：焦点移到标记点和坡顶之间（5552, 478, 24），范围改成实际 30 码，模型改用其他焦点物件的 1407。经同意重启后生效，等游戏里验证。这是第二个因为估位置出错的任务（另一个是 2.36）。
+修复（`sql-custom/2026_11_16_02_jagged_reef_focus_position.sql`）：焦点移到标记点和坡顶之间（5552, 478, 24），范围改成实际 30 码，模型改用其他焦点物件的 1407。经同意重启后生效，等游戏里验证。这是第二个因为估位置出错的任务（另一个是 8.1）。
 
 实测图腾放出来了，两波元素之后仪式完成，任务计数。
 
-### 2.42 Leave No Tracks：接任务窗口里只有"完成任务"
+### 8.5 Leave No Tracks：接任务窗口里只有"完成任务"
 
 13892 的 NPC 打开后是任务窗口，但按钮是"完成任务"，点了没反应。gdb 跟踪显示，一点 NPC，服务器就直接发了交任务的 `SendQuestGiverRequestItems`，玩家点按钮后发来的是 `CMSG_QUESTGIVER_CHOOSE_REWARD`，而这个任务根本没接。
 
@@ -2149,13 +2393,13 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 
 实测可以正常接任务了。
 
-### 2.43 Consumed：湖底的东西点不了
+### 8.6 Consumed：湖底的东西点不了
 
 13881 要调查熊喝水的湖。湖底能看到 Devouring Artifact（195057），但它是类型 5 的纯装饰物件，本来就不能点。这一项目标在这边是 DUMMY 类型（`quest_objective` type 10，对象 0）；TDB 4.4.2 的 `quest_objectives` 里它是"进入区域触发器 5449"，5449 就在湖底那件物品旁边，半径 12 码。这边进入区域触发器后靠 `areatrigger_involvedrelation` 找关联任务、给 DUMMY 目标记完成，可这张表里没有 13881。
 
 顺着查了全库：TDB 4.4.2 里靠区域触发器完成、这边也有 DUMMY 目标的现存任务 87 个，缺关联的 52 个。补了 49 条（`sql-custom/2026_11_16_03_restore_areatrigger_quest_links.sql`）；另外 3 条的触发器已经关联了别的任务（171、4200、4201），这张表一个触发器只能对应一个任务，保留原样。14482 和 28732 在参考库里各有两个触发器，这边只有一个 DUMMY 目标，两个都关联上，进任意一个算完成，和客户端显示的目标一致。用 `reload areatrigger_involvedrelation` 热加载，没有重启。
 
-### 2.44 The Seeds of Life：三颗种子只有一颗能拿
+### 8.7 The Seeds of Life：三颗种子只有一颗能拿
 
 13882 要收集大地、海洋、天空三颗种子。查下来只有海洋种子有来源（19 个 Glittering Shell 宝箱，位置和任务标记一致）。另外两颗：
 
@@ -2166,29 +2410,21 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 
 同一次还确认了 The Bear's Blessing（13544）的 Ancient Bear Statue 有刷出来，位置和参考库一致，只是离任务标记约 26 码、施法范围 5 码。
 
-### 2.45 Fleetfoot 不掉羽毛：再补 134 条任务掉落
-
-The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。鼠标指向陆行鸟 Fleetfoot（32997）时客户端显示它会掉任务物品，打死却什么都没有：它的 `lootid` 是 0，TDB 4.4.2 里也没有它的掉落。客户端之所以显示，是因为 `creature_questitem`（客户端缓存里的"这只怪会掉哪些任务物品"）记着它掉 44886。2.37 那次只对比了参考库的掉落表，参考库自己缺的就漏掉了。
-
-这次用参考库的 `creature_questitem` 再对一遍：现存任务需要、表里记着某种怪会掉、而这边那种怪不掉的有 803 条，涉及 174 个任务；其中 74 个"物品-任务"组合（65 个任务）的物品在这边没有任何怪或宝箱能拿到，任务做不了，例如 Oil Change、Hand-me-downs、Rokar's Test、Pro-liberation、The Forest Heart。
-
-这张表只说"会掉"，没有掉率，参考库里也没有。掉率影响难度，由用户决定：只刷 1–2 只的怪（稀有、首领）100%，成群的怪 40%，都只给有任务的玩家掉。修复（`sql-custom/2026_11_16_05_fleetfoot_tailfeathers.sql`、`2026_11_16_06_restore_quest_drops_from_questitem.sql`）共 134 条怪物掉落（同一物品可能由几种怪掉），24 种原来没有掉落表的怪设成 `lootid = entry`。热加载，没有重启。另外 114 条的物品已经能从别处拿到，暂不处理。
-
-### 2.46 Cleansing the Afflicted：灵魂是友方
+### 8.8 Cleansing the Afflicted：灵魂是友方
 
 13545 要先对 Blackwood Hold 的熊怪用 Blessed Herb Bundle（44889），再杀掉出现的 Spirit of Corruption（33000）7 只。灵魂能刷出来，但任务不计数。法术 62092 的召唤没问题；问题在灵魂的模板：阵营 35（友方）、1 级，玩家打不了它，也就拿不到击杀。TDB 4.4.2 里它是阵营 14（敌对）。
 
 修复（`sql-custom/2026_11_16_07_spirit_of_corruption_hostile.sql`）：阵营改成 14，等级改成和 Blackwood Furbolg（33084）一样的 17–18。热加载 `creature_template`，没有重启。已经刷出来的友方灵魂不会变，之后新召唤的才是敌对的。已在游戏里确认能计数。
 
-### 2.47 In Defense of Darkshore：Orseus 的选项看不见
+### 8.9 In Defense of Darkshore：Orseus 的选项看不见
 
 13885 原本要找 Orseus（34392）借一只角鹰兽，从空中保护鹿、熊和夜刃豹各 8 只。空中场景从来没实现过，11 月 13 日的处理是跳过场景：选他的对话选项"Orseus, Kathrena sent me to borrow one of your Hippogryphs."直接给全部 24 个计数（见 2.12）。但在游戏里和他说话只有一段文字，没有这个选项。
 
-原因和 2.44 的 Onu 一样：选项的 `OptionType` 和 `OptionNpcflag` 都是 0，服务器只显示 `OptionNpcflag` 和 NPC 标志有交集的选项，所以它永远不出现，SmartAI 也就等不到玩家选择。修复（`sql-custom/2026_11_16_08_orseus_gossip_visible.sql`）：改成 1 / 1，热加载 `gossip_menu_option`，没有重启。已在游戏里确认，任务完成。
+原因和 8.7 的 Onu 一样：选项的 `OptionType` 和 `OptionNpcflag` 都是 0，服务器只显示 `OptionNpcflag` 和 NPC 标志有交集的选项，所以它永远不出现，SmartAI 也就等不到玩家选择。修复（`sql-custom/2026_11_16_08_orseus_gossip_visible.sql`）：改成 1 / 1，热加载 `gossip_menu_option`，没有重启。已在游戏里确认，任务完成。
 
 顺便查了全库"有 SmartAI 等玩家选、选项却被隐藏"的情况：除了旅店老板的重复选项，只剩 Grek（纳格兰）、暗月马戏团传送法师和一个游戏物体的对话，都不在现在的路线上，暂不处理。
 
-### 2.48 The Devourer of Darkshore：树苗用不了
+### 8.10 The Devourer of Darkshore：树苗用不了
 
 13891 要在 Grove of the Ancients 南边浅湖的岸边用 Lifebringer Sapling（46370），召出湖底 Devouring Artifact 的守护者 Yoth'al the Devourer（34331）并打死它。树苗的法术 65207 要求附近有施法焦点 1608，然后发送事件 21674。三块都缺：焦点物体 Consumed Watering Hole（195028）没有模板也没有刷新点（TDB 4.4.2 只有模板），事件 21674 没有脚本，Yoth'al 没有刷新点，模板还是友方阵营 35、1 级、没有 AI。
 
@@ -2201,7 +2437,7 @@ The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。
 
 新加了物体模板，经同意重启后生效。已在游戏里确认，任务完成。
 
-### 2.49 The Titans' Terminal：哪里都 "Requires %"
+### 8.11 The Titans' Terminal：哪里都 "Requires %"
 
 13918 要在 Remtravel 挖掘点附近的海滩上用 Buried Artifact Detector（46388）找 5 个 Ancient Device Fragment（46702），右键合成 Ancient Slotted Device。探测器在哪里用都提示 "Requires %"：法术 65300 Ping for Artifact 要求施法焦点 1612，焦点物体 Remtravel Excavation Beach（195085）没有模板也没有刷新点，客户端连它的名字都查不到，于是只剩一个 `%`。
 
@@ -2215,13 +2451,27 @@ The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。
 
 测试时土堆能冒，但开出来只有灰色垃圾。原因是碎片设成了"只有任务需要时才掉"（`-100`），而服务器判断"任务需要"只看任务目标和任务的来源物品，碎片两样都不是（目标是合成后的装置）。第二个修复（`sql-custom/2026_11_16_11_titans_terminal_fragment_source.sql`）：碎片改成 100% 掉落（参考库也是 100%），热加载；同时把碎片登记为任务来源物品，需要 5 个，这一项要改任务表，热加载 `quest_template` 会删掉所有任务对象，有人在线时不安全，等下次重启生效。已在游戏里确认：碎片进背包，合成后任务完成。
 
-### 2.50 Bear In Mind：熊脑掉率
+## 第九章　暮色森林
+
+### 9.1 夜色镇的缝合怪
+
+之前（2.9）给 The Embalmer's Revenge（26727）补的是简化版：接任务时 Lord Ello Ebonlocke 在镇子南面入口召唤 Stitches 攻击玩家。实际测试接了任务什么也没看到，只是人物进入战斗又马上脱离。原因是服务器的 `ThreatRadius`（60 码）：怪物的目标离它的出生点超过这个距离就立即放弃战斗。召唤点离市政厅里的玩家大约 95 码，Stitches 一出来就把玩家当目标、又立刻放弃，原地站 2 分钟后消失。
+
+这次按原版事件重做（`sql-custom/2026_11_15_12_stitches_road_event.sql`，备份 `backup/stitches_event_20261115.tsv`）：
+
+- **接任务立刻触发**：召唤点改到市政厅门前的广场，离 Ebonlocke 约 38 码。
+- **平时也有**：乌鸦岭墓地加一个常驻的 Stitches（guid 9100141，5 分钟重刷），只给这个刷新点写的 SmartAI：刷出后设为常驻激活（没人在附近也继续走）、3 秒后沿 412 号路线走、到最后一个点在广场上游荡，由夜色镇守卫迎战。路线用的是 AzerothCore 里原版事件的 91 个路点，逐个和 MoP 地形核对过，高度差都在 3 码以内。
+- Stitches 原来的阵营 29 是一个部落阵营，改成 TDB 4.4.2 的 93（对玩家敌对的怪物）。做任务的玩家在路上截住常驻的这只，杀掉同样计数（KillCredit 43862）。
+
+经同意重启后生效，启动日志没有报错，等游戏里验证。
+
+### 9.2 Bear In Mind：熊脑掉率
 
 夜色森林 26787 要收集 8 个 Black Bear Brain（60334），只有 Coalpelt Bear（44016）掉。数据本身没坏：掉落表、刷新点、拾取代码都正常，Frank 也确实捡到了。但掉率只有 53.7%，而熊身上除了熊脑没有别的东西（也没有钱），没掉的尸体根本不能拾取，玩起来像"大多数时候什么都不掉"。
 
 用户要求调高。修复（`sql-custom/2026_11_16_12_bear_in_mind_drop_rate.sql`）：改成 TDB 4.4.2 里的 90%，仍然只掉给有任务的玩家。热加载，没有重启。
 
-### 2.51 Cry For The Moon：剧情演完不计数
+### 9.3 Cry For The Moon：剧情演完不计数
 
 夜色森林 26760 接了以后，Oliver Harris、Jitters 和被关着的狼人会演一段剧情（C++ 脚本 `npc_oliver_harris` 调度，三个演员 43858/43859/43950 用 SmartAI），剧情能完整演完，但任务不计数。
 
@@ -2229,7 +2479,7 @@ The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。
 
 修复（`sql-custom/2026_11_16_13_cry_for_the_moon_credit.sql`）：这一步改成直接给 100 码内的玩家计数 43969，只对身上有这个任务的玩家生效。注意 `reload smart_scripts` 只更新内存里的脚本表，已经刷在世界里的 NPC 要等重新创建才会用新脚本，所以经同意重启了一次。已在游戏里确认：放弃重接后看完剧情，任务计数。
 
-### 2.52 Morbent Fel：整条线没有起点
+### 9.4 Morbent Fel：整条线没有起点
 
 Cry For The Moon 之后查 Frank 的暮色森林完成度，发现 Morbent Fel 这条六个任务的线（26723 The Fate of Morbent Fel → 26724 → 26725 → 26753 → 26722 → 26754 Morbent's Bane）从头就接不到：
 
@@ -2244,35 +2494,9 @@ Cry For The Moon 之后查 Frank 的暮色森林完成度，发现 Morbent Fel �
 
 新刷了 NPC，经同意重启后生效。已在游戏里确认整条线做完。之后 Frank 的暮色森林只剩三个不算缺的：暴风城布告板的引路任务 28564，以及旧版 Lightforge 链里接不到的 270 和已禁用的 325。
 
-### 2.53 打完怪脱不了战斗
+## 第十章　荆棘谷
 
-很多地方都碰到过：打完怪以后人一直处在战斗状态，不能骑马、不回血，只有小退重登才恢复，和是哪种怪没关系。
-
-这次是在赤脊山碰到的，角色在 Everstill 湖边卡住。服务器是 Release 版，没有调试信息，所以先用同样的编译参数编了一个小程序，打印出 `Unit`、`HostileReference` 等结构里各字段的偏移，再用 gdb 挂上正在运行的 worldserver（断在 `Player::Update`，读完立刻脱离，前后不到一秒），顺着玩家的 `m_HostileRefManager` 把"谁的仇恨列表上还有她"列出来：
-
-- 两只豺狼人（Redridge Mystic 430、Redridge Basher 446）还记着她，各 0.5 点仇恨。它们在 Lakeshire 旁边，离她大约 590 码。
-- 两只都在打她的 Bravo 小队随从 Jorgensen（43305，见 2.29），随从被留在了那里。
-- 隔 6 秒再读一次，三个单位的血量和位置一点都没变：那片区域已经不更新了。
-
-原因：大陆地图的可视距离只有 90 码（`Visibility.Distance.Continents`），`Map::Update` 只更新玩家（和少数常驻对象）附近的格子。怪只有在自己被更新的时候才会判断脱战、回家；玩家这边，`Unit::Update` 只在仇恨引用全部清空后才倒计时退出战斗。于是只要一只记着你的怪被甩在一百多码以外（法师冰环、变羊之后跑开，或者随从留在原地打架），它就冻在战斗里，永远不会脱战，你也一直下不了战斗。小退时服务器会删掉玩家身上的所有仇恨引用，所以重登就好了。
-
-修复（`patches/2026_11_17_01_unit_cumulative_incl_far_hostile_ref_drop.patch`，备份 `backup/Unit.cpp.bak-20261117`）：玩家在战斗中时，`Unit::Update` 检查每条仇恨引用，如果来源是非玩家控制的生物，而且离玩家超过可视距离加 100 码（大陆上是 190 码），就删掉这条引用。正常追着你打的怪不会离这么远；被删掉的怪下次被更新时仇恨列表是空的，会自己回家。没有改头文件，下次编译是增量的。和 2.54 一起在 11 月 17 日编译（这次因为编译环境的基础层重建过，是全量重编，约 17 分钟），0 人在线时重启上线，等游戏里验证。
-
-### 2.54 放弃 29423 后 Huo 还一直跟着
-
-熊猫人岛 29423 The Passion of Shen-zin Su 接任务时，脚本 `npc_huo` 给玩家放 128700 Summon Spirit of Fire，召出跟随的 Huo（54958）。这个召唤（SummonProperties 3277）走的是普通临时召唤，和任务没有关联；放弃任务时服务器只删任务，不管 Huo，于是他会一直跟着，直到重新登录。
-
-修复（`patches/2026_11_17_02_questhandler_cumulative_incl_abandon_unsummon_huo.patch`，备份 `backup/QuestHandler.cpp.bak-20261117`）：`HandleQuestLogRemoveQuest` 放弃任务后，查一张"任务 → 跟随者 → 召唤光环"的小表：去掉召唤光环，并收回 200 码内由这个玩家召出的同 ID 生物。表里目前只有 29423 / Huo，以后碰到同类问题往里加一行就行。只改了 `QuestHandler.cpp`，和 2.53 一起在 11 月 17 日编译上线，等游戏里验证。
-
-### 2.55 To Win a War, You Gotta Become War：炸药放不下去
-
-赤脊山 26651 要用 Bravo Company Field Kit 在 Blackrock 弹药小屋和塔里各放一个炸药。拿出工具包后，"Plant Seaforium"（82585）一按就报 "Requires %s"。
-
-11 月 14 日重建赤脊山后半段时（2.30），我给 82585 加了目标条件（只能对弹药小屋 43589 / 塔 43590 这两个计数 NPC 放），也加了"被命中就计数"的脚本，但漏了一点：这个法术还要求附近有法术焦点 1676（`SpellCastingRequirements` 5800）。我们的库里没有任何带这个焦点的物体；TDB 4.4.2 里只有模板 204448 "Plant Seaforium Here"，也没有刷新点。所以无论站在哪里都放不了，和 2.49 的 Titans' Terminal 是同一类问题。
-
-修复（`sql-custom/2026_11_17_01_win_a_war_seaforium_focus.sql`）：补上模板 204448，在两个计数 NPC 的原始位置（小屋里、塔顶）各刷一个焦点物体，作用半径 10 码，和法术射程一致。位置检查通过。新刷的物体要重启后才出现，已在玩家下线后重启。已在游戏里确认：塔顶和弹药小屋的炸药都能放下，任务完成。
-
-### 2.56 Spared from Madness：营地里一个囚犯都没有
+### 10.1 Spared from Madness：营地里一个囚犯都没有
 
 荆棘谷 26736 要在 Kurzen's Compound 里救出三个人：Berrin Burnquill、Emerine Junis、Osborn Obnoticus。到了营地一个都找不到：三个囚犯（计数用的 43919/43920/43921）在我们的库和 TDB 4.4.2 里都没有刷新点，也没有任何营救脚本。不光这个任务做不了，三人被救回叛军营地后各自发的任务链（Water Elementals 等 26729–26731、Bloodscalp Insight 等 26742–26743、A Nose for This Sort of Thing 等 26746–26747、26749）也全接不到，因为营地版本的三个人（43884/43885/43886）同样没有刷新点。
 
@@ -2283,250 +2507,44 @@ Cry For The Moon 之后查 Frank 的暮色森林完成度，发现 Morbent Fel �
 
 新刷了 NPC，已在玩家下线后重启。已在游戏里确认：三个囚犯都能救出，任务完成。
 
-### 2.57 Favored Skull：联盟接到了部落版
+### 10.2 Favored Skull：联盟接到了部落版
 
-荆棘谷的蜥蜴幼崽（Lashtail Hatchling，42736，前面任务召唤出来的，没有固定刷新点）同时发两个 Favored Skull：26323 交给 Grom'gol 的 Nimboya（部落），26745 交给叛军营地的 Osborn Obnoticus（联盟）。两个任务都没有限制种族，联盟角色也会接到部落版，交任务标记就出现在部落营地里。联盟版的交任务人 Osborn 直到 2.56 才刷出来。
+荆棘谷的蜥蜴幼崽（Lashtail Hatchling，42736，前面任务召唤出来的，没有固定刷新点）同时发两个 Favored Skull：26323 交给 Grom'gol 的 Nimboya（部落），26745 交给叛军营地的 Osborn Obnoticus（联盟）。两个任务都没有限制种族，联盟角色也会接到部落版，交任务标记就出现在部落营地里。联盟版的交任务人 Osborn 直到 10.1 才刷出来。
 
 修复（`sql-custom/2026_11_17_07_favored_skull_faction_split.sql`，备份 `backup/favored_skull_20261117.tsv`）：26323 只给部落，26745 只给联盟，用的是库里通用的部落/联盟种族掩码。已经接了部落版的联盟角色，在离线时把存档里的 26323 换成"可交付"状态的 26745（这个任务没有目标，只要回去交），没有让玩家放弃重接，因为幼崽是召唤出来的，放弃后不一定还能再接。重启后生效。
 
-### 2.58 The Mosh'Ogg Bounty：两个一模一样的任务抢同一个物品
+### 10.3 The Mosh'Ogg Bounty：两个一模一样的任务抢同一个物品
 
 荆棘谷的 The Mosh'Ogg Bounty 每个阵营各有两份：联盟 26782/26783 都由 Fort Livingston 的 Wulfred Harrys 发和收，文本只差一个词；部落 26399/26412。四个任务都要宝箱里的同一个 Mosh'Ogg Bounty（58205）。我们的库里它们都没设互斥组，联盟角色可以把两份都接下：交第一份时物品被收走，第二份还留在日志里要同一个物品，只能再去开一次箱子。TDB 4.4.2 给部落那对设了互斥组 26399，联盟那对两边都没设。
 
 修复（`sql-custom/2026_11_17_08_mosh_ogg_bounty_exclusive.sql`，备份 `backup/mosh_ogg_bounty_20261117.tsv`）：部落那对照 TDB 设互斥组 26399，联盟那对设 26782，每个阵营只能接、只能做其中一份。等下次重启生效；已经两份都接了的玩家照常交掉第二份就行。
 
-### 2.59 See Raptor / Be Raptor：女祭司的对话选项不显示
+### 10.4 See Raptor / Be Raptor：女祭司的对话选项不显示
 
 荆棘谷 Fort Livingston 的 Priestess Thaalia（44017）要主持两个仪式：26773 See Raptor（Mind Vision，计数 42840）和 26775 Be Raptor（Mind Control，计数 42881–42884）。她的对话菜单 11785 里两个选项都在，但选项类型和 NPC 标记都是 0，客户端根本不显示；而且选了也什么都不会发生，我们的库、TDB 4.4.2 和 C++ 里都没有对应脚本。原版是两段祖尔格拉布剧情：See Raptor 被传送进去看一段过场，Be Raptor 变成被抓的迅猛龙逃出来。传送、召唤迅猛龙和曼多基尔这些法术都还在，但没有东西把它们串起来。
 
 按用户决定做了简单替代（`sql-custom/2026_11_17_09_see_raptor_be_raptor.sql`，备份 `backup/thaalia_rituals_20261117.tsv`）：两个选项只在接了对应任务时显示，选了直接给这个任务的全部计数并关闭对话。See Raptor 原本就只是看过场；Be Raptor 的逃跑玩法是用户要求简化的。部落版（Priestess Hu'rala 的 26359/26362）没有改。已在玩家下线后重启，等游戏里验证。
 
-### 2.60 Backdoor Dealings：图腾点了没反应
+### 10.5 Backdoor Dealings：图腾点了没反应
 
 Cape of Stranglethorn 的 Backdoor Dealings（联盟 26809 / 部落 26550）要把 Gurubashi Incense 放在 Totem of Hir'eek（物体 204361）前面，再偷听 Zanzil 的计划（计数 43252 + 43245）。图腾是"任务给予者"类型的物体，对话菜单 11711 里有 "Place the incense at the foot of the statue." 这个选项，但选项类型是 0；物体身上的对话选项只有"普通对话"类型才会显示，所以点了图腾什么都看不到。选了也没有任何脚本（我们的库、TDB 4.4.2、C++ 都没有）。原版是放下香后蝙蝠 Wings of Hir'eek 带玩家飞去看一段剧情。背包里的香本身没有使用效果，只是任务要带在身上的物品，所以用不了是正常的。
 
-照 2.59 的做法替代（`sql-custom/2026_11_17_11_backdoor_dealings.sql`，备份 `backup/backdoor_dealings_20261117.tsv`）：接了任意一个版本时，图腾的放香选项才会显示，选了两个计数一次给满并关闭对话。图腾挂上 SmartGameObjectAI，经同意重启，等游戏里验证。
+照 10.4 的做法替代（`sql-custom/2026_11_17_11_backdoor_dealings.sql`，备份 `backup/backdoor_dealings_20261117.tsv`）：接了任意一个版本时，图腾的放香选项才会显示，选了两个计数一次给满并关闭对话。图腾挂上 SmartGameObjectAI，经同意重启，等游戏里验证。
 
-### 2.61 接下来
+## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
-
-## 第三章　熊猫人新手岛任务修复
-
-熊猫人新手岛（Wandering Isle）是这个服务器里问题最集中的地方。查了很久才找到根源：上游的 **commit `2f8c98dc67`（"Drop dead code"）把新手岛的一大批 NPC 脚本当成死代码删掉了**，但数据库里这些 NPC 的 `ScriptName` 还留着。结果就是 NPC 站在那里，什么都不做。之后再遇到"有 ScriptName 却找不到代码"的新手岛 NPC，第一步就是 `git show 2f8c98dc67`，把原来的代码找回来。
-
-第二个大问题是**相位（phase）**，后面好几个任务都栽在这上面。
-
-### 29423 The Passion of Shen-zin Su：Huo 下线就丢，相位不刷新
-
-- **现象：** 要护送火精灵 Huo 回神庙，下线再上线 Huo 就没了，任务卡住。
-- **原因：**
-  1. Huo 是法术 128700 召唤出来的临时守护者，下线时会消失，但 128700 的光环还保存在角色身上，所以系统不会再召唤一次。
-  2. 交付进度靠区域触发器 AT 7835 的一次性脚本，要求 Huo 在 15 码以内，很容易错过。
-  3. **核心的相位 bug：** `UpdateAreaPhase` 只会在进入区域时加上 `phase_area` 定义的相位，离开时从不移除；接任务、交任务时也不会重新计算区域相位，只有重新登录才会。
-- **修复：**
-  - 新增一个 PlayerScript，登录时如果有 128700 光环就重新召唤 Huo；
-  - 把交付逻辑抽成一个共用函数，判定半径放宽到 40 码，再加一个"看见 Shang Xi 就交付"的兜底；
-  - 在 `Object.cpp` 里补上离开区域时移除相位的逻辑，并在接任务、设置任务状态、交任务、放弃任务时重新计算区域相位。注意不能放进 `UpdatePhasing`：移除相位光环时会调用它，结果又会把相位加回来。
-
-### 29663 Lesson of the Balanced Rock：被删掉的脚本
-
-站在木桩上的 Tushui 武僧（55019）的脚本被上游删掉了。我把它恢复了：武僧会自动站上 8 码内最近的空木桩，被打败后消失；同时把它们的游荡改成原地不动。顺带一提，同一组的 29661 Lesson of Dry Fur 其实没坏，只是没找到那口铃铛。
-
-### 31450 A New Fate：选阵营的灵魂不能对话，交任务的 NPC 不存在
-
-- **对话：** Master Shang Xi 的灵魂（56013）的 `npcflag` 只有任务标记，没有对话标记。任务图标消失后，玩家就点不出对话了。补上对话标记后，选阵营的界面能弹出来，传送去暴风城或奥格瑞玛也正常。
-- **交任务：** 两边负责交任务的 Aysa（60566，联盟）和 Ji（60570，部落）**在数据库里根本没有刷新点**。我把他们刷在传送落地点前方 4 码处。暴风城的落地点在城市建筑模型（WMO）上面，地形高度比实际站立高度低了将近 30 码，所以 z 坐标要用建筑表面的高度。
-
-### 29678 Shu, the Spirit of Water：跳石头跳回原地
-
-河里的跳石是陷阱型游戏对象，踩上去会强制施放 Rock Jump A/B/C。脚本里调用了 `MoveJump`，但法术默认的 `EffectJumpDest` 效果会在之后执行。因为 DEST_DB 类型的目标在 `spell_target_position` 表里没有数据，默认效果就把玩家"跳到自己身上"，覆盖掉了脚本的跳跃。在三个法术脚本里加上 `PreventHitDefaultEffect` 就好了。
-
-### 29770 Still Good!：不是 bug
-
-要收集的南瓜（Pilfered Pumpkins，17 个）在地鼠洞（Virmen Grotto）里，不在旁边那片装饰用的南瓜田。这个算"难但能做"，保持原样，最后靠自己找到了。
-
-### 29792 Bidden to Greatness：护送脚本被删
-
-原来的护送脚本 `mob_mandori_escort` 被删掉了。我没有完整还原护送过程，而是写了一个区域触发器脚本：任务未完成时走到 Mandori 门口给一个进度，走到 Pei-Wu 门口再给一个。流程比原版简单，但任务能完成了。
-
-### 29794 None Left Behind：背伤员
-
-- 恢复了受伤水手（55999）的脚本：右键水手，他会坐上玩家的"载具位"让你背着走；送到 Delora 旁边，任务进度加一，水手道谢后消失。
-- 第一次测试时水手背上了，但交付点没反应。原因是**玩家处于载具状态时，客户端似乎不发送 `CMSG_AREATRIGGER`**。于是改成由水手的 AI 自己判断：离交付点 15 码以内就算送到。
-
-### 30767 Risking It All：没有路径点的护送
-
-原版的护送 NPC 和对话都被删掉了，数据库里也没有路径点。我做了个简化版：玩家任务未完成、走到坠毁的飞艇边时，直接给进度，播放动画（movie 117），1 秒后把玩家传送到坡下交任务的 Ji 身边。没有原版的对话。
-
-### 29799 The Healing of Shen-zin Su：治疗事件
-
-恢复了 Ji（57739）的事件脚本和治疗者（60878/60896）。附近有任务未完成的玩家时，持续召唤治疗者和来捣乱的鱼人（Deepscale Fleshrippers）。每 3 秒按存活的治疗者数量累计进度，通过替代能量条显示，到 700 就完成，大约 3 到 5 分钟。
-
-### 29786 Battle for the Skies：Boss 看不见，还卡在 Evade
-
-- **看不见：** 接任务后，Aysa 把玩家放进了相位 524（为了显示炮台），而 Zhao-Ren 在相位 0。按 `WorldObject::IsPhased` 的规则，玩家的相位列表必须为空或包含 169，才看得见相位 0 的对象。重新登录能看见 Zhao-Ren，但炮台又没了。修复方法是：接任务时同时加上相位 169，再用 `phase_area` 规则保证任务期间该区域是 169 + 524。
-- **Evade：** 所有攻击都显示 "Evade"。`EnterEvadeMode` 先设置 `UNIT_STATE_EVADE`，然后让它飞回出生点；但 `Reset()` 清掉了移动，回家的移动没到终点就结束了，Evade 状态也就永远不会被清除。修复是：在 `Reset` 里清除这个状态，并重写 `EnterEvadeMode`，让它不再飞回出生点。
-
-### 29421 Only the Worthy Shall Pass：一刀秒杀导致 NPC 消失
-
-- **现象：** 打完 Li Fei，负责交任务的 Li Fei 不见了，要重新登录才出来。
-- **原因：** 我们的装备太好，一下就把 Li Fei 从 20% 以上的血量直接打死了。智能脚本（SAI）里"血量在 1%–20% 之间时给进度并切换相位"的事件根本没有触发。击杀本身让任务完成了，但玩家还留在旧相位 631 里。
-- **修复：** 纯 SQL，加了两个死亡事件，在 Li Fei 死亡时给击杀者切换相位；顺便修了一条接反了的事件链接。SAI 在生物创建时就复制了脚本，热重载对已经刷出来的 Li Fei 无效，所以要重启。
-
-### 29679 A New Friend：水精跳到远处就停了（实测抽检）
-
-这一段是跟着水精 Shu 在倒影池里追水柱：Shu 随机跳到 4 个池边位置之一，2 秒后在身边召出水柱，7 秒后喷发，踩在上面的玩家计数。脚本（`npc_shu_pool_of_reflection`）是在的，问题在它的"还有没有人在玩"检查：每轮水柱消失后只在 Shu 周围 **20 码**内找接了任务的玩家，找不到就停；重新启动也要求玩家走进这 20 码。可 4 个跳点之间隔着 20–50 码，玩家只要没紧贴着 Shu，它跳到远处就停住了——实测时角色在池子西边缘，离最近的跳点也有 28 码。把半径改成 60 码，覆盖整个池子（补丁 `patches/2026_11_13_05_zone_wandering_island_cumulative_incl_shu_pool_radius.patch`）。
-
-### 29775 The Spirit and Body of Shen-zin Su：牛车点了没反应（实测抽检）
-
-任务说"路边有辆车等着送你去神庙"。车就在 Dai-Lo 农场，鼠标移上去有上车的箭头，但点了没反应。新手岛一共有三个这样的牛车站：Singing Pools → Dai-Lo 农场、Dai-Lo 农场 → 神庙、天火号坠毁点 → 神庙。三个站的问题完全一样：
-
-- **点击法术不对。**路边那辆车点击时施放的是通用的"骑乘载具"（46598），可它本身不是载具，所以什么都不发生。法术数据里其实有正确的法术，比如 114453 "Summon Ox Cart, Farmlands -> Temple"：在路边那辆车的位置召出一辆能坐人的车（59496），把点击的人放上车，再触发 114454 在旁边那头牦牛的位置召出一头会走路的牦牛（59498）；
-- **召唤位置缺条件。**这两个法术的目标类型是"附近某个 NPC"（46），必须用条件指明是哪个 NPC，没有条件就找不到目标、什么都不召。补上：车召在路边那辆车的位置，牦牛召在旁边那头牦牛的位置；
-- **没有路线。**上游原来的脚本（`spell_grab_carriage`、`npc_nourished_yak`）已经被当作死代码删掉了，而且从来没有路线数据（`script_waypoint` 是空的）。
-
-路线我没有手画，而是又写了一个小工具 **navpath**（`tools/navpath/`），做法和 vmapcheck 一样：用服务端自带的 Detour 寻路库，直接读服务端的寻路网格（mmaps），算出两点之间真正能走的路，每 5 码取一个点，每个点都贴到网格表面上。三条路线分别是 488、554、699 码（101、124、145 个路点），只走地面不走水。去神庙的两条都停在神庙大台阶脚下。
-
-行为全部用 SmartAI 实现：牦牛被召出来就沿路线走；车 0.5 秒后跟在牦牛后面；牦牛走到终点时把车收掉（乘客自动下车），自己再消失。召唤物只存在 5 分钟，最长那条按默认步行速度要 280 秒，太紧，所以牦牛和车的步行速度加倍，最长约 140 秒。文件是 `sql-custom/2026_11_13_42_wandering_isle_ox_carts.sql`，由 `tools/gen_ox_carts.py` 生成。
-
-实测：Dai-Lo 农场这一站可以上车，牦牛拉着车一路走到神庙台阶下放人。
-
-### 再回到 29423：相位 632 一直不走
-
-上面那段 Li Fei 脚本会把玩家放进相位 632，但没有任何地方再把它移除。结果是所有相位 0 的 NPC 都看不见，包括神庙里的 Shang Xi，所以 Huo 交付不了，任务也交不了。修复方法是：在 Huo 的接任务回调里先移除 632 并刷新相位，再给祝福、召唤 Huo。
-
-### 小结
-
-| 类别 | 任务 |
-|---|---|
-| 上游误删脚本，已恢复或简化重写 | 29663、29792、29794、30767、29799 |
-| 相位问题 | 29423（两处）、29786、29421 |
-| 核心通用 bug | 区域相位不刷新、跳石法术默认效果、Evade 状态卡住 |
-| 数据缺失 | 31450（对话标记、两个交任务 NPC 没有刷新点） |
-| 不是 bug | 29770、29661 |
-
-## 第四章　矮人新手村任务修复
-
-矮人这条线的问题，比熊猫人岛的"零散"：很少有整段脚本被删，多数是**某个 NPC、某条条件、某个阵营值缺了**。大部分改 SQL 就够了，只有两个任务要写 C++。
-
-### 24477 Dwarven Artifacts：箱子"已被使用"（全服修复）
-
-- **现象：** 点矮人文物的箱子，客户端提示 "That is already being used"。
-- **原因：** 全库有 **126 个宝箱类游戏对象（type 3）的刷新状态 `state` 是 0**，而客户端把 0 理解成"正在被使用"。潘达利亚的矿点、草点也在其中。
-- **修复：** 统一改成 1。这是本服务器的第一个数据修复，对全服生效。
-
-### 24489 Trolling for Information：偷听不到巨魔说话
-
-任务要求站在巨魔祭司旁边偷听。偷听靠的是区域光环 69991，但它在 `spell_area` 里的 `autocast` 是 0，而所有任务相关的行里只有这一行是 0。改成 1 以后就正常了。这个光环是隐藏的，没有增益图标，需要站在祭司 10 码以内。
-
-**教训：** 一开始我用 `reload spell_area` 热重载，读了源码才发现它不会清空内部映射表，会留下悬空指针。之后凡是改 spell_area，一律重启 worldserver。
-
-### 412 Operation Recombobulation：地图标错了位置
-
-任务本身没坏：要收集的齿轮（Gyromechanic Gear）是 Frostmane Scavenger 100% 掉落的任务物品。但 `quest_poi_points` 里的地图标记指向了 New Tinkertown，那是侏儒任务 26222 收集零件的区域，数据被抄错了。我把 POI 重画到 Frostmane Front，用 `reload quest_poi` 热重载就生效了。后来发现当时看错位置，主要是地图插件标错了，但服务端的数据确实是错的，所以修复保留。SFDB 里可能还有别的任务 POI 也是这样抄错的。
-
-### 25839 The Ultrasafe Personnel Launcher：发射器点了没反应
-
-- **原因：** 两台发射器（41398）没有 `npcflag`，没有右键施法，也没有任何脚本，点了什么都不会发生。这个任务没有任务目标，只能靠法术 77393 完成：它会把玩家击飞，空中给一个降落伞，最后直接完成任务。
-- **难点：** 77393 是对自己施放的击退。核心对"击退自己"会**随机挑一个方向**（`Position::GetSinCos`），玩家可能被弹到任何地方。
-- **修复：**
-  - SQL：给发射器加上右键施法，条件是接了任务且未完成；
-  - C++：新增法术脚本 `spell_q25839_ultrasafe_personnel_launcher`，击飞方向取最近那台发射器的朝向。两台发射器本来就朝着目的地，这样每次都能飞到对的地方。
-
-### 28868 The View from Down Here：把自己缩小了
-
-望远镜道具（Viewpoint Equalizer）施放的法术 93773 能把目标缩小 55%，但它的目标类型是"任意单位"，又没有任何限制。没选中目标时，就把玩家自己缩小了，而且这个光环是永久的（持续时间 -1，会存进 `character_aura`）。修复方法是加一条条件，限定目标只能是 Frostmane Builder。至于已经缩小的角色，要在离线时删掉那条光环记录。
-
-### 25841 Strike From Above：信号弹打不出效果
-
-信号弹（Signal Flare）施放的法术 77488 是"附近指定 NPC"类型，但缺了限定目标的条件（conditions 类型 13），南北两个标记点的 NPC 也没有任何 AI。补上条件后，再用 SAI 写成"被法术命中 → 给施法者击杀进度"。原版的飞机飞过轰炸动画没有重做。
-
-### 25905 Rams on the Lam：吹口哨唤不回山羊
-
-走失的山羊（Stolen Ram，26 只）没有 AI。用 SAI 补上：收到 `/whistle` 表情时给进度，跟着玩家走 4 秒后消失。注意表情只会发给当前选中的目标，所以要先选中山羊再吹口哨。
-
-### 25932 It's Raid Night Every Night：整个事件不存在
-
-这个任务完全没有事件数据：负责计数的 NPC 一个刷新点都没有，也没有 AI；相关的法术没有被任何地方用到；数据库里那个突袭者（41603）只是一个 1 级友好的占位 NPC。只能自己写：
-
-- 新建 `zone_dun_morogh.cpp`，加进 CMakeLists 和 ScriptLoader；
-- Sergeant Flinthammer（41578）：玩家接任务时，或者带着这个任务走到他 30 码以内时，就开始事件。一共 3 波，每波 3 个巨魔，从西边营地方向出来攻击玩家；一波死光 8 秒后来下一波，三波都打完，就给 150 码内的参与者计数；
-- 如果附近已经没有有效的参与者，或者事件超过 6 分钟，就收场清理。
-
-波数和每波人数是我们估计的，原版的数值查不到。
-
-### 25997 Dark Iron Scheming：掉任务物品的队长不存在
-
-图纸是 Captain Beld 100% 掉落的，但 Beld **一个刷新点都没有**。我参考任务 POI 和旁边黑铁间谍的位置，把他刷在了建筑里面。
-
-### 25978 Entombed in Ice：冰块打不动
-
-被冻住的山地人会召唤一个冰块（Icy Tomb 41768），任务要你把冰块打碎。但召唤属性沿用了模板阵营 35（友好），冰块打不动。把它的阵营改成 7（中立，可以攻击）就好了。
-
-### 26078 Extinguish the Fires：大部分火点扑不灭
-
-- **现象：** 铁炉堡机场一共 15 个起火点，只扑灭了两个。
-- **机制：** 灭火装备放出的法术 78369 是"面前 10 码扇形"的空效果（DUMMY），命中隐形的计数 NPC（Burning Bomber Credit 42046）后，由它的 SAI 给进度。
-- **排除过的方向：** 法术的区域限制（所有火点都在允许的区域里），以及命中数量上限（没有设）。
-- **原因：** 大部分计数 NPC 离地 1–4 码，正好嵌在燃烧的轰炸机残骸模型里。核心在 `Spell::CheckEffectTarget` 里会做视线（LOS）检查，残骸模型挡住了视线，法术就跳过它们。能扑灭的正好是贴在地面上的那两三个。
-- **修复：** 在 `disables` 表里只给这一个法术关掉视线检查（flags 64 = `SPELL_DISABLE_LOS`，法术本身不受影响），用 `reload disables` 热加载。库里本来就有同样的写法，注释是"bunnies sit inside the towers"。
-
-### 26085 Rallying the Defenders：插完旗人物和镜头卡一下
-
-- **现象：** 旗子能插，任务也能完成，但每次插完人物和镜头都会卡一下。
-- **原因：** 插旗法术 78395 有三个效果：在目标物体（雪堆 Loose Snow，也是施法焦点）上立旗、碰一下雪堆、触发计数。核心按顺序处理效果，立旗（效果 0，`TRANS_DOOR`）时，雪堆的位置还没被记成目的地（要到效果 2 才设），于是 `EffectTransmitted` 退回用施法者的位置——**旗子直接立在了角色身上**，角色卡进旗子的碰撞模型，镜头也撞上去。
-- **修复（C++）：** 效果的目标如果是一个游戏物体，就把旗子立在那个物体的位置上。我把整个法术库扫了一遍，用"在目标物体上生成物体"这种写法的只有这一个法术，改动不会波及别的法术。补丁：`patches/2026_11_13_03_plant_banner_on_snow.patch`。
-
-### 26094 Striking Back：轰炸机点了没反应
-
-- **原因：** 跑道起点那架修好的轰炸机（Repaired Bomber 42092）没有右键施法，点上去什么都不会发生。按原设计，点它会放法术 78510，把玩家送上一条绕机场一圈的专用航线（2203，起点终点都是节点 575，坐骑是 42097）。飞行中用任务给的炸弹（Iron Hammer Bomb，78499）炸地面上的黑铁矮人。
-- **还有两个坑：**
-  1. 炸弹是"落点 10 码内所有指定 NPC"类型，却没有任何条件，会把机场上友方的卫兵、山地人一起炸到；
-  2. 我们开的 `InstantFlightPaths` 对这条航线也生效：起点和终点是同一个点，玩家会被直接传回原地，根本飞不起来。
-- **修复：**
-  - SQL：轰炸机加右键施法（条件：接了任务且未完成），炸弹只对黑铁一方生效（火焰术士、入侵者、两种魔像、General Grimaxe）；
-  - C++：`Player::ActivateTaxiPathTo` 里，瞬间飞行只对普通航线生效。由法术触发的航线是任务演出，要真正飞完全程（补丁 `patches/2026_11_13_04_instant_taxi_not_for_spell_flights.patch`）。
-
-顺带一提：`Player.cpp` 是 CRLF 换行，第一次用 Python 打补丁时整个文件被转成了 LF，diff 有四万多行。退回后改用 `open(..., newline="")` 重新打，最终改动只有 3 行。
-
-### 26102 Grimaxe's Demise：将军打不动
-
-General Grimaxe（42010）站在他的黑铁魔像（42008）头顶上，模板里带着"对玩家免疫"的标志（`IMMUNE_TO_PC | IMMUNE_TO_NPC`），而魔像、Grimaxe 和配套的控制 NPC 都**没有任何脚本**，所以他永远打不动。修法是用 SAI 重建一个流程：先打死魔像，Grimaxe 解除免疫，喊一句话后冲向最近的玩家。
-
-这个"先打魔像"的流程是我们根据数据推测的，原版细节查不到。
-
-### 26118 Seize the Ambassador：带不走大使
-
-- **机制：** 对大使（Ambassador Slaghammer 42146）使用手铐，法术 78628 会召唤一个"被押解的大使"（42153）。任务是事件型的，完成要靠法术 78642（Credit for Arresting Slaghammer，目标是"召唤者"）。
-- **原因：** 召唤属性 2967 在核心里落到普通召唤分支，被押解的大使只会站着不动；整个库里也没有任何东西会施放 78642，任务永远完成不了。原来那个大使也不会消失，会出现两个。
-- **修复（SQL + SAI）：**
-  - 手铐只能对大使用，并且要接了任务；
-  - 原来的大使被铐住后消失（2 分钟后刷新，别人也能做）；
-  - 被押解的大使跟着玩家走，走到 Moira Thaurissan 10 码以内时，自己施放 78642（玩家拿到完成），说一句话后消失。
-
-### 小结
-
-| 类别 | 任务 |
-|---|---|
-| 缺 NPC 刷新点 | 25997 |
-| 缺 AI 或脚本，用 SAI 补 | 25841、25905、26102、26118 |
-| 缺整段事件，用 C++ 重写 | 25932 |
-| 法术目标、条件不对 | 28868、25841、25839（加 C++ 定方向）、26094 |
-| 核心通用 bug | 26085（目标物体上生成物体）、26094（瞬间飞行吃掉任务航线） |
-| 视线被模型挡住 | 26078 |
-| 数据值写错 | 24477（全服 126 个箱子）、24489、25978、412 |
 
 ## 还没解决的问题
 
 - **重建会丢修复。** 数据库修复都在 `sql-custom/`，重新导入世界库后必须按顺序重跑一遍。源码改动只在工作区和 `patches/` 里，`git pull` 之前要先想好怎么合并。
 - **多人同时做同一个任务从没测过。** 每个修复都只用一个角色验证过，像 29799 这种全场共用的事件，中途加入或者几个人进度不同步，都还是未知数。
 - **其他种族已知做不了的任务：** 地精的 14113、14153 Life of the Party（派对客人一个刷新点都没有），14110 The New You（物品没有任何来源）。这些暂时搁置。
-- **赤脊山 26563 Return of the Bravo Company：** 前置任务和临时跟随者组合在一起，跳过 Weapons of War 的玩家拿不到（见 2.29），不挡主线，先不改。
+- **赤脊山 26563 Return of the Bravo Company：** 前置任务和临时跟随者组合在一起，跳过 Weapons of War 的玩家拿不到（见 6.3），不挡主线，先不改。
 - **赤脊山巨魔支线暂缓：** He Who Controls the Ettins（26519）的起始物品 Dirt-Stained Scroll 没有掉落来源（TDB 里由豺狼人掉，50%），后续 Saving Foreman Oslow（26520）控制巨魔搬石头的机制也完全没有脚本。不挡主线，用户决定先维持现状。
-- **赤脊山第二期替代设计还没实测：** 坦克能不能开、炮能不能打、Darkblaze 的强度都还是未知数（见 2.31）。
-- **下载具后不能跳。** Deadmines 的机器人和吉尔尼斯的马都出现过：下来以后不能跳，也走不下斜坡，重新登录可以恢复。已经上线"下载具 1.5 秒后补发恢复重力"的修复，还没验证（见 2.33）。
-- **狼人、地精新手村改成跳过。** 新建角色直接 12 级出现在达纳苏斯 / 奥格瑞玛（见 2.33 末尾），还没用真正新建的角色验证。吉尔尼斯里没修完的部分（191、194 号相位，Keel Harbor 弩车打不中、下车后飘在空中）暂时放着，只影响已经在里面的老角色。
+- **赤脊山第二期替代设计还没实测：** 坦克能不能开、炮能不能打、Darkblaze 的强度都还是未知数（见 6.5）。
+- **下载具后不能跳。** Deadmines 的机器人和吉尔尼斯的马都出现过：下来以后不能跳，也走不下斜坡，重新登录可以恢复。已经上线"下载具 1.5 秒后补发恢复重力"的修复，还没验证（见 7.1）。
+- **狼人、地精新手村改成跳过。** 新建角色直接 12 级出现在达纳苏斯 / 奥格瑞玛（见 7.1 末尾），还没用真正新建的角色验证。吉尔尼斯里没修完的部分（191、194 号相位，Keel Harbor 弩车打不中、下车后飘在空中）暂时放着，只影响已经在里面的老角色。
 - **全局审计剩下的问题。** 联盟这边还有约 1000 个任务需要重建内容（第二章），按等级段从低到高逐批修。
 - **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
