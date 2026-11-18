@@ -1730,6 +1730,68 @@ The Bear's Blessing 还要一份 Fleetfoot's Tailfeathers（44886）当材料。
 
 修复（`patches/2026_11_17_01_unit_cumulative_incl_far_hostile_ref_drop.patch`，备份 `backup/Unit.cpp.bak-20261117`）：玩家在战斗中时，`Unit::Update` 检查每条仇恨引用，如果来源是非玩家控制的生物，而且离玩家超过可视距离加 100 码（大陆上是 190 码），就删掉这条引用。正常追着你打的怪不会离这么远；被删掉的怪下次被更新时仇恨列表是空的，会自己回家。没有改头文件，下次编译是增量的。和第三章末尾补记的 Huo 修复一起在 11 月 17 日编译（这次因为编译环境的基础层重建过，是全量重编，约 17 分钟），0 人在线时重启上线，等游戏里验证。
 
+### 2.27 被隐藏的对话选项：全库排查，30–42 级第一批
+
+8.7 的 Onu、8.9 的 Orseus、10.4 的女祭司、10.5 的图腾，坏法都一样：对话选项明明在库里，客户端却看不到。原因在 `Player::PrepareGossipMenu`：
+
+- NPC 身上的选项，`OptionType` 是 0（`GOSSIP_OPTION_NONE`）或大于 20 的一律不显示；类型是 1（普通对话）但 `OptionNpcflag` 和 NPC 的 npcflag 没有交集的，也不显示。
+- 物体身上只显示类型 1 的选项，而且物体本身得是"任务给予者"或"按钮"类。
+
+库里这类选项大多是从别的版本导进来的，类型和 npcflag 都留成了 0。有些只是一段背景对话，藏了也无所谓；有些是任务流程的一步，比如传送、给物品、给计数，藏了任务就卡住。
+
+**排查（11 月 17 日，只读）。** 写了 `tools/gossip_audit.py` 和 `tools/gossip_audit_group.py`，按上面的规则扫全库，排除挂了 C++ 脚本的 NPC 和物体：
+
+- 一共 572 个被隐藏的选项，分布在 330 个 NPC 或物体上（`audit/gossip_hidden_all_20261117.txt`）。
+- 和联盟能接到的任务有关的，有 101 个 NPC 或物体、142 个选项（`audit/gossip_hidden_quest_20261117.txt`）。
+
+按影响分成三类：
+
+1. **任务流程按钮**：约 60 个，会卡任务。
+2. **服务入口**：约 30 个，买东西、修理、住店、飞行之类。
+3. **剧情闲聊**：约 10 个，不影响任务。
+
+修的顺序按 Mayo 的路线，从 30 级往上。只看联盟能走到的地方，部落 NPC（Krog、Gar'dul、Mankrik）先不动。每个任务按钮都对照了 TDB 4.4.2、客户端的法术表和任务文本，确认原本应该发生什么，再决定是照原样恢复，还是做替代。
+
+**第一批：30–42 级**（`sql-custom/2026_11_18_01_tauren_pirate_gossip.sql`、`2026_11_18_02_hidden_gossip_30_42.sql`，备份 `backup/tauren_pirate_26630_20261118.tsv`、`backup/hidden_gossip_30_42_20261118.tsv`）。
+
+Looks Like a Tauren Pirate to Me（26630）坏得最彻底：
+
+- 这个任务在库里**一个目标都没有**，接下就能交。交任务的奖励是"Seahorn 的头"（59146），正好拿去完成海盗那边的 26629。
+- 任务文本说要去拿两样东西：Rikqiz 养的牛 Bossy 身上的牛头，和 Narkk 卖的超大号海盗帽。两人的对话选项都是隐藏的，也没有任何脚本。客户端的法术表里倒是有现成的法术：81311 "Bossy's Sacrifice"（生成牛头）、81313 "Bossy Death"、81315 "Create Hat"，只是没有任何东西去施放它们。
+- 修复：给 26630 补上牛头和帽子两个目标，交任务时会收走。Narkk 的拿帽子选项、Bossy 的两层对话（选 *Do the deed.* 就得到牛头，Bossy 倒下，2 分钟后重生），都只在接了任务、包里还没有那样东西时才显示。顺带把 Narkk 被一起藏掉的商店入口也恢复了。Seahorn 交任务前那段"把头弄旧一点，装得像打过一架"的对话，在任务完成后才显示。
+
+其余的都是选项被藏、或者选了没反应，逐项见下表。
+
+这一批改了 `AIName`、`gossip_menu_id` 和任务目标，必须重启才生效。**数据已写进数据库，还没重启**：准备重启时有玩家在线，等下线后再重启。
+
+<details>
+<summary>30–42 级：恢复的 17 个对话选项</summary>
+
+| 等级 | 地点 | NPC | 选项 | 原本应该发生什么 | 现在的做法 |
+|---|---|---|---|---|---|
+| 31 | 藏宝海湾 | Fleet Master Seahorn（2487） | Here's the head and the hat, Fleet Master. → You're the boss. | 交 26630 之前的一段对话 | 26630 完成后显示，选了关闭对话 |
+| 31 | 藏宝海湾 | Narkk（2663） | I need an extra-large pirate hat. Seahorn's orders. | 拿到超大号海盗帽（59148） | 接了 26630、包里没帽子时显示；选了给帽子 |
+| 31 | 藏宝海湾 | Narkk（2663） | What've you got? | 商店 | 恢复成商店入口 |
+| 31 | 藏宝海湾 | Bossy（43505） | Bossy, I need to ask something great of you… / Moo. → Do the deed. / Chicken out. | 拿到牛头（59147），Bossy 牺牲 | 接了 26630、包里没牛头时显示；*Do the deed.* 给牛头并让 Bossy 倒下（2 分钟后重生），*Chicken out.* 关闭对话 |
+| 35 | 藏宝海湾 | War-Mage Erallier（49635） | Yes. Please prepare the portal, Erallier. | 28749 The Battle for Andorhal：传送到安多哈尔 | 接了 28749 时显示；传送到法术 92581 的落点，Thassarian 旁边 |
+| 37 | 壁炉谷 | Morris Vant（45148）、Outfitter Mendelev（45149）、High Cleric Alphus（45151） | 打听可疑的顾客、失窃的物资 | 27153 The Good People of Hearthglen 的谈话计数 | 接了 27153 时显示；选了给对应的计数，再显示原有的回答 |
+| 37 | 壁炉谷 | Bree Ironstock（45150） | Hello, ma'am. Heard any interesting rumors lately? | 同上 | 她原来**连对话菜单都没有**（只有任务标志），这一项无论如何都完成不了。补上菜单 11938，接了 27153 时显示，选了给计数 |
+| 37 | 壁炉谷 | Magus Bisp（45152） | 问他和南边豺狼人的关系 | 27154 Bagging Bisp：他被揭穿后动手。下一个任务 27155 开头就是"你在壁炉谷里杀了一名银色十字军成员" | 接了 27154 时显示；选了他变成敌对并攻击玩家，打倒他算完成；脱战或重生后恢复友好。战斗技能用 TDB 4.4.2 的（奥术冲击、近身时奥术爆炸） |
+| 41 | 东瘟疫之地 | Argus Highbeacon（45451） | Are you interested in joining our caravan? | 27381 Traveling Companions：他答应加入 | 接了 27381 时显示；选了给计数 45501 |
+| 41 | 东瘟疫之地 | Carlin Redpath（11063） | Are you interested in joining our caravan? | 他婉拒（剧情对话） | 接了 27381 时显示 |
+| 41 | 东瘟疫之地 | Carlin Redpath（11063） | Carlin, do you have the extended Annals of Darrowshire? | 27388 Heroes of Darrowshire：拿到 Extended Annals of Darrowshire（13202） | 接了 27388、包里没有时显示；选了给书 |
+| 35 | 塞拉摩 | Captain Garran Vimes（4944） | What have you heard of the Shady Rest Inn? | 背景对话 | 改成普通对话 |
+| 30–42 | 各地 | Mystic Yayo'jin、Eliza Darkgrin、Morris Vant、Outfitter Mendelev、Fiona、Urk Gagbaz、Brivelthwerp | 购买类选项 | 商店 | 恢复成商店入口（这几个 NPC 都有商人标志和货物） |
+| 41 | 东瘟疫之地 | Argus Highbeacon（45451） | Could you repair my gear, Argus? | 修理 | 恢复成修理入口 |
+
+</details>
+
+**这一段先不改的：**
+
+- 荒芜之地（44–47 级）的 Theldurin、The Warden、The Sentinel。Theldurin 讲故事那段原本要玩家亲身演一遍，数据全无，需要另做替代；两座雕像和两个"棋子"任务的关系也还要再理清。下一批处理。
+- Narain Soothfancy 的 "I'm ready to pilot our silithid."：24931 Gazer Tag 靠怪物掉落就能完成，这个选项只是另一种玩法。
+- Betina Bigglezink 补发两件旧饰品的选项：和现在的任务无关。
+
 ## 第三章　熊猫人新手岛任务修复
 
 熊猫人新手岛（Wandering Isle）是这个服务器里问题最集中的地方。查了很久才找到根源：上游的 **commit `2f8c98dc67`（"Drop dead code"）把新手岛的一大批 NPC 脚本当成死代码删掉了**，但数据库里这些 NPC 的 `ScriptName` 还留着。结果就是 NPC 站在那里，什么都不做。之后再遇到"有 ScriptName 却找不到代码"的新手岛 NPC，第一步就是 `git show 2f8c98dc67`，把原来的代码找回来。
@@ -2535,6 +2597,8 @@ Cape of Stranglethorn 的 Backdoor Dealings（联盟 26809 / 部落 26550）要�
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
 
+被隐藏的对话选项（见 2.27）接着修：先是荒芜之地的 Theldurin 和两座雕像，然后是 45 级以上的任务按钮，最后把剩下的商店、修理、住店、飞行入口一次批量恢复。
+
 ## 还没解决的问题
 
 - **重建会丢修复。** 数据库修复都在 `sql-custom/`，重新导入世界库后必须按顺序重跑一遍。源码改动只在工作区和 `patches/` 里，`git pull` 之前要先想好怎么合并。
@@ -2545,6 +2609,7 @@ Cape of Stranglethorn 的 Backdoor Dealings（联盟 26809 / 部落 26550）要�
 - **赤脊山第二期替代设计还没实测：** 坦克能不能开、炮能不能打、Darkblaze 的强度都还是未知数（见 6.5）。
 - **下载具后不能跳。** Deadmines 的机器人和吉尔尼斯的马都出现过：下来以后不能跳，也走不下斜坡，重新登录可以恢复。已经上线"下载具 1.5 秒后补发恢复重力"的修复，还没验证（见 7.1）。
 - **狼人、地精新手村改成跳过。** 新建角色直接 12 级出现在达纳苏斯 / 奥格瑞玛（见 7.1 末尾），还没用真正新建的角色验证。吉尔尼斯里没修完的部分（191、194 号相位，Keel Harbor 弩车打不中、下车后飘在空中）暂时放着，只影响已经在里面的老角色。
+- **2.27 那一批还没重启。** 数据已写进数据库，等玩家下线后重启才生效，之后还要在游戏里验证。
 - **全局审计剩下的问题。** 联盟这边还有约 1000 个任务需要重建内容（第二章），按等级段从低到高逐批修。
 - **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
@@ -2552,17 +2617,17 @@ Cape of Stranglethorn 的 Backdoor Dealings（联盟 26809 / 部落 26550）要�
 
 ## 修复进度统计
 
-*统计时间：2026-11-17。每次修复后重新统计并更新这一节。*
+*统计时间：2026-11-18。每次修复后重新统计并更新这一节。*
 
 统计范围是联盟角色能接到的普通任务（不含节日任务和可重复任务），共 5591 个。统计方法：先重跑第二章的全局审计脚本（`tools/quest_audit.py`），再用 `tools/quest_fix_stats.py` 和 11 月 13 日前两次审计的结果对比。
 
 | 项目 | 任务数 | 占比 |
 | --- | ---: | ---: |
 | 审计查出过问题的任务（基数） | 1445 | 100% |
-| 已修复（现在审计查不出问题） | 252 | 17.4% |
+| 已修复（现在审计查不出问题） | 253 | 17.5% |
 | 已禁用（交不了，见 2.6） | 437 | 30.2% |
-| 仍有问题，待修 | 756 | 52.3% |
+| 仍有问题，待修 | 755 | 52.3% |
 
-已修复和已禁用加起来是 47.7%。从整体看，没禁用的 5154 个任务里，审计查不出问题的有 4398 个，占 85.3%。
+已修复和已禁用加起来是 47.8%。从整体看，没禁用的 5154 个任务里，审计查不出问题的有 4399 个，占 85.4%。
 
 这个数字是**下限**。审计脚本只看数据库，看不懂 C++ 脚本：任务目标或交任务 NPC 只出现在 C++ 里的，一律算"有问题"；靠新写脚本或重建场景修好的任务，脚本也认不出来。比如 14212 Sacrifices 已经在游戏里确认能做完，统计里仍算待修。
