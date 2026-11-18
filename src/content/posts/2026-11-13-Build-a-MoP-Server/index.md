@@ -2734,6 +2734,14 @@ C++ 脚本 `npc_engineer_spark_overgrind` 是好的：任务进行中打开对�
 
 这一项不影响下面的统计：审计本来就不把这个任务算作有问题。
 
+### 11.5 What We Don't Know：审问完探子还是不计数（11.1 的修法有误）
+
+11.1 里顺手改的 9756 What We Don't Know 实际上没修好：Lizz 变装后和牢笼里的 Captured Sunhawk Agent（17824）把对话走完，任务"Sunhawk Information Recovered"仍然是 0/1。
+
+原因在我当时写的那行 `KilledMonsterCredit(C_SUNHAWK_TRIGGER, creature->GetGUID())`。`Player::KilledMonsterCredit` 收到 guid 时，会在地图上找到这个生物，然后**用它的真实编号代替传进来的编号**。传进去的是探子本人的 guid，于是计数按 17824 记，任务要的却是隐形计数 NPC 17974，对不上就什么都不发生。11.1 里 Rescue the Survivors! 的同一种改法没问题，因为那边传的就是幸存者自己的编号和 guid。
+
+修法：不传 guid，只写 `KilledMonsterCredit(C_SUNHAWK_TRIGGER)`。补丁 `patches/2026_11_18_03_bloodmyst_cumulative_sunhawk_credit_no_guid.patch`（这个文件相对上游的累计改动），源文件备份 `backup/zone_bloodmyst_isle.cpp.bak-20261118b`。只重新编译了这一个文件，11 月 18 日经用户同意在 Lizz 在线时重启。全库还有一处同样的写法在地精岛（`kezan.cpp` 的 DEFFIANT_KILL_CREDIT），地精线暂缓，先记下。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
