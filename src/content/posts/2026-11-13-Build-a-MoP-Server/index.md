@@ -1288,7 +1288,7 @@ for (WorldSocket* socket : sockets)
 | 任务 | 名称 | 修法 |
 |---|---|---|
 | 5713 | One Shot. One Kill.（黑海岸） | 进攻 Aynasha 的 Blackwood Tracker（11713）和 Marosh the Devious（11714）没有刷新点。改成：接任务后先冲上来 2 个 Tracker，25 秒后再来 2 个，50 秒后 Marosh 出场；Marosh 死后，60 码内接了任务的玩家都算完成。Aynasha 站在坡底（脚下 87，12 码外的地面有 90–105），直接按她的位置加偏移召唤会把敌人埋进山里，所以召唤点是从地图高度里挑的西北侧平地。波数、间隔是我们定的 |
-| 9759 | Ending Their World（秘血岛） | Sironas（17678）有刷新、能打，周围的 Sunhawk 守卫和线圈也都在，只是没有东西给完成。改成：接任务后 Legoso 跟着玩家走（10 分钟没完成就回原位）；Sironas 死后，60 码内接了任务的玩家都算完成，Legoso 离开。原版"在线圈上安放炸药"的演出没有重做 |
+| 9759 | Ending Their World（秘血岛） | Sironas（17678）有刷新、能打，周围的 Sunhawk 守卫和线圈也都在，只是没有东西给完成。改成：接任务后 Legoso 跟着玩家走（10 分钟没完成就回原位）；Sironas 死后，60 码内接了任务的玩家都算完成，Legoso 离开。原版"在线圈上安放炸药"的演出没有重做。11 月 18 日 Lizz 实测：Legoso 一路跟到山顶后不会有任何动作，要自己去打 Sironas，打死后任务完成 |
 
 ### 2.12 批次八：侏儒、黑海岸、狼人新手区
 
