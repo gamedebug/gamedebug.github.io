@@ -2701,6 +2701,21 @@ Ammen Vale 的 9283 Rescue the Survivors! 要对坠毁现场附近躺着的德�
 
 补丁 `patches/2026_11_18_01_draenei_survivor_sunhawk_kill_credit.patch`（两个文件各改一行），源文件备份在 `backup/` 下。只重新编译了这两个脚本文件，11 月 18 日玩家下线后换上新镜像重启。等 Lizz 上线后在游戏里验证。
 
+### 11.2 Tree's Company：变成树以后什么都没发生
+
+9531 Tree's Company 是 Odesyus 上将让你去 Geezle 的营地附近，用 Tree Disguise Kit（23792）把自己伪装成一棵树，偷听谁在和地精 Geezle 接头。用了道具，人确实变成了树，然后就再也没有动静：没有人来，任务目标"The Traitor Uncovered"一直是 0/1。
+
+道具的法术 30298 Tree Disguise 有三个效果：变形成树、定身，外加一个"发送事件"（10675）。事件脚本表里 10675 的内容是在营地旁召唤 Geezle（17318），存在 90 秒。所以召唤这一步是通的，问题在 Geezle 被召出来以后应该做什么。
+
+源码里其实有完整的 `npc_geezle`：Geezle 一出现就召唤 Engineer "Spark" Overgrind（17243），两人走到海边碰头、挪走纳迦旗子、对话一大段（Spark 骂 Geezle 差点暴露了"我们在内部的间谍"），结束时给 50 码内**正处于树形态**的玩家任务计数（`KilledMonsterCredit(17243)`），然后两人离开、旗子恢复。但这个类的 `new npc_geezle()` 不在注册列表里，数据库里 Geezle 的 ScriptName 也是空的。查 git 历史，是 2012 年上游一次清理（a67c5fd0f2，"not exist Quest ... in Cata"）认为这个任务大灾变以后不存在，把注册和 ScriptName 一起删了；现在这个类的代码又出现在文件里，但注册和 ScriptName 都没有恢复。实际上 9531 在 5.4.8 里照样能接。
+
+修法：
+
+- C++：在 `AddSC_azuremyst_isle()` 里补回 `new npc_geezle();`。补丁 `patches/2026_11_18_02_azuremyst_cumulative_incl_geezle.patch`（这个文件相对上游的累计改动，含 11.1），源文件备份 `backup/zone_azuremyst_isle.cpp.bak-20261118b`。
+- SQL `sql-custom/2026_11_18_08_trees_company_geezle.sql`：Geezle 的 ScriptName 设为 `npc_geezle`；同时删掉库里一个常驻的 Geezle 刷新点（guid 85587，TDB 里没有）。脚本一挂上，这个常驻的 Geezle 每次刷新都会自己把整段剧情演一遍，等于每 5 分钟就在营地演一次；任务真正的来源是变树时召唤的那一个。原数据备份 `backup/geezle_tree_company_20261118.tsv`。
+
+增量编译后，11 月 18 日在 0 人在线时重启，启动日志没有脚本报错。注意剧情从变树到给计数大约一分钟，期间要一直保持树的样子、待在 Geezle 附近 50 码内，提前取消变形就拿不到计数。等 Lizz 上线验证。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
