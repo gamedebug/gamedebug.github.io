@@ -2714,7 +2714,7 @@ Ammen Vale 的 9283 Rescue the Survivors! 要对坠毁现场附近躺着的德�
 - C++：在 `AddSC_azuremyst_isle()` 里补回 `new npc_geezle();`。补丁 `patches/2026_11_18_02_azuremyst_cumulative_incl_geezle.patch`（这个文件相对上游的累计改动，含 11.1），源文件备份 `backup/zone_azuremyst_isle.cpp.bak-20261118b`。
 - SQL `sql-custom/2026_11_18_08_trees_company_geezle.sql`：Geezle 的 ScriptName 设为 `npc_geezle`；同时删掉库里一个常驻的 Geezle 刷新点（guid 85587，TDB 里没有）。脚本一挂上，这个常驻的 Geezle 每次刷新都会自己把整段剧情演一遍，等于每 5 分钟就在营地演一次；任务真正的来源是变树时召唤的那一个。原数据备份 `backup/geezle_tree_company_20261118.tsv`。
 
-增量编译后，11 月 18 日在 0 人在线时重启，启动日志没有脚本报错。注意剧情从变树到给计数大约一分钟，期间要一直保持树的样子、待在 Geezle 附近 50 码内，提前取消变形就拿不到计数。等 Lizz 上线验证。
+增量编译后，11 月 18 日在 0 人在线时重启，启动日志没有脚本报错。注意剧情从变树到给计数大约一分钟，期间要一直保持树的样子、待在 Geezle 附近 50 码内，提前取消变形就拿不到计数。已确认：Lizz 看完剧情拿到计数，交掉了 9531。
 
 ### 11.3 Show Gnomercy：叛徒 Spark 点不开
 
@@ -2722,7 +2722,7 @@ Tree's Company 揭穿了叛徒以后，接着是 9537 Show Gnomercy：回 Odesyu
 
 C++ 脚本 `npc_engineer_spark_overgrind` 是好的：任务进行中打开对话，会多出一个"Traitor! You will be brought to justice!"选项，点了以后 Spark 变成敌对、扔着炸药开打，掉落表里 23899 也是 100% 的任务掉落。问题在数据库：他的 `npcflag` 是 0，没有"可对话"标志，客户端根本不会向服务器发起对话，脚本也就没有机会出场；`gossip_menu_id` 同样是 0。TDB 里这两项分别是 1 和 7426，菜单 7426 和对应的文本在我们库里都在。
 
-修法：`sql-custom/2026_11_18_09_show_gnomercy_spark_gossip.sql` 把 `npcflag` 加上对话位、`gossip_menu_id` 设为 7426，原值备份在 `backup/spark_overgrind_gossip_20261118.tsv`。NPC 模板是启动时读进内存的，场上的 Spark 要重启才拿到新数据，11 月 18 日经用户同意在 Lizz 在线时重启。等 Lizz 验证。
+修法：`sql-custom/2026_11_18_09_show_gnomercy_spark_gossip.sql` 把 `npcflag` 加上对话位、`gossip_menu_id` 设为 7426，原值备份在 `backup/spark_overgrind_gossip_20261118.tsv`。NPC 模板是启动时读进内存的，场上的 Spark 要重启才拿到新数据，11 月 18 日经用户同意在 Lizz 在线时重启。已在游戏里确认：选项出现，Spark 变敌对，打倒后拿到 Traitor's Communication，任务完成。
 
 ## 接下来
 
