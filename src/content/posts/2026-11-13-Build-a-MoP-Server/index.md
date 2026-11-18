@@ -2642,9 +2642,25 @@ Cape of Stranglethorn 的 Backdoor Dealings（联盟 26809 / 部落 26550）要�
 
 照 10.4 的做法替代（`sql-custom/2026_11_17_11_backdoor_dealings.sql`，备份 `backup/backdoor_dealings_20261117.tsv`）：接了任意一个版本时，图腾的放香选项才会显示，选了两个计数一次给满并关闭对话。图腾挂上 SmartGameObjectAI，经同意重启，等游戏里验证。
 
+## 第十一章　德莱尼新手村（秘蓝岛）
+
+### 11.1 Rescue the Survivors!：治好了幸存者，任务不计数
+
+Ammen Vale 的 9283 Rescue the Survivors! 要对坠毁现场附近躺着的德莱尼幸存者（Draenei Survivor，16483）用种族技能纳鲁的赐福（Gift of the Naaru）。Lizz（萨满，5 级）治好了人，幸存者也站起来道谢、跑开了，任务计数却一直是 0/1。
+
+幸存者用的是 C++ 脚本 `npc_draenei_survivor`。先排除了法术的问题：脚本按法术的 SpellFamilyFlags 认赐福，各职业版本的赐福（28880、59542–59548、121093）在 5.4.8 客户端里都带着这个标志，所以每个职业都能触发。真正的问题在给计数那一步：道谢后脚本调用 `player->TalkedToCreature(16483)`，而这个函数只给"和 NPC 交互"类型（`QUEST_OBJECTIVE_TYPE_NPC_INTERACT`，3）的目标计数；9283 的目标在库里是普通的"NPC"类型（0），所以调用了也什么都不发生。
+
+不能反过来把数据库里的目标类型改成 3：玩家每次打开 NPC 的对话，服务器都会调用 `TalkedToCreature`，改了以后点一下幸存者不用治疗就完成了。所以改脚本：把这一行换成 `KilledMonsterCredit`，它给类型 0 的目标计数。
+
+同一个问题还出现在一个地方：血色岛 9756 What We Don't Know... 里，审问 Sunhawk 间谍的对话走完后，脚本也用 `TalkedToCreature` 给计数（17974），目标同样是类型 0，一起改了。其余十个调用 `TalkedToCreature` 的脚本不在德莱尼路线上，以后碰到再看。
+
+补丁 `patches/2026_11_18_01_draenei_survivor_sunhawk_kill_credit.patch`（两个文件各改一行），源文件备份在 `backup/` 下。只重新编译了这两个脚本文件，11 月 18 日玩家下线后换上新镜像重启。等 Lizz 上线后在游戏里验证。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
+
+德莱尼新手村（第十一章）跟着 Lizz 的进度逐个修。
 
 被隐藏的对话选项（见 2.27、2.28）接着修：荒芜之地已经修完，下一批是 45 级以上的任务按钮，最后把剩下的商店、修理、住店、飞行入口一次批量恢复。
 
