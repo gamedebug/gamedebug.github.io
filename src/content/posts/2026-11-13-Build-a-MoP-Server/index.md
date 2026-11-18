@@ -2724,6 +2724,16 @@ C++ 脚本 `npc_engineer_spark_overgrind` 是好的：任务进行中打开对�
 
 修法：`sql-custom/2026_11_18_09_show_gnomercy_spark_gossip.sql` 把 `npcflag` 加上对话位、`gossip_menu_id` 设为 7426，原值备份在 `backup/spark_overgrind_gossip_20261118.tsv`。NPC 模板是启动时读进内存的，场上的 Spark 要重启才拿到新数据，11 月 18 日经用户同意在 Lizz 在线时重启。已在游戏里确认：选项出现，Spark 变敌对，打倒后拿到 Traitor's Communication，任务完成。
 
+### 11.4 Victims of Corruption：树人太少
+
+9574 Victims of Corruption 要交 6 个 Crystallized Bark（23869），唯一来源是血雾岛上的 Corrupted Treant（17352），带任务时 100% 掉落。Lizz 反映树人"特别少"。
+
+查下来数据并没有缺：库里一共 21 个刷新点，跟 TrinityCore 4.4.2 的世界库逐条对比，坐标完全一样，没有池子、事件或相位限制，刷新时间 5 分钟。问题在于这 21 只分散在整个岛上，最密的一群也只有 9 只左右，其余一两只一处，几个人或者一个人反复打的时候，很快就打空了。这不算"坏了"，但用户觉得太少，决定加怪并加快刷新。
+
+修法：`sql-custom/2026_11_18_10_victims_of_corruption_treants.sql`（用 `scratch/treant_gen.py` 生成）在每个原有刷新点旁边 12–16 码加一只（guid 9100348–9100368），位置用地图高度文件挑选：地面高度和原刷新点相差不到 3 码，并且不在水下。现在一共 42 只，所有树人刷新时间都改成 60 秒。原数据备份 `backup/corrupted_treant_20261118.tsv`。11 月 18 日经用户同意，在 Lizz 在线时重启。等她在游戏里确认。
+
+这一项不影响下面的统计：审计本来就不把这个任务算作有问题。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
