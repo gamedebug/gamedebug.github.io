@@ -1851,6 +1851,37 @@ Lizz（德莱尼萨满，7 级）在 Azure Watch 从德莱尼平民（Draenei Co
 
 节日日程过期是另一回事：库里除了暗月马戏团（排到 2037 年），其余 28 个节日的结束时间都是 2020 年，所以现在任何节日都不会开。重新排节日日程以后再慢慢修。
 
+### 2.30 飞行管理员：站错地方，或者干脆不存在
+
+Lizz 要在 Exodar 交任务时发现找不到飞行管理员。Exodar 的 Stephanos（17555）其实在库里，但站在 TBC 时的老位置，也就是飞船外面的地面上（-4057, -11789, 9）。客户端地图上的飞行点（TaxiNodes 94）在飞船里面（-3868, -11641, -138），两者相距 281 码。TDB 4.4.2 里他就站在飞行点旁边。把他挪到 TDB 的位置（`sql-custom/2026_11_18_05_exodar_flight_master.sql`，备份 `backup/exodar_flight_master_20261118.tsv`），位置检查通过。
+
+接着扫了全服：用客户端的 TaxiNodes.dbc，对每个联盟或部落能用的飞行点，看 40 码内有没有带飞行标记（npcflag 8192）的 NPC，再拿 TDB 4.4.2 对照。结论是**一大批飞行管理员在我们的库里根本没有刷新点**：TDB 里有刷新的飞行管理员共 289 个，我们缺 52 个。去掉同一位置不同相位的重复版本，补了 48 个刷新点（`sql-custom/2026_11_18_06_missing_flight_masters.sql`，guid 9100300 起）。位置照搬 TDB，一律设为常驻（相位 0），48 个位置检查全部通过。
+
+<details>
+<summary>补上的飞行管理员（48 个刷新点）</summary>
+
+| 区域 | 飞行点 / NPC |
+|---|---|
+| 灼热峡谷 | Thorium Point：Lanie Reed（联盟）、Grisha（部落）；Iron Summit：Doug Deepdown |
+| 凄凉之地 | Nijel's Point：Baritanas Skyriver；Thargad's Camp：Moira Steelwing；Karnum's Glade：Lastrea Greengale；Thunk's Abode：Thunk's Wyvern；Ethel Rethor：Korrah's Hippogryph；部落：Narimar |
+| 安戈洛环形山 | Marshal's Stand：Gryfe；Mossy Pile：Flizzy Coilspanner |
+| 希利苏斯 | Cenarion Hold：Cloud Skydancer（联盟）、Runk Windtamer（部落） |
+| 费伍德 | Talonbranch Glade：Mishellena；Emerald Sanctuary：Gorrim；Whisperwind Grove：Hanah Southsong；Wildheart Point：Chyella Hushglade；Irontree Clearing：Dirzak Pryocrank |
+| 菲拉斯 | Feathermoon：Irela Moonfeather；Shadebough：Seyala Nightwisp；Dreamer's Rest：Selor；Tower of Estulan：Aryenda；部落：Shyn、Tono、Mergek |
+| 海加尔山 | Nordrassil：Fayran Elthas；Grove of Aessina：Elizil Wintermoth；Shrine of Aviana：Dinorae Swiftfeather；Gates of Sothann：Althera；Sanctuary of Malorne：Ranela Featherglen |
+| 暮光高地 | Highbank：Glenn Arbuckle；Victor's Point：Angus Stillmountain、Desmond Chadsworth；Firebeard's Patrol：Farstad Stonegrip；Thundermar：Doran Talonheart；Kirthaven：Shaina Talonheart；Vermillion Redoubt：Aquinastrasz；Dragonmaw / Bloodgulch / Crushblow 等部落点：Gorthul、Bramok Gorewing、San'shigo、Jon-Jon Jellyneck、Tokrog、Harpo Boltknuckle |
+| 永歌森林 / 银月城 | Skymaster Brightdawn、Skymaster Skyles |
+| 艾萨拉 | Friz Groundspin |
+| 银松森林 / 吉尔尼斯（部落） | Bat Handler Maggotbreath、Bat Handler Doomair |
+
+</details>
+
+TDB 里这些 NPC 有一部分挂在任务相位上（暮光高地、海加尔、吉尔尼斯的几处）。我们的库基本不用这些相位，所以统一设成常驻：好处是飞行点永远有人，代价是剧情上可能"提前出现"。
+
+剩下 14 个飞行点附近仍然没有飞行管理员，要逐个看，暂时没动：藏宝海湾（Gyll 离飞行点 264 码，TDB 也一样，可能只是飞行点坐标偏了）、Southshore、Teldrassil 的 Fishing Village、月光林地的 Nighthaven、Skettis 和 Ogri'La（声望才能用的点）、瓦斯琪尔的三处海马点、潘达利亚的 4 个联盟点（Paw'Don Village、Pearlfin Village、白虎寺、Lion's Landing，TDB 4.4.2 里没有潘达利亚，得另找来源）。
+
+两个文件都已写进数据库，11 月 18 日重启生效，等游戏里验证。
+
 ## 第三章　熊猫人新手岛任务修复
 
 熊猫人新手岛（Wandering Isle）是这个服务器里问题最集中的地方。查了很久才找到根源：上游的 **commit `2f8c98dc67`（"Drop dead code"）把新手岛的一大批 NPC 脚本当成死代码删掉了**，但数据库里这些 NPC 的 `ScriptName` 还留着。结果就是 NPC 站在那里，什么都不做。之后再遇到"有 ScriptName 却找不到代码"的新手岛 NPC，第一步就是 `git show 2f8c98dc67`，把原来的代码找回来。
@@ -2685,6 +2716,7 @@ Ammen Vale 的 9283 Rescue the Survivors! 要对坠毁现场附近躺着的德�
 - **下载具后不能跳。** Deadmines 的机器人和吉尔尼斯的马都出现过：下来以后不能跳，也走不下斜坡，重新登录可以恢复。已经上线"下载具 1.5 秒后补发恢复重力"的修复，还没验证（见 7.1）。
 - **狼人、地精新手村改成跳过。** 新建角色直接 12 级出现在达纳苏斯 / 奥格瑞玛（见 7.1 末尾），还没用真正新建的角色验证。吉尔尼斯里没修完的部分（191、194 号相位，Keel Harbor 弩车打不中、下车后飘在空中）暂时放着，只影响已经在里面的老角色。
 - **2.27、2.28 两批还没在游戏里验证。** 11 月 18 日都已重启生效，启动日志干净，但还没上号逐个试过。2.28 里雕像变敌对后的强度、宝箱的位置也要实地看一眼。
+- **剩下 14 个飞行点附近没有飞行管理员**（见 2.30 末尾），包括潘达利亚的 4 个联盟点，还要逐个查。
 - **全局审计剩下的问题。** 联盟这边还有约 1000 个任务需要重建内容（第二章），按等级段从低到高逐批修。
 - **11 月 9 日那次崩溃还没有结论。** 后来抓到的两个 core 都是关机时的另一个 bug（见 1.8 节，已修复）。`GetQuestStatus` 那次一直没有再出现，还在等它的 core。
 
