@@ -1884,7 +1884,7 @@ TDB 里这些 NPC 有一部分挂在任务相位上（暮光高地、海加尔�
 
 **挪完以后，Exodar 反而一条航线都没有了。** Lizz 在 Stephanos 那里打开飞行地图，连 Azure Watch 都飞不了。原因是服务器打开飞行地图时，会先用 `ObjectMgr::GetNearestTaxiNode` 找离 NPC 最近的飞行点，当作"你现在所在的点"。Exodar 飞行点旁边，客户端数据里还留着 4 个废弃的任务飞行点（名字是 "Quest Path ... zzzThe Exodar -> ..."），它们唯一的航线是飞到自己，也没有任何法术用到，所以服务器把它们当成了正常的飞行点。我照 TDB 坐标放下的 Stephanos，离其中一个废弃点 1.1 码，离真正的 Exodar 点 2.5 码。结果飞行地图打开在废弃点上，一条航线都没有，玩家还会"学会"这个废弃点。
 
-查了全服飞行管理员，同样的情况还有两个，都在潘达利亚翡翠林：Dawn's Blossom 的 Keg Runner Lee（离废弃点 3.0 码，离真点 4.0 码）和 Emperor's Omen 的 Supplier Towsa（0.9 码对 4.8 码）。三个都挪了 2–4 码，让真正的飞行点至少近出 1.2 码（`sql-custom/2026_11_18_07_flight_masters_nearest_node.sql`，备份 `backup/flight_masters_nearest_node_20261118.tsv`），位置检查通过。等玩家下线后重启生效。
+查了全服飞行管理员，同样的情况还有两个，都在潘达利亚翡翠林：Dawn's Blossom 的 Keg Runner Lee（离废弃点 3.0 码，离真点 4.0 码）和 Emperor's Omen 的 Supplier Towsa（0.9 码对 4.8 码）。三个都挪了 2–4 码，让真正的飞行点至少近出 1.2 码（`sql-custom/2026_11_18_07_flight_masters_nearest_node.sql`，备份 `backup/flight_masters_nearest_node_20261118.tsv`），位置检查通过。11 月 18 日重启后，Lizz 在 Exodar 确认能正常飞了。
 
 ## 第三章　熊猫人新手岛任务修复
 
