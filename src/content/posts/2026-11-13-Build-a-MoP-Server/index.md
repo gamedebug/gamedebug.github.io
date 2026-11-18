@@ -2742,6 +2742,21 @@ C++ 脚本 `npc_engineer_spark_overgrind` 是好的：任务进行中打开对�
 
 修法：不传 guid，只写 `KilledMonsterCredit(C_SUNHAWK_TRIGGER)`。补丁 `patches/2026_11_18_03_bloodmyst_cumulative_sunhawk_credit_no_guid.patch`（这个文件相对上游的累计改动），源文件备份 `backup/zone_bloodmyst_isle.cpp.bak-20261118b`。只重新编译了这一个文件，11 月 18 日经用户同意在 Lizz 在线时重启。全库还有一处同样的写法在地精岛（`kezan.cpp` 的 DEFFIANT_KILL_CREDIT），地精线暂缓，先记下。
 
+### 11.6 德莱尼两岛普查：Lizz 还没做的任务
+
+Lizz（24 级德莱尼萨满）觉得两座岛的任务都做完了，于是把秘蓝岛、秘血岛、埃索达所有德莱尼萨满能接的任务（发任务的 NPC/物件刷在两岛上，或者任务归属这几个区域）列出来，和她交过的 121 个逐个对照。剩下的大致分三类。
+
+**正常、可以不做的：** 9313 Travel to Azure Watch、9371 Botanist Taerix（都是引路任务，人已经到了）；9528 A Cry For Help（护送 Magwin，脚本和 31 个路径点都在）；9564 Gurf's Dignity（物品由 17475 掉落，有刷新）；9642 More Irradiated Crystal Shards（可重复）；14082 学骑术、Hero's Call 系列和捐布任务不属于新手岛。另有 9546、9633、9749、9751 在 TDB 里就标为废弃，9306/9307/9750/9754/9755 是没有发放者的旧条目。
+
+**Wyrmscar 岛两条线，检查后正常：** 9687 Restoring Sanctity → 9688 Into the Dream → 9689 Razormaw（Razormaw 平时没有刷新点，用 Bundle of Dragon Bones 点燃 Ever-burning Pyre 后由事件 11087 召唤，飞完 11 个路径点后变得可攻击，数据都在）；9683 里的 Atoph 同样由 Statue of Queen Azshara 的事件 11027 召唤。
+
+**真正坏掉、已修复的两处：**
+
+- **9672 The Bloodcurse Legacy 接不到。** 它由物品 24132 A Letter from the Admiral 开始，但这封信在库里没有任何来源（TDB 4.4.2 也一样），后面整条 Captain Edward Hanes 线（9674 → 9682 → 9683）都因此锁住。改成由 Blood Watch 的信使 Messenger Hermesius（17703，前一个任务 9671 Urgent Delivery 的发放和交付人）直接发：`sql-custom/2026_11_18_12_bloodcurse_legacy_starter.sql`。
+- **9711 Matis the Cruel 做不完。** 用 Flare Gun 打 Matis 会召唤 Tracker of the Hand（17853），但 Matis 和追踪者都没有 AI，追踪者还是中立的 35 号阵营打不了他，于是没人施放完成任务的 31336。照 TDB 4.4.2 移植了两者的 SAI 和喊话（Matis 血量降到 50% 以下：倒地、无敌、释放 31336 给附近玩家完成任务，追踪者押走他），追踪者阵营改回 1700；SkyFire 没有 SET_UNINTERACTIBLE 这个动作，改用"不可选中"单位标志。另外加了一条死亡兜底（和熊猫人岛 Li Fei 那次同一个思路）：玩家太强、一下把 Matis 从 50% 以上打死时，30 码内的玩家也算完成。`sql-custom/2026_11_18_11_matis_the_cruel.sql`。
+
+原数据备份 `backup/matis_bloodcurse_20261118.tsv`。11 月 18 日经用户同意，在 Lizz 在线时重启，启动日志没有 SAI 报错。两处都等 Lizz 在游戏里确认。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
