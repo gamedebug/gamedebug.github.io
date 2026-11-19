@@ -2837,6 +2837,16 @@ Lizz（24 级德莱尼萨满）觉得两座岛的任务都做完了，于是把�
 
 修复（`sql-custom/2026_11_19_07_multibot_spawn_spot.sql`，原数据备份 `backup/multibot_spawn_spot_20261119.tsv`）：接任务和要新机器人这两种情况都发生在 Grindspark 身边，所以让机器人一刷出来先瞬移到 Grindspark 正前方约 5 码的空地（-5075.5, 459.4, 410.6；地形高度 410.33，那里没有建筑模型），然后再跟随主人。注意 SkyFire 的 `SMART_ACTION_TELEPORT` 是先按目标类型挑出"要传送谁"，再用 target_x/y/z 当坐标，所以目标类型要填"自己"（1）；填"坐标"（8）的话一个单位都挑不出来，什么也不会发生。机器人每次都是新召出来的，会读最新的脚本，热加载就生效了，这一步没有重启。等 Evan 确认。
 
+### 12.3 To the Surface：Torben 的对话选项没反应
+
+27674 To the Surface 要找地下的 Torben Zapblast（46293），选"Send me to the surface, Torben."，他会给计数并把玩家传送到地面的 Nevin Twistwrench 旁边。Evan 选了这个选项，什么都没发生。
+
+Torben 的 SmartAI 本身是对的：选中菜单 12104 的选项后给 46293 计数，并让玩家施放 86278 Teleport to Surface（落点在 `spell_target_position` 里，就在 Nevin 旁边，也查过了）。问题在编号：SAI 监听的是 12104 的 **0 号**选项，库里这个菜单却只有一个 **1 号**选项。TDB 4.4.2 里 0 号、1 号两个选项都有，我们的库只留了 1 号，于是选了也匹配不上任何脚本。
+
+修复（`sql-custom/2026_11_19_08_to_the_surface_torben_option.sql`，原数据备份 `backup/torben_gossip_20261119.tsv`）：把这个选项的编号从 1 改成 0。对话选项是每次打开对话时才读的，`reload gossip_menu_option` 就生效了，不用重启；Torben 身上的旧脚本本来监听的就是 0 号，也不用重新加载。
+
+全库扫了一遍"SAI 监听的选项在菜单里不存在"：编号对不上的只有 Torben 这一处。另外 4 个 NPC 的菜单里一个选项都没有，包括 2.31 里提到的 General Nazgrim（55054）和 Sky Admiral Rogers（66292），以及 Darrok（27425）和 Valis Windchaser（33974），走到那里再修。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
