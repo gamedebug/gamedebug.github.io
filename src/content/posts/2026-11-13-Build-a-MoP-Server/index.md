@@ -2870,6 +2870,14 @@ Evan 做完丹莫罗进了洛克莫丹，从 Jern Hornhelm 接了 13639 Resupply
 
 Huldar 原来没有 AI，已经刷出来的 Huldar 换不上新脚本，11 月 19 日经用户同意，在 Evan 在线时重启。Evan 接任务时事件还不存在，要放弃 309 再接一次。等 Evan 在游戏里确认。
 
+### 12.6 Keep Your Hands Off The Goods!：挖掘场里找不到能点的文物
+
+309 之后 Prospector Ironband 给 13650 Keep Your Hands Off The Goods!，要进挖掘场检查三件被巨魔占领时丢下的文物：Upturned Giant（倒地的巨人像）、Overdressed Woman（穿得很隆重的女人像）和 Broken Tablet（碎石板）。Evan 在挖掘场里转了一圈，找不到任何能点的东西。
+
+本来就不该有能点的东西：三件文物是地图模型，任务目标是三个看不见、也选不中的计数 NPC（Ironband Sandal / Liberty / Tablet Artifact Bunny，33485～33487），刷新点就在雕像旁边。查客户端的 AreaTrigger.dbc，每个计数 NPC 脚下 1 码内正好各有一个区域触发器（5375、5376、5377，半径 11.3 码），客户端里还有三个对应的计数法术（63073～63075）。原版的做法是走到文物跟前、进入触发器就给计数。但服务器没给这三个触发器挂任何处理，TDB 4.4.2 里也没有，所以走到哪里都不会计数。
+
+修复（`sql-custom/2026_11_19_11_keep_your_hands_off_artifacts.sql`，修复前两张表里都没有这三个触发器）：三个触发器挂上 `SmartTrigger`，各写一条 SmartAI，"进入触发器 → 给进入的玩家对应文物的计数"。玩家必须有这个任务才会记上。触发器脚本的对应关系只在启动时加载，11 月 19 日经用户同意，在 0 人在线时重启，启动日志正常。等 Evan 在游戏里确认。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
