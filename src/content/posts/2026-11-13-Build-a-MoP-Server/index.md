@@ -2854,7 +2854,7 @@ Evan 做完丹莫罗进了洛克莫丹，从 Jern Hornhelm 接了 13639 Resupply
 
 这个任务的目标在这边是占位类型（`quest_objective` type 10，对象 0），TDB 4.4.2 里它是"进入区域触发器 171"。171 正好在 Huldar 脚下（-5705.8, -3548.4，半径 50 码），走进去就该完成，之后 Huldar 才能交。11 月 16 日按 TDB 批量补"触发器 → 任务"关联时（见 8.6），171 被跳过了：它已经关联给了 273，同名的旧版任务（大地变迁前那条 301 → 302 → 273，TDB 里三个都没有起始 NPC，我们的库里却还留着）。SkyFire 这张表一个触发器只能对应一个任务，于是新版 13639 永远完不成。
 
-修复（`sql-custom/2026_11_19_09_resupplying_excavation_at171.sql`，原数据备份 `backup/resupplying_at171_20261119.tsv`）：把 171 改关联到 13639，并给 13639 补上"探索/事件"标志（不补的话加载时核心也会自动补，但会报一条警告）。`reload areatrigger_involvedrelation` 热加载，没有重启。代价是旧版 273 从此完成不了；它本该随 301、302 一起下线。11 月 20 日按用户决定把 301、302、273 三个都禁用了（`sql-custom/2026_11_19_13_disable_old_ironband_chain.sql`，`reload disables` 热加载）：TDB 里三个都没有起始 NPC，我们的库里却和新版 13639 同时挂在 Jern Hornhelm 身上。Evan 已经交过 301、302，再往下就会接到 273，禁用正好挡在前面；现在没有角色日志里还挂着这三个任务。已确认：Evan 回到 Huldar 身边完成并交掉了 13639。
+修复（`sql-custom/2026_11_19_09_resupplying_excavation_at171.sql`，原数据备份 `backup/resupplying_at171_20261119.tsv`）：把 171 改关联到 13639，并给 13639 补上"探索/事件"标志（不补的话加载时核心也会自动补，但会报一条警告）。`reload areatrigger_involvedrelation` 热加载，没有重启。代价是旧版 273 从此完成不了；它本该随 301、302 一起下线。11 月 20 日按用户决定把 301、302、273 三个都禁用了（`sql-custom/2026_11_19_13_disable_old_ironband_chain.sql`，`reload disables` 热加载）：TDB 里三个都没有起始 NPC，我们的库里却和新版 13639 同时挂在 Jern Hornhelm 身上。Evan 已经交过 301、302，再往下就会接到 273，禁用正好挡在前面；现在没有角色日志里还挂着这三个任务。Evan 做完洛克莫丹后，同一批旧任务又剩两个：298 Excavation Progress Report（Prospector Ironband 还在发）和 454 After the Ambush（前置是 273），TDB 里同样没有起始 NPC，也按用户决定禁用了（`sql-custom/2026_11_20_01_disable_old_ironband_298_454.sql`）。已确认：Evan 回到 Huldar 身边完成并交掉了 13639。
 
 ### 12.5 Protecting the Shipment：接了任务什么都不发生
 
@@ -2927,6 +2927,6 @@ Huldar 原来没有 AI，已经刷出来的 Huldar 换不上新脚本，11 月 1
 | 已禁用（交不了，见 2.6） | 436 | 30.2% |
 | 仍有问题，待修 | 751 | 52.0% |
 
-已修复和已禁用加起来是 48.0%。从整体看，没禁用的 5152 个任务里，审计查不出问题的有 4401 个，占 85.4%。
+已修复和已禁用加起来是 48.0%。从整体看，没禁用的 5150 个任务里，审计查不出问题的有 4399 个，占 85.4%。
 
 这个数字是**下限**。审计脚本只看数据库，看不懂 C++ 脚本：任务目标或交任务 NPC 只出现在 C++ 里的，一律算"有问题"；靠新写脚本或重建场景修好的任务，脚本也认不出来。比如 14212 Sacrifices 已经在游戏里确认能做完，统计里仍算待修。
