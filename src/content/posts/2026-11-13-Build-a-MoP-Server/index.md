@@ -2940,6 +2940,16 @@ Realm of Shadows 光环会把玩家切到 174 号相位，而这个核心里，�
 
 修复（`sql-custom/2026_11_20_02_realm_of_shadows_phase.sql`，修改前的数据备份在 `backup/realm_of_shadows_phase_20261120.tsv`）：22 个刷新点改到 174 号相位；在外面那个 Salanar 的位置补一个 174 号相位的 Salanar（28788）。刷新点只在启动时加载，经用户同意后重启。已确认：Kiv 打下黑骑士，骑上他的马回到 Salanar 身边，任务完成并交掉了。
 
+### 13.3 The Gift That Keeps On Giving：食尸鬼在和空气打架
+
+12698 The Gift That Keeps On Giving 要在矿洞里对 Scarlet 矿工使用 Gift of the Harvester。矿工有一半几率变成食尸鬼（Scarlet Ghoul，28845）跟着你，另一半几率变成敌对的鬼魂（Scarlet Ghost，28846）。食尸鬼带回 Gothik the Harvester 身边就计数。Kiv 召唤出鬼魂以后，自己什么都看不见，食尸鬼却一直对着空气打，脱不了战，也就没法带回去交任务。
+
+先排除了几种常见原因：鬼魂的阵营（2089）对玩家是敌对的，和矿工一样；召唤它的法术（52505）是"野生"召唤，不会把它变成玩家的随从；模型（25731，鬼魂模型）和 TrinityCore 4.4.2 一致。剩下的可疑之处是模板里的 `dynamicflags = 9`。这个值像是从 WotLK 抓包数据里抄过来的：那时 0x1 是"可拾取"、0x8 是"已被玩家占有"。但在 5.4.8 里，"可拾取"已经挪到 0x2，0x1 在源码里只标着"未知"。按 6.x 的定义往回推，它在这个版本应该是"隐藏模型"。也就是说，服务器上鬼魂是真实存在的，食尸鬼打得到它，可客户端把它的模型藏起来了。TrinityCore 4.4.2 已经整个去掉了这个字段。
+
+修复（`sql-custom/2026_11_20_03_scarlet_ghost_visible.sql`，原值 9）：鬼魂的 `dynamicflags` 改成 0，用 `reload creature_template 28846` 热加载，没有重启。已确认：Kiv 放弃任务重接，再召唤出来的鬼魂看得见，也打得动了。
+
+全库还有 3 个模板带着同样的 0x1 位：Prince Thunderaan（14435）、Shannox（53691）、Riplimb（53694），都是团本 boss，先不动。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
