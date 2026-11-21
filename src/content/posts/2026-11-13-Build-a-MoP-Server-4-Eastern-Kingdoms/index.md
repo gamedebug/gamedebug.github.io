@@ -7,7 +7,7 @@ tags:
   - "私服"
   - "魔兽世界"
   - "Docker"
-description: "熊猫人服务器东部王国的任务修复：西部荒野、赤脊山、暮色森林、荆棘谷、洛克莫丹、暴风城、东瘟疫之地、湿地。"
+description: "熊猫人服务器东部王国的任务修复：西部荒野、赤脊山、暮色森林、荆棘谷、洛克莫丹、暴风城、东瘟疫之地、湿地、阿拉希高地。"
 ---
 
 这是《建造自己的魔兽世界（熊猫人之谜）》系列的第四篇。
@@ -331,3 +331,17 @@ Huldar 原来没有 AI，已经刷出来的 Huldar 换不上新脚本，11 月 1
 修复（`sql-custom/2026_11_21_06_first_mate_fitzsimmons_spawn.sql`，guid 9100436）：在 Deepwater Tavern 一楼、Glorin Steelbrow 和 Kersok Prond 之间给他加一个刷新点。建筑里的地板不在地形数据里，z 取服务器导航网格上的高度（`tools/navpath`，0.7 码），朝向 Glorin。当时没人在线，直接重启生效，还没上号验证。
 
 其余几个没做的湿地任务不是坏的：25736 The Floodsurge Core 是怪物掉落物品开始的可选任务（掉落正常），28565 Hero's Call: Wetlands! 和 26138 Ferilon Leafborn 是引导任务，Evan 是从别的路线进的湿地。
+
+## 第九章　阿拉希高地
+
+### 9.1 The Princess Unleashed：卷轴一用就"闪一下"
+
+（同一条线上的 Myzrael's Tale 联盟、部落两个版本都能接，那是全库性质的问题，见[《全局修复》2.14](/Build-a-MoP-Server-2-Global-Fixes/#214-两个阵营的任务谁都能接1988-个任务缺种族限制)。）
+
+26049 The Princess Unleashed 要在 Shards of Myzrael 用 Scroll of Myzrael（4472）召唤 Myzrael 并打败她。Evan 在碎片旁边用卷轴，施法条闪一下就没了，也没有报错。
+
+卷轴施放的是 4141 Summon Myzrael。这个法术本身只发一个事件（420），由事件脚本在碎片那里召唤 Myzrael（2755），这部分我们库里是好的，和 TrinityCore 一致。卡住的是施法条件：4141 要求附近有一个"法术焦点 5"的物体，没有就直接拒绝施法。整个库里只有一个专门为此准备的焦点物体，是 SFDB 自己加的 300139 "TEMP Shards of Myzrael"（模型是个小苹果，作用半径 10 码），但它从来没有刷新点。TrinityCore 4.4.2 里连这个模板都没有。
+
+修复（`sql-custom/2026_11_21_08_shards_of_myzrael_spell_focus.sql`，guid 9100401）：在 Shards of Myzrael 原位刷一个 300139，往下沉 0.6 码，让苹果藏在碎片模型里。新物体要重启才会出现，经用户同意重启了一次。已重启生效，还没上号验证。
+
+另外，库里的 Myzrael 还是旧版本的数据：44 级精英，而大地变迁版这个任务是 28 级、建议 2 人。用户决定先让 Evan（33 级）试试，打不过再调。
