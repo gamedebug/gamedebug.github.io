@@ -3030,7 +3030,7 @@ Kiv 做到 12801 The Light of Dawn（圣光之愿礼拜堂大战）时，用户�
 
 在 TrinityCore 里，这个选项是这样接上的：只有接了 27726 才显示；选中后玩家自己施放 86587 Teleport to Moonglade，这个法术一个效果传送到月光林地的永夜港，另一个效果完成 27726 的目标。我们库里缺了三样：Jademoon 没有 SmartAI，选项没有响应；选项也没有显示条件，谁都看得到；86587 的传送效果要从 `spell_target_position` 读落点，而这一行也没有，就算施放了法术也不知道往哪儿传。部落那边的 Cenarion Emissary Blackhoof（15188，法术 86565）是完整的，坏的只有联盟这一边。
 
-修复（`sql-custom/2026_11_21_03_jademoon_moonglade_teleport.sql`，修复前 15187 的 AIName 为空，其余几行都不存在）：按 TrinityCore 给 Jademoon 加上 SmartAI，选中选项时由玩家施放 86587；补上 86587 的落点（地图 1，7827.41, -2423.57, 488.81，和部落的 86565 几乎同一个位置）；加上"已接 27726 才显示"的条件。几张表都热加载过，但已经站在要塞里的 Jademoon 要重新刷出来才会换上 SmartAI，所以经用户同意重启了一次。已重启生效，还没上号验证。
+修复（`sql-custom/2026_11_21_03_jademoon_moonglade_teleport.sql`，修复前 15187 的 AIName 为空，其余几行都不存在）：按 TrinityCore 给 Jademoon 加上 SmartAI，选中选项时由玩家施放 86587；补上 86587 的落点（地图 1，7827.41, -2423.57, 488.81，和部落的 86565 几乎同一个位置）；加上"已接 27726 才显示"的条件。几张表都热加载过，但已经站在要塞里的 Jademoon 要重新刷出来才会换上 SmartAI，所以经用户同意重启了一次。已确认：Kiv 点这个选项后直接传到了月光林地。
 
 ## 接下来
 
