@@ -3002,7 +3002,7 @@ New Avalon 酒馆里的 Orbaz Bloodbane（28914）有一个对话选项："I mis
 
 这个选项在 TrinityCore 里有两条规则：只有已经完成 12757 Scarlet Armies Approach、而且附近 30 码内没有回阿彻鲁斯的传送门（191155）时才显示；选中后关掉对话框，运行 Orbaz 现成的开门脚本（施放 Portal: Acherus，53097）。也就是说，它是给"接完 12757、错过了 Orbaz 开的门"的人准备的补救选项。我们库里这两样都缺：选项对所有人一直显示，选了也没有任何脚本响应。
 
-修复（`sql-custom/2026_11_21_01_orbaz_portal_gossip.sql`，修复前这几行都不存在）：按 TrinityCore 补上"选择对话选项 → 关闭对话框 → 运行开门脚本"的 SmartAI，以及显示选项的两个条件。`reload smart_scripts` 和 `reload conditions` 热加载，没有重启。Kiv 还没接 12757，所以这个选项现在对她隐藏了，要等她做到 12757 时才能验证。
+修复（`sql-custom/2026_11_21_01_orbaz_portal_gossip.sql`，修复前这几行都不存在）：按 TrinityCore 补上"选择对话选项 → 关闭对话框 → 运行开门脚本"的 SmartAI，以及显示选项的两个条件。`reload smart_scripts` 和 `reload conditions` 热加载。不过 `reload smart_scripts` 只对之后新刷出来的 NPC 生效，已经站在酒馆里的 Orbaz 还在用旧脚本，所以又经用户同意重启了一次。已确认：Kiv 完成 12757 后点这个选项，Orbaz 开了门，传回了阿彻鲁斯。
 
 ## 接下来
 
