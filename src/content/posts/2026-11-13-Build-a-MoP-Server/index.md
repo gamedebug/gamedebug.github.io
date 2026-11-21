@@ -3032,6 +3032,18 @@ Kiv 做到 12801 The Light of Dawn（圣光之愿礼拜堂大战）时，用户�
 
 修复（`sql-custom/2026_11_21_03_jademoon_moonglade_teleport.sql`，修复前 15187 的 AIName 为空，其余几行都不存在）：按 TrinityCore 给 Jademoon 加上 SmartAI，选中选项时由玩家施放 86587；补上 86587 的落点（地图 1，7827.41, -2423.57, 488.81，和部落的 86565 几乎同一个位置）；加上"已接 27726 才显示"的条件。几张表都热加载过，但已经站在要塞里的 Jademoon 要重新刷出来才会换上 SmartAI，所以经用户同意重启了一次。已确认：Kiv 点这个选项后直接传到了月光林地。
 
+## 第十五章　东瘟疫之地
+
+### 15.1 Hero's Call：Fiona 和 Gek 都是隐身的
+
+暴风城英雄榜上的两个任务，28578 Hero's Call: Eastern Plaguelands! 和 28579 Hero's Call: Badlands!，分别要找东瘟疫之地 Thondroril 河东岸的 Fiona（45417）和圣光之愿礼拜堂的 Gek Nozzlerocket（48704）。Kiv 到了地方，两个人都找不到。
+
+两人都有刷新点，位置也对，问题出在身上挂的光环：Fiona 是 49414 Generic Quest Invisibility 1（隐身类型 7），Gek 是 87871 Generic Quest Invisibility 21（类型 29）。这种"任务隐身"只有身上带着同类型侦测光环的玩家才看得见，侦测光环通常由 `spell_area` 在某个区域、某个任务状态下自动挂上。但整个东瘟疫之地没有任何一条 `spell_area` 会给类型 7 或 29 的侦测，接这两个任务时也不施放任何法术，TrinityCore 4.4.2 的数据也一样。结果就是普通角色永远看不见这两个 NPC。之前服务器上交过这两个任务的 3 个角色都是 GM，而 GM 能看见隐身单位，所以一直没发现。
+
+影响比两个 Hero's Call 大：Fiona 是整条东瘟疫之地主线的起点（Into the Woods、Gidwin Goldbraids、Tarenar Sunstrike……一直到 Fuselight, Ho!），她看不见，这一整条线对普通角色都是断的。
+
+修复（`sql-custom/2026_11_21_04_epl_fiona_gek_visible.sql`，修复前 `creature_template_addon` 里 45417 的光环是 `49414`、48704 是 `87871`）：清掉这两个光环。两人在全世界都只有一个刷新点，也没有单独的 `creature_addon`，不影响别处。这张表不能热加载，经用户同意重启了一次。已重启生效，还没上号验证。
+
 ## 接下来
 
 30–39 级段继续逐个重建：东瘟疫之地、荆棘谷海角、千针石林、南贫瘠之地、菲拉斯、尘泥沼泽、凄凉之地，以及辛特兰的 27626。
