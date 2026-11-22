@@ -1767,3 +1767,70 @@ Nolan 的任务之前已经全部直接写成完成，所以他只需要能过�
 修复：`sql-custom/2026_11_21_07_quest_faction_races_from_tdb.sql`，备份和完整清单在 `backup/quest_requiredraces_0_tdb_faction_20261121.tsv`（修复前全是 0）。`reload quest_template` 会先删掉内存里所有任务对象再重新加载，在线玩家身上可能还留着指向旧对象的指针，所以没有热加载，经用户同意重启了一次。重启后 Evan 交的是联盟版 26346，正在做后续的 26049。
 
 这次修复之后，修复进度统计的范围（联盟能接到的普通任务）从 5596 个降到 5348 个，基数从 1446 降到 1352：原来被算成"联盟能接"的部落任务被排除了。
+
+### 2.15 看不见的 NPC 和用不了的任务物品：全库审计（20–39 级）
+
+灰谷连着三个任务（[《卡利姆多》2.4](/Build-a-MoP-Server-5-Kalimdor/#24-astranaars-burning看不到起火)、[2.5](/Build-a-MoP-Server-5-Kalimdor/#25-a-trip-to-the-moonwell泪滴在月亮井里用不了)、[2.6](/Build-a-MoP-Server-5-Kalimdor/#26-he-who-would-be-forgiven雷恩斯伍德塔里找不到交任务的人)）都是两类问题之一，于是写了个全库扫描（`tools/invis_focus_audit.py`，只读，结果在 `audit/invis_focus_20261122.json`）：
+
+- **任务隐身**：NPC 身上挂着 N 号隐身光环，而玩家在那个地方拿不到 N 号、数值足够的侦测光环。侦测的来源都算上：`spell_area`、任务给的法术、物品、SAI、点击、物体、联动法术，以及它们触发的法术，并按区域定位。按"某个联盟能接的任务，唯一的发布人或交付人看不见"统计，有 151 个任务、48 个 NPC。
+- **施法焦点**：任务物品的法术要求附近有某种施法焦点，但没有任何刷出来的物体提供它。联盟能做的有 135 个物品、182 个任务。
+
+**为什么两个库都缺：** 施法焦点是服务器端的隐形物体，抓包抓不到。TDB 4.4.2 里 106 个只有模板没有刷新点，所以每个都得手工找位置。任务隐身的侦测光环也一样，由服务器直接加在玩家身上，参考库里同样没有。
+
+**清单里的误报：**
+
+- 自动接受、自动完成的任务不需要找 NPC。比如 29414，有 8 个普通角色交过。
+- 一部分部落任务没有阵营限制，混了进来。这批按发布 NPC 的阵营模板剔除。
+- Adam、Eve、Nolan 的任务是 GM 批量交的，不能证明能做。
+
+这一节先修 20–39 级。按规则只补坏掉的环节：焦点放在任务文本和地图标记指的位置（看得见的物体、事件召唤点或计数用的隐形生物），范围用参考库或抓包得到的数值。召唤出来的首领原来都是占位模板（1 级、友好），阵营按参考库填，等级按任务等级填。
+
+<details>
+<summary>任务隐身：4 处侦测光环</summary>
+
+| 等级 | 地点 | NPC | 隐身 | 侦测（`spell_area`） | 什么时候看得见 |
+|---|---|---|---|---|---|
+| 34 | 西瘟疫之地 Writhing Haunt（3197） | Thurman Grant（45165），6 个任务 | 49414，7 号 | 49416 | 接了 27172 The Writhing Haunt 起，一直可见 |
+| 39 | 东瘟疫之地 Thondroril River（2619） | Gidwin Goldbraids（45428） | 80852，18 号 | 88957 | 接 27367 起，到交完 27368 Just Encased |
+| 39 | 东瘟疫之地 Death's Step（5446） | Tarenar Sunstrike（45429） | 83305，19 号 | 88958 | 接 27370 起，到交完 27381 Traveling Companions |
+| 39 | 圣光之愿礼拜堂（2268） | Rimblat Earthshatter（16134） | 80852，18 号 | 88957 | 一直可见（他的任务没有前置，也查不到引过去的任务；那里没有别的 18 号隐身生物） |
+
+文件 `sql-custom/2026_11_22_10_quest_invis_20_39.sql`。18 号侦测本来更像该用 96876 "See Quest Invis 10"，但它的施法要求限定在荆棘谷（区域组 2663），在瘟疫之地会被核心当场移除，所以用了没有区域限制的 88957。
+
+</details>
+
+<details>
+<summary>施法焦点：17 个任务</summary>
+
+| 等级 | 地图 | 任务 | 原来缺什么 | 补了什么 |
+|---|---|---|---|---|
+| 30 | 尘泥沼泽 | 27429 Raze Direhorn Post! | 焦点 1460 | 三个帐篷的计数生物上各放一个 Grimtotem Tent（186310） |
+| 30 | 尘泥沼泽 | 27291 Peace at Last | 焦点 1461，事件 15385 | Hyal 家族墓碑上放焦点（186324）；照 TDB 补事件：召唤 Lynn 和 Jimmy Hyal（Lynn 的 SAI 原来就会给计数） |
+| 30 | 尘泥沼泽 | 27190 Cleansing Witch Hill | 焦点 1464 | 码头尽头（Zelfrax 的落点，不是半空的起飞点）放 Swamplight Dock（186424） |
+| 32 | 南贫瘠之地 | 25044 Diplomacy By Another Means | 焦点 1637，事件 22771 | 挑战场放焦点（201732）；号角召唤 Sabersnout，去掉模板上的"玩家不能攻击"，补上 TDB 的战斗技能 |
+| 32 | 南贫瘠之地 | 25082 Working the Bugs Out | 焦点 1642，计数链 | 22 个虫穴标记上各放 Silithid Mound（201943）；沥青打中虫穴放出 3 只 Silithid Swarmer（同一个虫穴 20 秒后才能再用） |
+| 33 | 尘泥沼泽 | 27243 Unleash the Raptors | 焦点 1459，事件 15363 | 照 TDB 刷新点放 Blackhoof Village Windmill（186299）；事件补计数（TDB 里另外 9 只迅猛龙的路径点这里没有，没加） |
+| 34 | 菲拉斯 | 25654 Dark Heart | 焦点 343 | Hatetalon Stones 上放焦点（144569），召唤 Edana 的事件原来就有 |
+| 35 | 尘泥沼泽 | 27411 Challenge to the Black Flight | 焦点 1463 | 奥妮克希亚巢穴门口（召唤 Smolderwing 的位置）放焦点（186336） |
+| 37 | 菲拉斯 | 25368 Verinias the Twisted | 焦点 1652，事件 24189，首领模板 | 暗雾废墟放焦点（202873）；召唤 Verinias（阵营 14，37 级，TDB 的两个法术） |
+| 38 | 千针石林 | 25524 In the Outhouse | 焦点 1654 | 沉在水下的厕所上放焦点（202995，范围用抓包模板的 11） |
+| 41 | 千针石林 | 25798 Defend the Drill | 焦点 1666，整个防守 | 油池放焦点（203233）；钻井架召出后分三波来 Galak Stormer 和 Mauler，第三波后 25 秒判定守住（40 码内的玩家），任务改成由事件完成 |
+| 42 | 千针石林 | 25762 The Ancient Brazier | 焦点 1665，事件 24689，Aquarian 模板 | 火盆上放焦点（203223，范围放宽到 5 码）；点燃给火盆计数，并召唤 Aquarian（掉 The Sacred Flame） |
+| 42 | 东瘟疫之地 | 27464 Argent Call: The Trial of the Crypt | 焦点 1685，事件 26356，首领模板 | 地穴放焦点（205535）；读卷轴召唤 Lord Raymond George，3 秒后变敌对开打 |
+| 43 | 千针石林 | 27329 Invoking the Serpent | 焦点 1683，事件 26323 | Arikara's Circle 放焦点（205424）；召唤 Arikara（阵营 14，TDB 的闪电箭） |
+| 39 | 东瘟疫之地 | 27421 Amidst Death, Life | 焦点 1684 | 三个花朵控制点上各放焦点（205434），计数原来就有 |
+| 39 | 东瘟疫之地 | 27482 Into the Flames | 焦点 1686，计数 | 祖玛沙金字塔顶的篝火放焦点（205536）和计数生物；法术 85327 的第 0 个效果打中它就计数（第 1 个效果触发的 85335 在这个客户端里不存在） |
+| 29 | 石爪山 | 14311 Taking Part | 焦点 1631，计数 | 照 TDB 刷 14 个 Fertile Mound Bunny，各放一个焦点；种子打中给计数，60 秒后才能再用。**但发布人 Botanist Ferrah 没有刷新点，任务目前接不到**，见下 |
+
+文件：`sql-custom/2026_11_22_08_spell_focus_20_39_part1.sql`、`_09_..._part2.sql`、`_11_..._part3.sql`。改过的生物模板备份在 `backup/focus_part2_templates_20261122.tsv`、`backup/focus_part3_templates_20261122.tsv`，其余都是新加的行。所有新刷新点都过了位置检查（`tools/poscheck.py`）。
+
+</details>
+
+**这一档没修的：**
+
+- **石爪山卡塔克里斯姆版的大片区域没有刷怪**：武器架、萨特、燕巢一带，TDB 有约 276 个刷新点，我们只有 3 个；Cenarion Wildlands 315 对 15；雷斧堡垒 73 对 0。To the Hilt!、Early Adoption、Putting Their Heads Together、Taking Part 的发布人都不在。这是整片区域的问题，要单独处理。
+- **Ghost-o-plasm Round Up**（凄凉之地）：发布人 Hornizz Brimbuzzle、Magrami Spectre 都没有刷新点，磁铁的陷阱也没挂法术，要整个重新设计。
+- **The Battle of Darrowshire**（东瘟疫之地）：多波怪物，还要保护好几个 NPC 的大型战斗，两个库都没有脚本。
+- **Unto Dust Thou Shalt Return**：副本里的任务，以后单独看。
+
+全部在 0 人在线时重启生效（Into the Flames 的修正后来热加载），都还没在游戏里验证。
