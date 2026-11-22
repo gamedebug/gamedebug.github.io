@@ -220,3 +220,11 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 Thunder Peak（区域 4690）的 Sabina Pilgrim（34283）是 13877 Go With The Flow 和 13886 Vortex 的交付人。她身上挂着 65097 "Thunder Peak: Invisibility - Alliance"（7 号隐身），配套的 65098 "Thunder Peak: See Invisibility - Alliance" 没有任何来源，和 [2.9](#29-three-friends-of-the-forestbolyuns-camp-的三个人看不见) 一样。这是改了审计条件之后找出来的，玩家还没走到这里。
 
 修复（`sql-custom/2026_11_22_16_thunder_peak_sabina_see_invisibility.sql`）：`spell_area` 让玩家在 Thunder Peak 接了这两个任务中的任意一个后就带上 65098，不设结束。和 2.10 同一次重启生效。还没在游戏里验证。
+
+### 2.12 The Goblin Braintrust：Sploder 卡在伐木机半空中
+
+13979 要拿 Chief Bombgineer Sploder（34591）的头（46768，掉落表 100%，没问题）。玩家看到他卡在大伐木机的半空中，打死以后也捡不了。
+
+他的刷新坐标（2306.64, -960.69, 107.76）和 TDB 4.4.2 完全一样，但在这个客户端里，这个点离脚下最近的碰撞面（伐木机 93.4 码高的那层）还有 14 码，正好浮在两层平台之间。旁边的技师站在 98 和 117 码高的平台上，都是好的。人够不到他，尸体也在拾取距离之外。
+
+修复（`sql-custom/2026_11_22_17_goblin_braintrust_sploder_ground.sql`）：把他挪到西边 7 码的地面上，挨着一个站在地上的技师，位置检查通过。备份 `backup/sploder_178222_20261122.tsv`。经同意重启生效。还没在游戏里验证。
