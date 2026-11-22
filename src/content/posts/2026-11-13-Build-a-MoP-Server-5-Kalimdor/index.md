@@ -146,3 +146,16 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 实测书能拿到，锤子拿不到：鼠标指针会变成拾取，点了没有任何反应。两具遗体的模板、点击法术、条件、光效光环都一样，唯一的差别是最后一步：书是脚本直接加物品，锤子是让遗体施放 62838。我先按这个差别改了（`sql-custom/2026_11_22_03_respect_for_the_fallen_hammer.sql`：锤子改成由 SAI 直接把 45042 放进背包，热加载），但实测还是拿不到，说明点击那一步就没成功。
 
 真正的差别在环境：点击时由玩家自己施放 62837 / 62839，走普通施法检查，而这两个法术都带 `SPELL_ATTR0_CANT_USED_IN_COMBAT`（战斗中不能使用，DBC 原样）。Delgren 在塔顶，周围没有怪；Feero 倒在塔下，身边有 20 个敌对的 Horde Invader（33334），走过去就会进入战斗，这时点遗体会被服务器拒绝。这是原版设计，不算坏，所以没有去掉这个限制：清掉附近的敌人、脱离战斗再点。上面那个 SAI 改动和原来的做法效果相同，保留。还没在游戏里验证。
+
+### 2.4 Astranaar's Burning!：看不到起火
+
+13849 由阿斯特兰纳的 Sentinel Thenysil（4079）发布：给一个水桶（46094），把镇上 15 处火扑灭。接了任务以后镇上一处火都没有，水桶也没有目标。
+
+一开始怀疑是相位问题，但这些火其实不靠相位：45 个火焰点（Astranaar's Burning! Fire Bunny，34123）都在 0 相位，全在 Astranaar（区域 415）里，跟参考库一样。它们身上挂着两道光环：52855 是火焰光效，64573 "Astranaar's Burning!: Invisibility" 是 7 号隐身。原版的做法是接任务的玩家在镇上带着 64572 "Astranaar's Burning!: See Invisibility 01"（7 号隐身侦测），这样只有做任务的人能看到火。DBC 里这个法术是现成的，但 SFDB 和 TDB 4.4.2 都没有让玩家获得它的地方（`spell_area`、SAI、脚本都没有），所以火对所有人都是隐身的，水桶自然也选不到目标。
+
+修复（`sql-custom/2026_11_22_04_astranaars_burning_see_fires.sql`）：
+
+- `spell_area` 加一行：在区域 415、任务 13849 进行中（状态掩码 8，只在未完成时）自动加上 64572；火扑够 15 处后光环自动消失。
+- 火焰点原来的 SAI（[《全局修复》1.7](/Build-a-MoP-Server-2-Global-Fixes/#17-批次三任务物品的标记法术没人接) 加的：被 64558 水桶打中给施法者计数）后面接一步：0.5 秒后消失，120 秒后重刷。原来扑过的火还亮着，还能反复计数；现在扑灭的火会熄掉，跟原版一样每处火只算一次。备份 `backup/fire_bunny_34123_sai_20261122.tsv`。
+
+`spell_area` 不能热加载（会留下悬空指针，见[《新手村》Trolling for Information](/Build-a-MoP-Server-3-Starter-Zones/#24489-trolling-for-information偷听不到巨魔说话)），经同意重启后生效（当时 Vanhelsing 在线）。还没在游戏里验证。
