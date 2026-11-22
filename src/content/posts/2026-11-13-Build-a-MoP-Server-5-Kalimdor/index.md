@@ -205,6 +205,18 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 
 13976 要去 Bolyun's Camp（区域 4716）找 Bolyun（3698）交任务，他也是 13982 In a Bind 的发布人。营地里有三个被锁着的人：Bolyun、猎人训练师 Alenndaar Lapidaar（8308）、皮革商人 Harlown Darkweave（6731），就是任务名里的"三个朋友"。三个人身上都挂着 65709 "Bolyun's Camp: Invisibility 01"（7 号隐身）和锁链效果，而配套的 65714 "Bolyun's Camp: See Invisibility 01" 没有任何来源，SFDB 和 TDB 4.4.2 都是这样。和 [2.4](#24-astranaars-burning看不到起火)、[2.6](#26-he-who-would-be-forgiven雷恩斯伍德塔里找不到交任务的人) 是同一类问题。
 
-[《全局修复》2.15](/Build-a-MoP-Server-2-Global-Fixes/#215-看不见的-npc-和用不了的任务物品全库审计2039-级) 的全库审计漏掉了这一处：灰谷别的地方有一个任务给的 7 号侦测（Cloak of Cenarius），审计只要求"同一个大区"就算能看见，判得太宽了。按"有同名配对的侦测法术，但它没有任何来源"重新筛了一遍，联盟能接的任务里还有一处：Thunder Peak 的 Sabina Pilgrim（13877 / 13886 的交付人），先记下。
+[《全局修复》2.15](/Build-a-MoP-Server-2-Global-Fixes/#215-看不见的-npc-和用不了的任务物品全库审计2039-级) 的全库审计漏掉了这一处：灰谷别的地方有一个任务给的 7 号侦测（Cloak of Cenarius），审计只要求"同一个大区"就算能看见，判得太宽了。按"有同名配对的侦测法术，但它没有任何来源"重新筛了一遍，联盟能接的任务里还有一处：Thunder Peak 的 Sabina Pilgrim（13877 / 13886 的交付人），见 [2.11](#211-go-with-the-flow--vortexthunder-peak-的-sabina-看不见)。
 
 修复（`sql-custom/2026_11_22_14_bolyuns_camp_see_invisibility.sql`）：`spell_area` 让玩家在 Bolyun's Camp 从接 13976 起一直带着 65714。三个人被救出来以后还留在营地当训练师和商人，所以不设结束。经同意重启（当时 Vanhelsing 在线）。还没在游戏里验证。
+
+### 2.10 In a Bind：Kaliva 根本不存在
+
+13982 由 Bolyun 发布：杀掉 Kaliva（34602），拿到她的心脏（46774），才能解开三个人身上的锁链。Kaliva 的掉落表是好的（心脏 100%），但她在 SFDB 和 TDB 4.4.2 里都没有刷新点，模板也是占位（1 级、友好）。11 月 13 日的批次里看到过这一处，当时跳过了。
+
+修复（`sql-custom/2026_11_22_15_in_a_bind_kaliva.sql`）：在任务地图标记的目标点（2389, 623，营地往坡下约 45 码）刷一个常驻的 Kaliva，2 分钟重刷；阵营照 TDB 设成 90（敌对），等级按任务等级 26，战斗技能用 TDB 的 Vile Beam 和 Sinful Beam。位置检查通过。原版里她可能是接任务时才冒出来的（任务文本说"这是个陷阱"），这里用常驻刷新，多人做也不会互相卡住。模板备份 `backup/kaliva_34602_template_20261122.tsv`。经同意重启。还没在游戏里验证。
+
+### 2.11 Go With The Flow / Vortex：Thunder Peak 的 Sabina 看不见
+
+Thunder Peak（区域 4690）的 Sabina Pilgrim（34283）是 13877 Go With The Flow 和 13886 Vortex 的交付人。她身上挂着 65097 "Thunder Peak: Invisibility - Alliance"（7 号隐身），配套的 65098 "Thunder Peak: See Invisibility - Alliance" 没有任何来源，和 [2.9](#29-three-friends-of-the-forestbolyuns-camp-的三个人看不见) 一样。这是改了审计条件之后找出来的，玩家还没走到这里。
+
+修复（`sql-custom/2026_11_22_16_thunder_peak_sabina_see_invisibility.sql`）：`spell_area` 让玩家在 Thunder Peak 接了这两个任务中的任意一个后就带上 65098，不设结束。和 2.10 同一次重启生效。还没在游戏里验证。
