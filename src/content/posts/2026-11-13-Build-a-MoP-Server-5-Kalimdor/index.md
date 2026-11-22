@@ -239,4 +239,4 @@ Thunder Peak（区域 4690）的 Sabina Pilgrim（34283）是 13877 Go With The 
 - 加一条条件，让 63578 只打 33767。
 - 给 Bunny 加 SmartAI：被 63578 打中就给施法者一次计数，然后这扇门和 Bunny 一起消失，2 分钟后重刷。
 
-条件和脚本已经热加载。Bunny 的 AIName 要重启才生效。还没在游戏里验证。
+条件和脚本已经热加载，Bunny 的 AIName 经同意重启后生效。还没在游戏里验证。
