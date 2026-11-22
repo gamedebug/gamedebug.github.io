@@ -167,3 +167,18 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 和 [2.2](#22-bathed-in-light药剂在哪里用都-requires-s) 是同一类问题：泪滴施放的 65514 Cleanse Elune's Tear（效果是直接完成任务 13919）要求附近有施法焦点 1614，可库里没有任何物体模板带这个焦点。井边看得见的两个 Moonwell 物体（177277 / 177278）是焦点 883，是另一种月亮井。TDB 4.4.2 有焦点模板（195109 Moonwell of Purity Spell Focus，服务器端隐形物体），但同样没有刷新点。
 
 修复（`sql-custom/2026_11_22_05_trip_to_the_moonwell_spell_focus.sql`）：照参考库补上模板，刷在两个 Moonwell 物体的正中（2904.26, -1399.6, 207.0），也是任务地图标记的位置，位置检查通过。焦点范围是 `data1 / 2`，即 4 码，所以要站进井里用。新加了物体模板，经同意重启后生效（当时 Vanhelsing 在线，就站在井里）。还没在游戏里验证。
+
+### 2.6 He Who Would Be Forgiven：雷恩斯伍德塔里找不到交任务的人
+
+13921 让玩家回 Raynewood Tower 找 Avrus Illwhisper（34335）交任务，他也是下一个任务 13922 In the Hands of the Perverse 的发布人。玩家站在任务标记的位置（离他的刷新点不到 5 码），什么都没有。
+
+和 [2.4](#24-astranaars-burning看不到起火) 一样，不是相位问题，是任务隐身：Avrus 的刷新点在（和 TDB 4.4.2 一致，位置检查通过），但他身上挂着 65316 "In the Hands of the Perverse: Quest Invisibility 1"（7 号隐身），玩家需要 65315 "… See Invisibility Quest 1"（7 号侦测）才看得到，库里没有任何地方给这个光环。
+
+往下查还有一处断档：13922 交完以后，下一个任务 13924 All's Well 由 Avrus the Redeemed（34358）发布，但这个 NPC 在 SFDB 和 TDB 里都没有刷新点。DBC 里这一套法术是成对设计的：被救赎后的 Avrus 用 8 号隐身（65317），玩家用 65314 "See Invisibility Quest 2"（8 号侦测）看他；交 13922 的时候玩家的侦测从 7 号换成 8 号，原来的 Avrus 消失，被救赎的 Avrus 出现在同一个位置。负责切换的 65318 / 65319 只是空的哑法术，没有脚本。
+
+修复：
+
+- `sql-custom/2026_11_22_06_raynewood_avrus_see_invisibility.sql`：`spell_area` 让玩家在 Raynewood Tower（区域 4705，塔周围 60 码都是这个区域）从接 13921 起、到交完 13922 为止自动带 65315。
+- `sql-custom/2026_11_22_07_avrus_the_redeemed.sql`：在原 Avrus 的位置刷一个 Avrus the Redeemed（guid 9100437，模板光环 65317）；`spell_area` 从交完 13922 起、到交完 13924 为止给 65314。不用脚本，只靠这两条区域光环完成切换。
+
+两次都经同意重启（当时 Vanhelsing 在线）。还有一个核心问题：交任务时核心不会重新计算区域光环（只有接任务、换子区域和登录时才算），所以交完 13922 那一刻，原来的 Avrus 不会马上消失，被救赎的也不会马上出现，要走出塔区再回来，或者重新登录。已经在 `Player::RewardQuest` 里加了重新计算（交任务后调用 `UpdateZoneDependentAuras` / `UpdateAreaDependentAuras`），等下一批 C++ 改动一起编译。都还没在游戏里验证。
