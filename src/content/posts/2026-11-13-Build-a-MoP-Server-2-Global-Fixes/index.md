@@ -1131,7 +1131,7 @@ description: "熊猫人服务器的全局修复：写审计脚本扫全库任务
 |---|---|---|---|
 | 29352 | A Fowl Shortage（铁炉堡） | Dun Morogh Chicken（69 只） | 点鸡 → 99486 → 鸡对玩家施放 99487（给鸡）后消失 |
 | 26177 | Feeling Crabby?（暴风城） | Canal Crab（20 只） | 点螃蟹 → 78974 → 78975（给螃蟹）后消失 |
-| 13626 | Respect for the Fallen（灰谷） | Feero Ironhand、Delgren the Purifier 的遗体 | 点 Feero → 62837 → 62838（给锤子；实测拿不到，后来改成直接放进背包，见[《卡利姆多》2.3](/Build-a-MoP-Server-5-Kalimdor/#23-respect-for-the-fallen塔下的锤子拿不到)）；点 Delgren → 62839 → 库里没有"给书"的法术，用 SAI 直接把祈祷书放进背包 |
+| 13626 | Respect for the Fallen（灰谷） | Feero Ironhand、Delgren the Purifier 的遗体 | 点 Feero → 62837 → 62838（给锤子；战斗中点不了，见[《卡利姆多》2.3](/Build-a-MoP-Server-5-Kalimdor/#23-respect-for-the-fallen塔下的锤子拿不到)）；点 Delgren → 62839 → 库里没有"给书"的法术，用 SAI 直接把祈祷书放进背包 |
 
 都只对接了任务、未完成的人生效。
 
