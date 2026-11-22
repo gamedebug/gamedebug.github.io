@@ -159,3 +159,11 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 - 火焰点原来的 SAI（[《全局修复》1.7](/Build-a-MoP-Server-2-Global-Fixes/#17-批次三任务物品的标记法术没人接) 加的：被 64558 水桶打中给施法者计数）后面接一步：0.5 秒后消失，120 秒后重刷。原来扑过的火还亮着，还能反复计数；现在扑灭的火会熄掉，跟原版一样每处火只算一次。备份 `backup/fire_bunny_34123_sai_20261122.tsv`。
 
 `spell_area` 不能热加载（会留下悬空指针，见[《新手村》Trolling for Information](/Build-a-MoP-Server-3-Starter-Zones/#24489-trolling-for-information偷听不到巨魔说话)），经同意重启后生效（当时 Vanhelsing 在线）。还没在游戏里验证。
+
+### 2.5 A Trip to the Moonwell：泪滴在月亮井里用不了
+
+13919 由 Pelturas Whitemoon（3894）发布：把 Elune's Tear（46389）带到雷霆峰东南脚下的 Moonwell of Purity，在井水里洗净，再回去找他交任务。玩家站在月亮井里使用泪滴，用不了。
+
+和 [2.2](#22-bathed-in-light药剂在哪里用都-requires-s) 是同一类问题：泪滴施放的 65514 Cleanse Elune's Tear（效果是直接完成任务 13919）要求附近有施法焦点 1614，可库里没有任何物体模板带这个焦点。井边看得见的两个 Moonwell 物体（177277 / 177278）是焦点 883，是另一种月亮井。TDB 4.4.2 有焦点模板（195109 Moonwell of Purity Spell Focus，服务器端隐形物体），但同样没有刷新点。
+
+修复（`sql-custom/2026_11_22_05_trip_to_the_moonwell_spell_focus.sql`）：照参考库补上模板，刷在两个 Moonwell 物体的正中（2904.26, -1399.6, 207.0），也是任务地图标记的位置，位置检查通过。焦点范围是 `data1 / 2`，即 4 码，所以要站进井里用。新加了物体模板，经同意重启后生效（当时 Vanhelsing 在线，就站在井里）。还没在游戏里验证。
