@@ -228,3 +228,15 @@ Thunder Peak（区域 4690）的 Sabina Pilgrim（34283）是 13877 Go With The 
 他的刷新坐标（2306.64, -960.69, 107.76）和 TDB 4.4.2 完全一样，但在这个客户端里，这个点离脚下最近的碰撞面（伐木机 93.4 码高的那层）还有 14 码，正好浮在两层平台之间。旁边的技师站在 98 和 117 码高的平台上，都是好的。人够不到他，尸体也在拾取距离之外。
 
 修复（`sql-custom/2026_11_22_17_goblin_braintrust_sploder_ground.sql`）：把他挪到西边 7 码的地面上，挨着一个站在地上的技师，位置检查通过。备份 `backup/sploder_178222_20261122.tsv`。经同意重启生效。还没在游戏里验证。
+
+### 2.13 Closure is Only Natural：用树枝对着恶魔之门不计数
+
+13766 要用 Gnarl's Bough（45545）关掉 Demon Fall Canyon 的 10 扇恶魔之门。计数挂在 Demon Gate Master Bunny（33767）身上，28 扇门（194493）每扇底下都有一只。
+
+树枝放出来的法术是 63578。它是对地面点施放的，目标类型是 `TARGET_UNIT_DEST_AREA_ENTRY`：点周围 5 码内某种指定的生物。可"指定哪种生物"要靠 `conditions` 表来写，这里是空的，所以法术什么都打不中。Bunny 自己也没有任何脚本，就算打中了也不会给计数。SFDB 和 TDB 4.4.2 里两样都没有。
+
+修复（`sql-custom/2026_11_22_18_closure_is_only_natural.sql`）：
+- 加一条条件，让 63578 只打 33767。
+- 给 Bunny 加 SmartAI：被 63578 打中就给施法者一次计数，然后这扇门和 Bunny 一起消失，2 分钟后重刷。
+
+条件和脚本已经热加载。Bunny 的 AIName 要重启才生效。还没在游戏里验证。
