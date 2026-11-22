@@ -130,3 +130,11 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 
 修复（`sql-custom/2026_11_22_01_of_their_own_design_wildfire_loot.sql`）：照 TDB 4.4.2 把 `data1` 设成 26865，并加一行拾取：26865 → 44967，任务需要时 100% 掉落（`-100`）。物体模板不能热加载，0 人在线时直接重启生效。还没在游戏里验证。
 
+
+### 2.2 Bathed in Light：药剂在哪里用都 "Requires %s"
+
+13642 由 Orendil Broadleaf 发布：把 Unbathed Concoction（45065）带到西边的 Lake Falathim，在 Elune 的月光下"沐浴"，变成 Bathed Concoction（45066）。药剂一用就提示 "Requires %s"，和黑海岸的 [1.11](#111-the-titans-terminal哪里都-requires-) 是同一类问题：法术 62981 要求附近有施法焦点 1600，可库里没有任何物体模板带这个焦点，客户端连焦点的名字都查不到，只剩一个占位符。
+
+湖边那道看得见的月光（Light of Elune，194651）是好的，但它只是装饰物体，不是施法焦点。TDB 4.4.2 有焦点模板（194343 Light of Elune Spell Focus，服务器端隐形物体），但同样没有刷新点。
+
+修复（`sql-custom/2026_11_22_02_bathed_in_light_spell_focus.sql`）：照参考库补上模板，刷在那道月光的正中（3073.65, 616.10, 6.46），位置检查通过。这个核心的施法焦点范围是 `data1 / 2`，即 4 码，所以要站进月光里用药剂。新加了物体模板，经同意重启后生效。还没在游戏里验证。
