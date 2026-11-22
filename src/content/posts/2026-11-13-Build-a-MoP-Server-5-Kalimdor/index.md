@@ -192,3 +192,11 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 点了以后又发现一个问题：点击法术 82781 Recover the Fallen: Loot FX 原本设成由点击者施放，而这个法术的目标是施法者自己，结果遗体身上的效果光环加到了玩家身上，而且是永久的，角色跳跃时像在水里上浮。给物品的那一步本来就由 SAI 完成，所以把点击改成由遗体对自己施放。
 
 修复（`sql-custom/2026_11_22_12_recover_the_fallen_clickable.sql`）：遗体模板的 `unit_flags` 改成 537133824、`type_flags` 改成 128，经同意重启生效（备份 `backup/laughing_sister_34426_flags_20261122.tsv`）；点击的 `cast_flags` 从 1 改成 0，热加载 `npc_spellclick_spells`。已经点过的角色身上那个光环要手动去掉。
+
+### 2.8 In the Hands of the Perverse：萨特不掉月光石
+
+13922 由 Avrus Illwhisper 发布，要 5 块 Fallen Moonstone（5508）。玩家打了地图标记那一片的怪，一块都没掉。
+
+月光石唯一的来源是 Shadethicket Oracle（3931）的掉落表（任务掉落 100%），而这个怪在 SFDB 和 TDB 4.4.2 里都没有刷新点。任务地图标记圈的是 Satyrnaar，那里刷的是 Felmusk 萨特（Satyr、Rogue、Felsworn、Shadowstalker，共 17 只），任务名说的"堕落者"也是他们。这几种萨特身上已经挂着同一带另外两个任务的物品，这一处只是漏了。
+
+修复（`sql-custom/2026_11_22_13_hands_of_the_perverse_moonstones.sql`）：按[《全局修复》1.8](/Build-a-MoP-Server-2-Global-Fixes/#18-批次四119-级的掉落表模式-a) 的规则（4 种来源、要 5 个、刷新点多于 3 个 → 50%），给这四种萨特加 50% 的任务掉落。掉落表热加载，不用重启。还没在游戏里验证。
