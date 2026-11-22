@@ -182,3 +182,13 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 - `sql-custom/2026_11_22_07_avrus_the_redeemed.sql`：在原 Avrus 的位置刷一个 Avrus the Redeemed（guid 9100437，模板光环 65317）；`spell_area` 从交完 13922 起、到交完 13924 为止给 65314。不用脚本，只靠这两条区域光环完成切换。
 
 两次都经同意重启（当时 Vanhelsing 在线）。还有一个核心问题：交任务时核心不会重新计算区域光环（只有接任务、换子区域和登录时才算），所以交完 13922 那一刻，原来的 Avrus 不会马上消失，被救赎的也不会马上出现，要走出塔区再回来，或者重新登录。已经在 `Player::RewardQuest` 里加了重新计算（交任务后调用 `UpdateZoneDependentAuras` / `UpdateAreaDependentAuras`），等下一批 C++ 改动一起编译。都还没在游戏里验证。
+
+### 2.7 Recover the Fallen：Laughing Sister 的遗体点不了
+
+13928 要从雷恩斯伍德一带收回 10 具 Laughing Sister 的遗体（物品 46543）。这个物品原来没有任何来源，[《全局修复》1.14](/Build-a-MoP-Server-2-Global-Fixes/#114-批次十2029-级) 里给遗体（34426，17 具，和 TDB 4.4.2 的位置、数量一样）加了右键点击：有这个任务时点遗体，SAI 把遗体放进背包，遗体消失，2 分钟后重刷。TDB 里这具遗体既没有点击，也没有脚本和拾取，两个库都没有现成做法。
+
+实测鼠标放上去什么反应都没有。和能点的 [2.3](#23-respect-for-the-fallen塔下的锤子拿不到) 里 Delgren、Feero 的遗体相比，任务标记、点击设置、假死光环都一样，只有几个标志位不同：`unit_flags` 多了 0x8000，`type_flags` 多了 0x400 和 0x1000000（这个核心里都是没有命名的未知位）。照能点的那两具改过来以后就能点了，第一具遗体顺利进了背包。所以原因就在这三位里，具体是哪一位没再细分。
+
+点了以后又发现一个问题：点击法术 82781 Recover the Fallen: Loot FX 原本设成由点击者施放，而这个法术的目标是施法者自己，结果遗体身上的效果光环加到了玩家身上，而且是永久的，角色跳跃时像在水里上浮。给物品的那一步本来就由 SAI 完成，所以把点击改成由遗体对自己施放。
+
+修复（`sql-custom/2026_11_22_12_recover_the_fallen_clickable.sql`）：遗体模板的 `unit_flags` 改成 537133824、`type_flags` 改成 128，经同意重启生效（备份 `backup/laughing_sister_34426_flags_20261122.tsv`）；点击的 `cast_flags` 从 1 改成 0，热加载 `npc_spellclick_spells`。已经点过的角色身上那个光环要手动去掉。
