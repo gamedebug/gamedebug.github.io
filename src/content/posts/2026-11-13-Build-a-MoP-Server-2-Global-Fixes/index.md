@@ -2451,3 +2451,34 @@ Nolan 的任务之前已经全部直接写成完成，所以他只需要能过�
 文件：`sql-custom/2026_11_26_03_lost_vikings.sql`；C++ 在 `spell_quest.cpp`（npc_lost_vikings_camp、npc_lost_viking_brother、spell_lost_vikings_eric_ability、spell_lost_vikings_command）和 `TemporarySummon.cpp`；备份 `backup/lost_vikings_20261126.tsv`、`backup/spell_quest.cpp.bak-20261126`、`backup/TemporarySummon.cpp.bak-20261126`。
 
 全部在 0 人在线时重启生效（三矮人的 C++ 和 11 月 22 日攒下的 Avrus 光环刷新改动一起编译），按批量修复的做法没有逐个上号验证。
+
+### 2.18 看不见的 NPC 和用不了的任务物品：全库审计（50–59 级）
+
+2026-11-26，接着 [2.17](#217-看不见的-npc-和用不了的任务物品全库审计4049-级) 往下做。这一档审计列出来的施法焦点问题，几乎都出在发布人根本没有刷新点的任务上（安戈洛、费伍德森林），光补焦点没用，见 [2.19](#219-整片区域没刷怪按-tdb-补刷新点先补菲拉斯)。真正能修的是三处：
+
+| 任务 | NPC | 问题 | 修法 |
+|---|---|---|---|
+| 燃烧平原 Morgan's Vigil 整个任务点（28311–28326） | John J. Keeshan（48306）、Colonel Troteman（48307） | 带 Generic Quest Invisibility 3（60921，9 号）/ 7（85096，15 号），哪里都拿不到侦测 | 去掉光环（各只有一个刷新点） |
+| 28314 Blood Tour、28315 Draconic Vanguard、28316 A Deal With a Dragon | 跟着你走的 Keeshan（48346） | 这三个任务要 Keeshan 陪着你巡游，交任务也交给跟着你的这个他。但没有任何东西会召唤他（客户端里有 89869 "Summon Personal Guardian (Keeshan 03)"） | C++：接三个任务里任意一个就召唤他，他会跟着你一起打；下线或死亡后丢了，回 Morgan's Vigil 找 Keeshan 对话就能叫回来 |
+| 悲伤沼泽 Harborage 整条任务线（27875–27919） | Anchorite Avuun（17127） | Generic Quest Invisibility 1（49414） | 去掉光环 |
+
+文件：`sql-custom/2026_11_26_04_audit_50_59.sql`；C++ 在 `spell_quest.cpp`（npc_keeshan_morgans_vigil，跟随的 Keeshan 用三矮人那套跟随 AI）；备份 `backup/audit_50_59_20261126.tsv`。0 人在线时重启生效，没有逐个验证。
+
+**没修的：** 28320 Assault on Dreadmaul Rock 是载具任务（杀 200 个黑石入侵者，丢了载具可以用 Horn of the Callers 再叫一个），载具在两个库里都找不到，而它又是燃烧平原后面任务的前置。先放着，等快练到 50 级再说。
+
+### 2.19 整片区域没刷怪：按 TDB 补刷新点，先补菲拉斯
+
+做 50–59 级审计时发现，好多任务的发布人根本没有刷新点。于是查了全库：联盟（或两个阵营都能接）的任务里，有 **344 个发布人在我们库里没有刷新点，而 TDB 4.4.2 里有**，一共涉及 791 个任务。按地区数，最多的是暮光高地（87 个发布人）、海加尔山（43）、费伍德森林（31）、凄凉之地（26）、菲拉斯（24）、安戈洛环形山（18）、灼热峡谷（13），另外还有一些副本。石爪山（[2.15](#215-看不见的-npc-和用不了的任务物品全库审计2039-级)）也是同一类问题。看样子这些大地图变迁时改版的地区，SFDB 压根没有刷怪。
+
+菲拉斯最严重：整个区我们只有 35 个生物、30 个物体，TDB 里有 2243 个生物、810 个物体，梦行者之憩、羽月要塞、石槌要塞的发布人和野外的怪基本都没有。Mayo 和 Evan 马上要练到这里，所以先补菲拉斯，之后照她们的路线一个区一个区补。
+
+做法（两个新脚本，都可以给别的区重复用）：
+
+- `tools/zone_gap.py <地图> <区域>`：用地图文件算出每个刷新点属于哪个区域，再对比 TDB 和我们的库。同一个生物 15 码内已经有的就算已有。结果在 `audit/zone_gap_feralas_20261126.json`。
+- `tools/gen_zone_import.py`：生成导入 SQL。位置照抄 TDB（抓包来的）。会跳过三类：分相位才出现的、节日活动专用的（比如万圣节的南瓜，256 个物体）、在 TDB 刷新池里的。同时带上 TDB 的装备、`creature_addon`（坐骑、站姿、表情、光环，但去掉隐身光环，免得又出现看不见的 NPC）、巡逻路线（32 个会巡逻的生物，2648 个路径点）。宝箱类物体照[《新手村》里箱子"已被使用"那次修复](/Build-a-MoP-Server-3-Starter-Zones/#24477-dwarven-artifacts箱子已被使用全服修复)的规矩，把状态设成 1。
+
+结果：补了 **2214 个生物**（guid 9200001–9202214，其中 114 个带 addon）和 **538 个物体**（guid 9200001–9200538：矿点和草药约 300 个、陷阱、营火、装饰等）。顺便按 TDB 修了两个模板：General Skessesh（40051，25458 的目标）原来是 1 级友好的占位模板，改成阵营 2205、37 级；Gnarl Leafbrother（5354）改成 TDB 的阵营和等级。
+
+补完以后，菲拉斯只剩两个发布人还没有刷新点：Sensiria（40131）和 Khan Shodo（36487）。TDB 里也没有他们，应该是事件里召唤出来的，以后再看。
+
+文件 `sql-custom/2026_11_26_05_feralas_spawns_from_tdb.sql`；TDB guid 和我们 guid 的对照在 `audit/zone_gap_feralas_20261126_guidmap.json`；改过的模板备份在 `backup/feralas_templates_20261126.tsv`。要撤销，删掉上面的 guid 范围就行。0 人在线时重启生效，启动日志没有相关报错，没有逐个验证。
