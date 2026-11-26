@@ -181,7 +181,7 @@ Horoo 的阵营模板是 1924（阵营 1065 "Monster, Zone Force Reaction 1"）�
 - `sql-custom/2026_11_22_06_raynewood_avrus_see_invisibility.sql`：`spell_area` 让玩家在 Raynewood Tower（区域 4705，塔周围 60 码都是这个区域）从接 13921 起、到交完 13922 为止自动带 65315。
 - `sql-custom/2026_11_22_07_avrus_the_redeemed.sql`：在原 Avrus 的位置刷一个 Avrus the Redeemed（guid 9100437，模板光环 65317）；`spell_area` 从交完 13922 起、到交完 13924 为止给 65314。不用脚本，只靠这两条区域光环完成切换。
 
-两次都经同意重启（当时 Vanhelsing 在线）。还有一个核心问题：交任务时核心不会重新计算区域光环（只有接任务、换子区域和登录时才算），所以交完 13922 那一刻，原来的 Avrus 不会马上消失，被救赎的也不会马上出现，要走出塔区再回来，或者重新登录。已经在 `Player::RewardQuest` 里加了重新计算（交任务后调用 `UpdateZoneDependentAuras` / `UpdateAreaDependentAuras`），等下一批 C++ 改动一起编译。都还没在游戏里验证。
+两次都经同意重启（当时 Vanhelsing 在线）。还有一个核心问题：交任务时核心不会重新计算区域光环（只有接任务、换子区域和登录时才算），所以交完 13922 那一刻，原来的 Avrus 不会马上消失，被救赎的也不会马上出现，要走出塔区再回来，或者重新登录。已经在 `Player::RewardQuest` 里加了重新计算（交任务后调用 `UpdateZoneDependentAuras` / `UpdateAreaDependentAuras`），2026-11-26 和三矮人任务（[《全局修复》2.17](/Build-a-MoP-Server-2-Global-Fixes/#217-看不见的-npc-和用不了的任务物品全库审计4049-级)）一起编译上线。都还没在游戏里验证。
 
 ### 2.7 Recover the Fallen：Laughing Sister 的遗体点不了
 

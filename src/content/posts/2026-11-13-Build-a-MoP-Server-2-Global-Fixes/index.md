@@ -1834,3 +1834,620 @@ Nolan 的任务之前已经全部直接写成完成，所以他只需要能过�
 - **Unto Dust Thou Shalt Return**：副本里的任务，以后单独看。
 
 全部在 0 人在线时重启生效（Into the Flames 的修正后来热加载），都还没在游戏里验证。
+
+### 2.16 物体名字显示成 unk name：补上 557 个
+
+2026-11-23 有玩家报告：熊猫人新手岛上的卷轴，鼠标移上去名字显示 unknown name，但能点，任务也能计数。查下来，SFDB 的 `gameobject_template` 里有 8989 个物体模板的名字写的是占位用的 `unk name`，客户端就直接把它当名字显示出来。29408 The Lesson of the Burning Scroll 用到的东西都正常：任务物品 The Master's Flame（80212）和要点的 Edict of Temperance（210986）名字都对。报告里说的卷轴应该是 29778 Rewritten Wisdoms 的 Defaced Scroll of Wisdom（209656/209660/209661/209663，新手岛一共刷了 40 个）。玩家已经下线，还没确认。
+
+修复（`sql-custom/2026_11_23_01_go_unk_names.sql`）：只改名字。如果我们库里施法条文字是空的，就一起补上。类型和 data 都没动。
+- 547 个按编号对照 TDB 4.4.2 补上名字。其中只有 2 个在游戏里有刷新点（205033 Stove、209276 Staked Skin），其余都没刷新，只有被法术召唤出来时才看得到。
+- TDB 里没有的熊猫人时期物体：只看游戏里真刷出来、能交互的（宝箱、按钮、任务物体、传送门、邮箱、椅子之类），一共 25 种。按编号去 Wowhead 查到 10 个名字。剩下 15 个（209575-209577、209685、209924，还有 215802 等 10 把椅子）Wowhead 上也查不到，保持原样。
+- 还剩 8432 个 `unk name`，几乎都是门、装饰这类玩家看不到名字或者没刷新的东西，没动。
+- 已经缓存过旧名字的客户端，要删掉 Cache 文件夹才能看到新名字。
+
+备份 `backup/go_unk_name_20261123.tsv`（修改前全部 8989 行）。已重启生效（当时没人在线），没有逐个验证。
+
+另外发现：209276 Staked Skin 是 29519 Tan My Hide（暗月岛）的任务目标。我们库里它的类型是 0（门），TDB 里是 10（可点击物体），这个任务可能做不了，以后另查。
+
+<details><summary>逐项清单（557 条）</summary>
+
+| 编号 | 名字 | 来源 |
+|---|---|---|
+| 4 | Bonfire Damage | TDB442 |
+| 129 | Naxx Teleporter trap | TDB442 |
+| 3645 | Ripe Watermelon | TDB442 |
+| 3692 | Food Crate | TDB442 |
+| 3698 | Food Crate | TDB442 |
+| 12653 | Ghost Saber Trap | TDB442 |
+| 56817 | Campfire | TDB442 |
+| 128972 | Shallow Grave TRAP | TDB442 |
+| 136924 | Bench | TDB442 |
+| 146087 | Bonfire | TDB442 |
+| 147075 | Doodad_GeneralChairLoEnd02 | TDB442 |
+| 147076 | Doodad_GeneralChairLoEnd04 | TDB442 |
+| 147077 | Doodad_GeneralChairLoEnd05 | TDB442 |
+| 148500 | Suzi Test Object 1 | TDB442 |
+| 175295 | Doodad_MediumBrazierNoOmni68 | TDB442 |
+| 175296 | Doodad_MediumBrazierPurple14 | TDB442 |
+| 175297 | Doodad_SmallBrazierPurple02 | TDB442 |
+| 175299 | Doodad_MediumBrazierPurple02 | TDB442 |
+| 175301 | Doodad_MediumBrazierPurple04 | TDB442 |
+| 175303 | Doodad_OrcSign_RekkulsPoisons | TDB442 |
+| 175304 | Doodad_OrcSign_ShadowswiftBrotherhood | TDB442 |
+| 175309 | Mighty Blaze | TDB442 |
+| 175339 | Doodad_SmallPortcullis04 | TDB442 |
+| 175340 | Doodad_SmallPortcullis03 | TDB442 |
+| 175341 | Doodad_SmallPortcullis02 | TDB442 |
+| 175590 | Spire Spider Egg Trap | TDB442 |
+| 175622 | Rookery Egg Spawner | TDB442 |
+| 176094 | Andorhal Tower One | TDB442 |
+| 176096 | Andorhal Tower Three | TDB442 |
+| 176097 | Andorhal Tower Four | TDB442 |
+| 176453 | Meat Rack | TDB442 |
+| 176592 | Shellfish Trap | TDB442 |
+| 176750 | Kodo Bones | TDB442 |
+| 178188 | Molten Core Circle BARON | TDB442 |
+| 178547 | Jeztor's Beacon | TDB442 |
+| 178549 | Mulverick's Beacon | TDB442 |
+| 178644 | Ryson's All Seeing Eye Trap | TDB442 |
+| 178664 | Steamsaw | TDB442 |
+| 178665 | Steamsaw | TDB442 |
+| 179527 | Warpwood Pod - Root | TDB442 |
+| 179530 | Warpwood Pod - Spore | TDB442 |
+| 179531 | Warpwood Pod - Summon | TDB442 |
+| 179675 | Warlock Mount Quest Portal Spell Focus | TDB442 |
+| 179688 | Ritual Candle Aura | TDB442 |
+| 179971 | Elf Crate 01 | TDB442 |
+| 180574 | Wickerman Guardian Ember | TDB442 |
+| 180589 | MetalBars01Truesilver | TDB442 |
+| 180609 | Doodad_GeneralChairLoEnd02 | TDB442 |
+| 180610 | Doodad_GeneralChairLoEnd04 | TDB442 |
+| 180611 | Doodad_GeneralChairLoEnd05 | TDB442 |
+| 180670 | Bay of Storms Lightning Storm | TDB442 |
+| 180671 | Xandivious' Demon Bag | TDB442 |
+| 180672 | Demon Summoning Torch | TDB442 |
+| 181074 | Arena Spoils | TDB442 |
+| 181207 | Runed Demonic Blade | TDB442 |
+| 181751 | Remote Mail Terminal | TDB442 |
+| 181831 | Sealed Tome | TDB442 |
+| 181838 | Sealed Tome | TDB442 |
+| 181840 | Sealed Tome | TDB442 |
+| 181842 | Sealed Tome | TDB442 |
+| 181844 | Sealed Tome | TDB442 |
+| 184600 | Felcannon Ammunition (DEPRECATED) | TDB442 |
+| 184601 | Felcannon Ammunition (DEPRECATED) | TDB442 |
+| 184602 | Felcannon Ammunition (DEPRECATED | TDB442 |
+| 184603 | Felcannon Ammunition 4 | TDB442 |
+| 184633 | Forge | TDB442 |
+| 184654 | Hellfire Fire - Quest - Felcannon Explosion | TDB442 |
+| 184981 | Poodad Trap | TDB442 |
+| 185001 | Shadow Council Tent 01 | TDB442 |
+| 185002 | Shadow Council Tent 02 | TDB442 |
+| 185003 | Shadow Council Torch | TDB442 |
+| 186421 | Syndicate Documents | TDB442 |
+| 186462 | Holiday - Brewfest - Mole Machine | TDB442 |
+| 186471 | Holiday - Brewfest - Dark Iron - Mug Trap | TDB442 |
+| 187191 | Standing, Exterior, Medium - Xmas | TDB442 |
+| 188093 | Temple City Transport Orb | TDB442 |
+| 188094 | Naxxanar Transport Orb | TDB442 |
+| 188095 | Naxxanar Transport Orb | TDB442 |
+| 188097 | Portal to Lower Naxxanar | TDB442 |
+| 188098 | Portal to Upper Naxxanar | TDB442 |
+| 188099 | Portal to the Temple City | TDB442 |
+| 188110 | Glacial Stone | TDB442 |
+| 188124 | Ice Chest | TDB442 |
+| 188130 | Ice Stone | TDB442 |
+| 188134 | Ice Stone | TDB442 |
+| 188135 | Ice Stone | TDB442 |
+| 188139 | Ice Stone | TDB442 |
+| 188146 | Ice Stone | TDB442 |
+| 188216 | Armor Stand | TDB442 |
+| 188427 | Portal to Upper Naxxanar | TDB442 |
+| 188509 | Dark Iron Mole Machine (Minion Summoner Trap) | TDB442 |
+| 188597 | Lightwell | TDB442 |
+| 188598 | Lightwell | TDB442 |
+| 188602 | Honeycone | TDB442 |
+| 188603 | Quickpoppy | TDB442 |
+| 188714 | Orb of the Nexus | TDB442 |
+| 190217 | Forsaken Tent 04 | TDB442 |
+| 190485 | Wintergrasp Tower Banner | TDB442 |
+| 190486 | Wintergrasp Tower Banner | TDB442 |
+| 190631 | The Eye of Acherus | TDB442 |
+| 190816 | Drakuru's Platform | TDB442 |
+| 190897 | Drakuru's Stairs | TDB442 |
+| 191146 | Ensnaring Trap | TDB442 |
+| 191319 | [PH] Guild Vault | TDB442 |
+| 191367 | Dominion Over Acherus Generator | TDB442 |
+| 192055 | Rockfin Grouper School | TDB442 |
+| 192076 | The Guardian's Charge | TDB442 |
+| 192409 | Alliance Banner | TDB442 |
+| 192552 | Horn of Elemental Fury | TDB442 |
+| 193417 | Sewer Healing Potion | TDB442 |
+| 193418 | Sewer Mana Potion | TDB442 |
+| 193419 | Sewer Noggenfogger Elixir | TDB442 |
+| 193788 | Cultist's Cauldron | TDB442 |
+| 195102 | Ethel Rethor | TDB442 |
+| 195103 | Karnum's Glade | TDB442 |
+| 195104 | Nijel's Point | TDB442 |
+| 195493 | Kaja'mite Deposit Trap A | TDB442 |
+| 195499 | Kaja'mite Deposit Trap B | TDB442 |
+| 195500 | Kaja'mite Deposit Trap C | TDB442 |
+| 200301 | Impaling Spine | TDB442 |
+| 201294 | Uther's Draenei Tribute | TDB442 |
+| 202109 | Orc Table | TDB442 |
+| 202111 | Mighty Blaze | TDB442 |
+| 202127 | Embers | TDB442 |
+| 202137 | Kaldorei Artifact | TDB442 |
+| 202140 | Barricade | TDB442 |
+| 202248 | Naga Banner | TDB442 |
+| 202276 | Big Blue Bonfire | TDB442 |
+| 202401 | Mole Machine | TDB442 |
+| 202453 | Big Haunch of Stormsnout Meat | TDB442 |
+| 202461 | Captured Tower Banner - Alliance | TDB442 |
+| 202463 | Land Mine | TDB442 |
+| 202516 | Emerald Portal | TDB442 |
+| 202547 | Tablets of the Earth | TDB442 |
+| 202548 | Mysterious Crystal | TDB442 |
+| 202555 | Tauren Wind Break | TDB442 |
+| 202562 | Emergency Fire Valve | TDB442 |
+| 202565 | Mysterious Crystal | TDB442 |
+| 202566 | Tablets of Fire | TDB442 |
+| 202567 | Keg of Ol' Barkerstout | TDB442 |
+| 202570 | Mysterious Cheese | TDB442 |
+| 202571 | Bael'dun Fortress Schematics | TDB442 |
+| 202617 | Orgrimmar Crate | TDB442 |
+| 202649 | Elemental Fire for the Soul | TDB442 |
+| 202650 | What Does 'The End of All Things' Mean for Me? | TDB442 |
+| 202651 | Finding Security and Comfort in a Doomed World | TDB442 |
+| 202663 | Beware: Dangerous Cultists | TDB442 |
+| 202700 | Beware: Dangerous Cultists | TDB442 |
+| 202707 | Cultist Tent | TDB442 |
+| 202708 | Cultist Tent 2 | TDB442 |
+| 202720 | Cultist Crate | TDB442 |
+| 202721 | Cultist Barrel | TDB442 |
+| 202722 | Cultist Table | TDB442 |
+| 202726 | Cultist Altar | TDB442 |
+| 202730 | Cultist Elemental Device | TDB442 |
+| 202735 | Elemental Device | TDB442 |
+| 202755 | Tablet Quest Smoke | TDB442 |
+| 202789 | Elemental Device | TDB442 |
+| 202986 | Cultist Banner | TDB442 |
+| 202987 | Cultist Banner 2 | TDB442 |
+| 203302 | STAND ON ME TO GET OUT | TDB442 |
+| 203307 | Wiggleweed | TDB442 |
+| 203404 | Nespirah Abscess | TDB442 |
+| 203414 | Krom'gar "Elf Killer" | TDB442 |
+| 203462 | Council Table | TDB442 |
+| 203463 | Council Chair | TDB442 |
+| 203632 | Doodad_StratholmeFloatingEmbers38 | TDB442 |
+| 203633 | Doodad_StratholmeFloatingEmbers39 | TDB442 |
+| 203726 | Doodad_StratholmeFloatingEmbers48 | TDB442 |
+| 203727 | Doodad_StratholmeFloatingEmbers44 | TDB442 |
+| 203728 | Doodad_StratholmeFloatingEmbers49 | TDB442 |
+| 203754 | Sandbag Stack | TDB442 |
+| 203761 | Barricade Box | TDB442 |
+| 203797 | Gates of Gnomeregan Tent | TDB442 |
+| 203798 | Council Table | TDB442 |
+| 203861 | Display Base | TDB442 |
+| 203923 | Command Tent Light | TDB442 |
+| 203971 | Prickly Pear Fruit Trap | TDB442 |
+| 203991 | Doodad_StratholmeFloatingEmbers61 | TDB442 |
+| 203994 | Doodad_StratholmeFloatingEmbers64 | TDB442 |
+| 203995 | Doodad_StratholmeFloatingEmbers66 | TDB442 |
+| 204020 | Barricade Box | TDB442 |
+| 204023 | Makeshift Cage | TDB442 |
+| 204024 | Makeshift Cage | TDB442 |
+| 204025 | Makeshift Cage | TDB442 |
+| 204026 | Makeshift Cage | TDB442 |
+| 204027 | Makeshift Cage | TDB442 |
+| 204028 | Makeshift Cage | TDB442 |
+| 204029 | Makeshift Cage | TDB442 |
+| 204030 | Makeshift Cage | TDB442 |
+| 204031 | Makeshift Cage | TDB442 |
+| 204032 | Makeshift Cage | TDB442 |
+| 204033 | Makeshift Cage | TDB442 |
+| 204034 | Makeshift Cage | TDB442 |
+| 204035 | Makeshift Cage | TDB442 |
+| 204036 | Makeshift Cage | TDB442 |
+| 204037 | Makeshift Cage | TDB442 |
+| 204038 | Makeshift Cage | TDB442 |
+| 204040 | Tauren Wind Break Post | TDB442 |
+| 204565 | Pirate Ship (Damsel's Luck) | TDB442 |
+| 204566 | Pirate Ship (Riptide) | TDB442 |
+| 204567 | Pirate Ship | TDB442 |
+| 204568 | Pirate Ship | TDB442 |
+| 204569 | Pirate Ship | TDB442 |
+| 204570 | Pirate Ship | TDB442 |
+| 204571 | Pirate Ship | TDB442 |
+| 204572 | Pirate Ship | TDB442 |
+| 204585 | Blackwater Rope | TDB442 |
+| 204586 | Bloodsail Rope | TDB442 |
+| 204587 | Narkk's Handbombs | TDB442 |
+| 204927 | Ozumat Tentacle (Down Angle) | TDB442 |
+| 204944 | Ozumat Tentacle (Up Angle) | TDB442 |
+| 204945 | Explosive Trap | TDB442 |
+| 205006 | Anvil | TDB442 |
+| 205007 | Anvil | TDB442 |
+| 205010 | Forge | TDB442 |
+| 205014 | Campfire | TDB442 |
+| 205016 | Bonfire | TDB442 |
+| 205033 | Stove | TDB442 |
+| 205051 | Gyromechanic Gear | TDB442 |
+| 205055 | Restabilization Cog | TDB442 |
+| 205471 | Cauldron | TDB442 |
+| 205473 | Campfire | TDB442 |
+| 205474 | Cauldron | TDB442 |
+| 205475 | Campfire | TDB442 |
+| 205555 | Waterworks Banner | TDB442 |
+| 205556 | Mine Banner | TDB442 |
+| 205557 | Lighthouse Banner | TDB442 |
+| 205577 | Fire | TDB442 |
+| 205578 | Fire | TDB442 |
+| 205890 | Highvale Report | TDB442 |
+| 205891 | Highvale Records | TDB442 |
+| 205892 | Highvale Notes | TDB442 |
+| 206076 | Wreath scale 0.25 | TDB442 |
+| 206077 | Christmas Tree (Small) | TDB442 |
+| 206078 | XMasGift02 scale 1.5 | TDB442 |
+| 206079 | XMasGift06 scale 1.5 | TDB442 |
+| 206080 | XMasGift03 scale 1.5 | TDB442 |
+| 206082 | XMasGift05 scale 1.5 | TDB442 |
+| 206083 | XMasGift01 scale 1.5 | TDB442 |
+| 206084 | XMasGift04 scale 1.5 | TDB442 |
+| 206104 | Christmas Tree (Medium) | TDB442 |
+| 206106 | Wreath scale 0.5 | TDB442 |
+| 206115 | Lights x3 | TDB442 |
+| 206205 | Wreath scale 2.5 | TDB442 |
+| 206308 | Cultist Candle | TDB442 |
+| 206323 | Cultist Ritual Circle | TDB442 |
+| 206324 | Cultist Rune | TDB442 |
+| 206567 | Cult Initiate Robes | TDB442 |
+| 206568 | Cult Initiate Robes | TDB442 |
+| 206676 | Horde Banner | TDB442 |
+| 206696 | Doodad_OrcBrazierStreetLamp01 | TDB442 |
+| 206786 | Windspeaker Pylon | TDB442 |
+| 207201 | Hobo Christmas Tree | TDB442 |
+| 207202 | XMasGift01 scale 0.5 | TDB442 |
+| 207203 | XMasGift02 scale 0.5 | TDB442 |
+| 207204 | XMasStocking01 scale 0.5 | TDB442 |
+| 207205 | Flames scale 0.05 | TDB442 |
+| 207228 | Hanging, Streamer x3 - Brewfest (scale 1.5) | TDB442 |
+| 207229 | Hanging, Streamer x3 - Xmas (scale 1.5) | TDB442 |
+| 207230 | Hanging, Streamer x3 - MFF (scale 1.5) | TDB442 |
+| 207329 | Cauldron | TDB442 |
+| 207356 | Big Cauldron of Battle | TDB442 |
+| 207358 | Big Cauldron of Battle | TDB442 |
+| 207620 | Elemental Fire for the Soul | TDB442 |
+| 207621 | What Does 'The End of All Things' Mean for Me? | TDB442 |
+| 207622 | Finding Security and Comfort in a Doomed World | TDB442 |
+| 207677 | Spare Initiate Robes | TDB442 |
+| 207678 | Spare Initiate's Robes | TDB442 |
+| 207700 | (TESTING) Placeholder x3 Fishing Node [DND] | TDB442 |
+| 207707 | Campfire | TDB442 |
+| 207891 | Heart of Wind | TDB442 |
+| 207893 | Heart of Wind | TDB442 |
+| 207894 | Heart of Wind | TDB442 |
+| 208077 | Web Wide | TDB442 |
+| 208120 | Candy Bucket | TDB442 |
+| 208780 | Lighthouse Banner | TDB442 |
+| 208781 | Lighthouse Banner | TDB442 |
+| 208861 | 'Young' Ironjaw | TDB442 |
+| 208933 | Fandral's Flame | TDB442 |
+| 208934 | Fandral's Flame | TDB442 |
+| 208949 | Test Object | TDB442 |
+| 208980 | Netherstorm Flag | TDB442 |
+| 208982 | Mage Tower Banner | TDB442 |
+| 208983 | Draenei Ruins Banner | TDB442 |
+| 208984 | Blood Elf Banner | TDB442 |
+| 208985 | Fel Reaver Banner | TDB442 |
+| 209059 | Blood Nettle | TDB442 |
+| 209100 | Branch of Nordrassil | TDB442 |
+| 209107 | Anvil of Conflagration Portal | TDB442 |
+| 209254 | Lava Bridge | TDB442 |
+| 209261 | Cache of the Fire Lord | TDB442 |
+| 209276 | Staked Skin | TDB442 |
+| 209364 | The Dimming Flame | Wowhead |
+| 209465 | Greench Stash | TDB442 |
+| 209473 | Metzen Cage Segment | TDB442 |
+| 209474 | Metzen Cage Post | TDB442 |
+| 209497 | Stolen Treats | TDB442 |
+| 209506 | Stolen Treats | TDB442 |
+| 209626 | Break Gong | Wowhead |
+| 209656 | Defaced Scroll of Wisdom | Wowhead |
+| 209660 | Defaced Scroll of Wisdom | Wowhead |
+| 209661 | Defaced Scroll of Wisdom | Wowhead |
+| 209663 | Defaced Scroll of Wisdom | Wowhead |
+| 209833 | Silk Patch | TDB442 |
+| 209894 | Greater Cache of the Aspects | TDB442 |
+| 209896 | Greater Cache of the Aspects | TDB442 |
+| 209925 | Brazier | TDB442 |
+| 209927 | Convenient Rope | TDB442 |
+| 209928 | Unsecured Vent | TDB442 |
+| 209967 | Methane Bomb Pile | TDB442 |
+| 209974 | Barrel of Slickies | TDB442 |
+| 210083 | Horde Banner | TDB442 |
+| 210160 | Lesser Cache of the Aspects | TDB442 |
+| 210161 | Lesser Cache of the Aspects | TDB442 |
+| 210162 | Lesser Cache of the Aspects | TDB442 |
+| 210217 | Elementium Fragment | TDB442 |
+| 210219 | Elementium Fragment | TDB442 |
+| 210389 | Nala's Bucket | TDB442 |
+| 210395 | Dezco's Baby | TDB442 |
+| 210396 | Leza's Pyre | TDB442 |
+| 210401 | Leza's Flowers | TDB442 |
+| 210587 | Paw'don Village | TDB442 |
+| 210926 | Fresco Panel 1 | TDB442 |
+| 211271 | Blanche's Lightning Lager | TDB442 |
+| 211272 | Blanche's Lightning Lager Keg Stand | TDB442 |
+| 211320 | Mok Mok's Idol | TDB442 |
+| 211584 | Ancient Control Console | TDB442 |
+| 212038 | Ancient Amber Chunk | TDB442 |
+| 212039 | Amplification Crystal | TDB442 |
+| 212040 | Amplification Crystal | TDB442 |
+| 212041 | Amplification Crystal | TDB442 |
+| 212042 | Amplification Crystal | TDB442 |
+| 212076 | Mogu Crypt Doors (phased) | TDB442 |
+| 212150 | Honeydew Village | TDB442 |
+| 212225 | Shan'ze Cage | TDB442 |
+| 212248 | Unga Keg | TDB442 |
+| 212262 | Slippery Banana | TDB442 |
+| 212268 | Banana | TDB442 |
+| 212269 | Barrel | TDB442 |
+| 212278 | Protected Unga Keg | TDB442 |
+| 212508 | Frenzy Fish | TDB442 |
+| 212989 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212991 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212992 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212993 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212994 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212995 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212996 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212997 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212998 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 212999 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213000 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213001 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213002 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213003 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213005 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213006 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213007 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213008 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213009 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213010 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213025 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213026 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213027 | Grookin Hill Phased Horde Supplies | TDB442 |
+| 213253 | Horde Crate | TDB442 |
+| 213266 | Amplification Crystal | TDB442 |
+| 213313 | Mogu'Shan Palace - Placeholder Doors Large | TDB442 |
+| 213326 | Amber Pot | TDB442 |
+| 213362 | Ship's Locker | TDB442 |
+| 213363 | Wodin's Mantid Shanker | TDB442 |
+| 213364 | Ancient Pandaren Mining Pick | TDB442 |
+| 214354 | Liu Lang's Final Rest | Wowhead |
+| 214429 | Worn Tracks | TDB442 |
+| 214430 | Barely-Visible Tracks | TDB442 |
+| 214431 | Muddy Tracks | TDB442 |
+| 214432 | Mysterious Tracks | TDB442 |
+| 214433 | Heavy Tracks | TDB442 |
+| 214434 | Puzzling Tracks | TDB442 |
+| 214435 | Dusty Tracks | TDB442 |
+| 214437 | Flooded Tracks | TDB442 |
+| 214500 | Instance Portal (Party + Heroic) | TDB442 |
+| 214501 | Instance Portal (Party + Heroic) | TDB442 |
+| 214502 | Instance Portal (Party + Heroic) | TDB442 |
+| 214503 | Instance Portal (Party + Heroic) | TDB442 |
+| 214507 | Instance Portal (Party + Heroic) | TDB442 |
+| 214517 | Instance Portal (Party + Heroic) | TDB442 |
+| 214523 | Instance Portal (Raid 10/25 No Heroic) | TDB442 |
+| 214524 | Instance Portal (Raid 10/25 No Heroic) | TDB442 |
+| 214528 | Instance Portal (Raid 10/25 No Heroic) | TDB442 |
+| 214536 | Instance Portal (Raid 10/25 No Heroic) | TDB442 |
+| 214538 | Instance Portal (Raid 10/25 No Heroic) | TDB442 |
+| 214794 | Ancient Mogu Treasure | TDB442 |
+| 215833 | Kril'mandar's Emblem | TDB442 |
+| 215852 | Portal to Orgrimmar | TDB442 |
+| 215873 | Candy Bucket | TDB442 |
+| 216083 | Speed | TDB442 |
+| 216097 | Armor | TDB442 |
+| 216100 | Mailbox | Wowhead |
+| 216232 | Wooden Spikes | TDB442 |
+| 216233 | Boiling Bubbles | TDB442 |
+| 216257 | Bomb Wagon | TDB442 |
+| 216272 | Heavily-Chewed Silkweed | TDB442 |
+| 216313 | Cackleberry Trap | TDB442 |
+| 216368 | Campfire | TDB442 |
+| 216369 | Forge | TDB442 |
+| 216370 | Anvil | TDB442 |
+| 216371 | Bonfire | TDB442 |
+| 216372 | Brazier | TDB442 |
+| 216373 | Brazier | TDB442 |
+| 216374 | Brazier | TDB442 |
+| 216375 | Brazier | TDB442 |
+| 216376 | Brazier | TDB442 |
+| 216377 | Bonfire | TDB442 |
+| 216378 | Brazier | TDB442 |
+| 216379 | Brazier | TDB442 |
+| 216380 | Brazier | TDB442 |
+| 216381 | Brazier | TDB442 |
+| 216382 | Forge | TDB442 |
+| 216383 | Anvil | TDB442 |
+| 216384 | Brazier | TDB442 |
+| 216385 | Bonfire | TDB442 |
+| 216386 | Brazier | TDB442 |
+| 216387 | Mailbox | TDB442 |
+| 216388 | Brazier | TDB442 |
+| 216389 | Brazier | TDB442 |
+| 216390 | Brazier | TDB442 |
+| 216391 | Bonfire | TDB442 |
+| 216393 | Brazier | TDB442 |
+| 216410 | Mailbox | TDB442 |
+| 216411 | Brazier | TDB442 |
+| 216412 | Brazier | TDB442 |
+| 216413 | Brazier | TDB442 |
+| 216464 | Barrel Ramp | TDB442 |
+| 216466 | Campfire | TDB442 |
+| 216467 | Anvil | TDB442 |
+| 216468 | Forge | TDB442 |
+| 216469 | Chair | TDB442 |
+| 216470 | Chair | TDB442 |
+| 216471 | Chair | TDB442 |
+| 216472 | Chair | TDB442 |
+| 216473 | Chair | TDB442 |
+| 216474 | Chair | TDB442 |
+| 216475 | Campfire | TDB442 |
+| 216482 | Barrel Ramp | TDB442 |
+| 216486 | Flame Cannon | TDB442 |
+| 216487 | Keg Stand | TDB442 |
+| 216489 | Blast-Brew Keg | TDB442 |
+| 216490 | Unfinished Keg | TDB442 |
+| 216492 | Portal to Sparkrocket Outpost | TDB442 |
+| 216621 | Flame Cannon | TDB442 |
+| 216667 | Portal Back | Wowhead |
+| 216722 | Glaivethrower | TDB442 |
+| 216724 | Barrel of Rockets | TDB442 |
+| 216725 | Reaver Bombs | TDB442 |
+| 216737 | Elven Table | TDB442 |
+| 216738 | Mound of Soil | TDB442 |
+| 216759 | Lever-Action Boomsticks | TDB442 |
+| 216880 | Horde Flag | TDB442 |
+| 218101 | Campfire | TDB442 |
+| 218102 | Campfire | TDB442 |
+| 218105 | Campfire | TDB442 |
+| 218106 | Campfire | TDB442 |
+| 218143 | ITK Beastmaster Straw | TDB442 |
+| 218144 | ITK Beastmaster Straw | TDB442 |
+| 218145 | ITK Beastmaster Straw | TDB442 |
+| 218146 | ITK Beastmaster Straw | TDB442 |
+| 218147 | ITK Beastmaster Straw | TDB442 |
+| 218148 | ITK Beastmaster Straw | TDB442 |
+| 218149 | ITK Beastmaster Pot | TDB442 |
+| 218150 | ITK Beastmaster Pot | TDB442 |
+| 218151 | ITK Beastmaster Pot | TDB442 |
+| 218152 | ITK Beastmaster Pot | TDB442 |
+| 218153 | ITK Beastmaster Grain | TDB442 |
+| 218154 | ITK Beastmaster Grain | TDB442 |
+| 218155 | ITK Beastmaster Grain | TDB442 |
+| 218156 | ITK Beastmaster Drum | TDB442 |
+| 218157 | ITK Beastmaster Drum | TDB442 |
+| 218158 | ITK Beastmaster Straw | TDB442 |
+| 218159 | ITK Beastmaster Straw | TDB442 |
+| 218160 | ITK Beastmaster Straw | TDB442 |
+| 218161 | ITK Beastmaster Straw | TDB442 |
+| 218162 | ITK Beastmaster Straw | TDB442 |
+| 218163 | ITK Beastmaster Straw | TDB442 |
+| 218164 | ITK Beastmaster Straw | TDB442 |
+| 218165 | ITK Beastmaster Straw | TDB442 |
+| 218166 | ITK Beastmaster Straw | TDB442 |
+| 218167 | ITK Beastmaster Straw | TDB442 |
+| 218168 | ITK Beastmaster Straw | TDB442 |
+| 218169 | ITK Beastmaster Straw | TDB442 |
+| 218170 | ITK Beastmaster Straw | TDB442 |
+| 218171 | ITK Beastmaster Straw | TDB442 |
+| 218172 | ITK Beastmaster Straw | TDB442 |
+| 218173 | ITK Beastmaster Straw | TDB442 |
+| 218174 | ITK Beastmaster Straw | TDB442 |
+| 218428 | For Council and King | TDB442 |
+| 218437 | The Curse and the Silence | TDB442 |
+| 218460 | Sunreaver Portal | TDB442 |
+| 218486 | Sunreaver Portal | TDB442 |
+| 218513 | Forge | TDB442 |
+| 218515 | Anvil | TDB442 |
+| 218517 | Brazier | TDB442 |
+| 218558 | Sunreaver Ballista | TDB442 |
+| 218559 | Sunreaver Ballista | TDB442 |
+| 218560 | Sunreaver Ballista | TDB442 |
+| 218561 | Sunreaver Ballista | TDB442 |
+| 218562 | Sunreaver Ballista | TDB442 |
+| 218563 | Sunreaver Ballista | TDB442 |
+| 218564 | Sunreaver Ballista | TDB442 |
+| 218565 | Sunreaver Ballista | TDB442 |
+| 218566 | Sunreaver Ballista | TDB442 |
+| 218567 | Sunreaver Ballista | TDB442 |
+| 218568 | Sunreaver Ballista | TDB442 |
+| 218569 | Sunreaver Ballista | TDB442 |
+| 218570 | Sunreaver Ballista | TDB442 |
+| 218627 | Ice Tomb | TDB442 |
+| 218651 | Large Pool of Sha-Touched Spinefish | TDB442 |
+| 218737 | Zandalari Caster Spell Focus Cauldron | TDB442 |
+| 218738 | Zandalari Caster Spell Focus Eyeball | TDB442 |
+| 218742 | Bonfire | TDB442 |
+| 218782 | Coming of Age | TDB442 |
+| 218783 | For Council and King | TDB442 |
+| 218784 | Shadows of the Loa | TDB442 |
+| 218785 | The Dark Prophet Zul | TDB442 |
+| 218786 | Lei Shen | TDB442 |
+| 218787 | The Sacred Mount | TDB442 |
+| 218788 | Unity at a Price | TDB442 |
+| 218789 | The Pandaren Problem | TDB442 |
+| 218812 | Campfire | TDB442 |
+| 218813 | Bonfire | TDB442 |
+| 218817 | Portal to Dawnseeker Promontory | TDB442 |
+| 218838 | Teleport to the Seabolt | TDB442 |
+| 218840 | Teleport to the Crimson Treader | TDB442 |
+| 219135 | Brazier | TDB442 |
+| 219136 | Brazier | TDB442 |
+| 219137 | Brazier | TDB442 |
+| 219153 | Doodad_OrcPVPBonfireLarge19 | TDB442 |
+| 219154 | Doodad_OrcPVPBonfireLarge20 | TDB442 |
+| 219172 | Rekkul's Poisons | TDB442 |
+| 219174 | Shadowswift Brotherhood | TDB442 |
+| 220170 | Slightly Smelly Pile of Money | TDB442 |
+| 220348 | Amber | TDB442 |
+| 221027 | Conspicuously Empty Shell | TDB442 |
+| 221529 | Kor'kron Cannon | TDB442 |
+| 221530 | Cannonball Stack | TDB442 |
+| 221613 | 5.4 - Cooking - Noodle Cart - S1 - Q3 - Boss Fight Doors | TDB442 |
+| 222768 | Zarhym's Body | TDB442 |
+| 223081 | Wrathion's Hoard | Wowhead |
+| 223212 | Portal to Vale of Eternal Blossoms | TDB442 |
+| 223230 | Gold Coins | TDB442 |
+| 223283 | Campfire | TDB442 |
+| 223284 | Campfire | TDB442 |
+| 223285 | Campfire | TDB442 |
+| 223286 | Campfire | TDB442 |
+| 223288 | Noodles | TDB442 |
+| 223464 | Sunstrider Ship (Garrosh Raid) | TDB442 |
+| 223534 | Alliance Ramp | TDB442 |
+
+</details>
+
+### 2.17 看不见的 NPC 和用不了的任务物品：全库审计（40–49 级）
+
+2026-11-26，接着 [2.15](#215-看不见的-npc-和用不了的任务物品全库审计2039-级) 的 20–39 级批次往下做。先用当前数据库重跑了审计（`tools/invis_focus_audit_run.py` → `audit/invis_focus_20261126.json`），再用 `tools/band2.py 40 49` 只挑出联盟能接、没被禁用的任务。判定规则和 2.15 一样：任务相关的 NPC 身上有任务隐身光环，但服务器里没有任何地方会给玩家对应的侦测光环（TDB 4.4.2 也一样缺，说明正式服的侦测是服务器端按区域给的，抓包没抓到）。
+
+<details>
+<summary>已修：5 处（4 个看不见的 NPC 和 1 个点了没反应的控制器）</summary>
+
+| 任务 | NPC / 物体 | 问题 | 修法 |
+|---|---|---|---|
+| 27446 Tanaris is Calling、28507 Hero's Call: Tanaris!、25048–25050、25121 | Kelsey Steelspark 38535（加基森） | 带 Generic Quest Invisibility 1（49414），没人看得见 | 去掉光环（只有一个刷新点；部落那边的 Megs 没动） |
+| 25021、25025、25026、25032 | Mazoga 38927（Sandsorrow Watch，塔纳利斯） | 同上 | 去掉光环 |
+| 27764 A Strange Request 起整条 Rhea 任务线 | Rhea 46654（荒芜之地 Lethlor Ravine） | Generic Quest Invisibility 10（80852） | 去掉光环 |
+| 27827 The Swift, the Fierce, and the Stout 及三矮人各自的任务 | Eric 46852、Baelog 46853、Olaf 46854（Dragon's Mouth） | Generic Quest Invisibility 2（49415） | 接了 27827 后在 Dragon's Mouth（区域 5564）给侦测 49417，之后一直有效 |
+| 28140 The Elder Crone | Magatha's Bonds Controller 206767、被锁的 Magatha 47718（千针石林 The Bulwark） | 控制器点了施放 88865，这个法术在 5.4.8 客户端里不存在，所以不给计数；被锁的 Magatha 也一直隐身 | 控制器加 SAI：点了直接给计数 47718，并在原地召出获救的 Magatha 47736（60 秒）；任务进行中在区域 5590 给侦测 49416，完成后她自然消失 |
+
+文件：`sql-custom/2026_11_26_01_audit_40_49_invis.sql`、`2026_11_26_02_the_elder_crone.sql`；备份 `backup/audit_40_49_invis_20261126.tsv`（另外两处改动前本来没有数据）。
+
+</details>
+
+**没修，原因：**
+
+- 三矮人后面的 27828 / 27834 / 27835 要整条重写，见下面。
+- 费伍德森林（Felwood）：28044、28119、28229 缺施法焦点，但更大的问题是整个大地图变迁版的费伍德森林几乎没刷怪（我们约 320 个刷新点，TDB 约 2430 个），38 个任务给予者没有刷新。和石爪山（见 [2.15](#215-看不见的-npc-和用不了的任务物品全库审计2039-级)）是同一类问题，要单独处理。
+- 992、1948、7029/7041：没有任务给予者，接不到。27390 达罗郡之战：照旧跳过。
+- 部落的 Megs Dreadshredder 38534：只有部落能接，没动。
+
+**三矮人任务（失落的维京人）：整条重写**
+
+27828 Eric, the Utility Dwarf / 27834 Baelog, the Glass Cannon / 27835 Olaf, the Big Fella'：任务要"用一遍"三兄弟的技能，交给跟着你的那三个矮人（46855–46857）。SFDB 和 TDB 里什么都没有：没人召唤他们，没有技能按钮，也没有给计数的地方。从客户端法术数据看，正式服是 Eric 当可控随从（有宠物技能栏），Baelog 和 Olaf 当跟班。
+
+- 交 27827 给营地里的 Eric（或接三个任务里任意一个）时，三兄弟一起召出来（87262/87263/87264）。猎人或术士的宠物会先收起来，因为 Eric 要占宠物栏。
+- 宠物栏只有 4 格：Eric 冲锋、Eric 的口袋药水、Baelog 的瓦尔哈拉射击（Baelog 射你选中的目标）、Olaf 的强力怒吼（嘲讽）。Baelog 的战吼在每场战斗开始时自动放，Olaf 的盾墙在他掉到八成血以下时自动放（30 秒一次）。每个技能用到一次就给对应的计数（46862–46867）。
+- 下线、死亡或传送走以后矮人不见了：找营地里任意一个兄弟对话，选 "Come on, boys…" 就能叫回来（三个任务都交完后这个选项就不出现了）。
+- 核心改动：SummonProperties 3039（Eric）按 TrinityCore 的做法当成可控随从。只对这一个属性生效，其他 25 个同类召唤不受影响。
+
+文件：`sql-custom/2026_11_26_03_lost_vikings.sql`；C++ 在 `spell_quest.cpp`（npc_lost_vikings_camp、npc_lost_viking_brother、spell_lost_vikings_eric_ability、spell_lost_vikings_command）和 `TemporarySummon.cpp`；备份 `backup/lost_vikings_20261126.tsv`、`backup/spell_quest.cpp.bak-20261126`、`backup/TemporarySummon.cpp.bak-20261126`。
+
+全部在 0 人在线时重启生效（三矮人的 C++ 和 11 月 22 日攒下的 Avrus 光环刷新改动一起编译），按批量修复的做法没有逐个上号验证。
