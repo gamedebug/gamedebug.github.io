@@ -2482,3 +2482,32 @@ Nolan 的任务之前已经全部直接写成完成，所以他只需要能过�
 补完以后，菲拉斯只剩两个发布人还没有刷新点：Sensiria（40131）和 Khan Shodo（36487）。TDB 里也没有他们，应该是事件里召唤出来的，以后再看。
 
 文件 `sql-custom/2026_11_26_05_feralas_spawns_from_tdb.sql`；TDB guid 和我们 guid 的对照在 `audit/zone_gap_feralas_20261126_guidmap.json`；改过的模板备份在 `backup/feralas_templates_20261126.tsv`。要撤销，删掉上面的 guid 范围就行。0 人在线时重启生效，启动日志没有相关报错，没有逐个验证。
+
+### 2.20 补刷新点：凄凉之地、费伍德森林、安戈洛环形山、石爪山
+
+2026-11-26，照 [2.19](#219-整片区域没刷怪按-tdb-补刷新点先补菲拉斯) 的办法，按 Mayo 和 Evan 接下来的路线再补四个区。四个区补完后一起重启（当时 0 人在线），启动日志没有相关报错，没有逐个验证。
+
+| 区域 | 原来（生物 / 物体） | TDB 4.4.2 | 补了生物 | 补了物体 | 文件 |
+|---|---|---|---|---|---|
+| 凄凉之地 | 48 / 38 | 2654 / 695 | 2598（巡逻路线 3174 个点） | 495 | `2026_11_26_06_desolace_spawns_from_tdb.sql` |
+| 费伍德森林 | 8 / 15 | 1717 / 854 | 1551 + 34 | 216 | `2026_11_26_07_felwood_spawns_from_tdb.sql`、`_10_felwood_deadwood_pools.sql` |
+| 安戈洛环形山 | 6 / 2 | 1450 / 407 | 1445（巡逻路线 1089 个点） | 370 | `2026_11_26_08_ungoro_spawns_from_tdb.sql` |
+| 石爪山 | 2971 / 468 | 3028 / 830 | 51 | 0 | `2026_11_26_09_stonetalon_spawns_from_tdb.sql` |
+
+几个和菲拉斯不一样的地方：
+
+- **费伍德森林有相位。** 导入脚本加了相位映射。169 号是默认相位，当普通刷新点导入。316 号是喝 Phaseblood Potion（28044 Touch the Untouchable）后进的"Shifted"相位，329 号是戴 Sindweller Blindfold 后看到的，客户端里都有对应法术，按原相位导入。339 号的 56 个生物找不到任何东西会让玩家进那个相位，跳过了。
+- **Deadwood 巢穴的熊怪在 TDB 刷新池里。** 同一个位置三种熊怪（7156/7157/7158）轮流刷，一共 34 个池子。导入脚本默认跳过刷新池，这批是任务要打的怪，所以单独补上：每个位置一只，三种轮着放。费伍德森林另外 522 个在刷新池里的物体是矿点，没导。
+- **石爪山其实不缺怪。** 之前（[2.15](#215-看不见的-npc-和用不了的任务物品全库审计2039-级)）说接不到的几个任务，发布人现在都有刷新点。这里只缺 51 个生物；缺的 409 个物体全是节日专用的，没导。
+- **模板修正（照 TDB）：** 凄凉之地 9 个（Furien、Jorreth、Kherrah、Brendol、Doomguard Invader 这些原来是 1 级友好的占位模板，还有 Magram Pack Runner、Nijel's Point Guard 等的阵营）；费伍德森林 5 个（发布人 Impsy 原来 1 级，Vorlus、Shadowsworn Netherguard、Jadefire Defender 原来是 1 级友好，Lord Banehollow 的阵营）；安戈洛 2 个（满地的 Ravasaur 原来是 1 级，改成 48–49 级；Marshal Expeditions Mercenary 的阵营）。备份在 `backup/desolace_templates_20261126.tsv`、`backup/felwood_ungoro_templates_20261126.tsv`。
+
+补完以后还没有刷新点的发布人：
+
+| 区域 | 发布人 | 原因 |
+|---|---|---|
+| 凄凉之地 | Cork / Rigger Gizelton（车队护送）、Khan Kammah、Khan Leh'Prah、Lord Hydronis、Jinar'Zillen | TDB 里也没有刷新点，应该是事件召唤出来的，以后逐个看 |
+| 费伍德森林 | Seedling / Sapling / Flourishing Protector（28219–28228） | 同上，像是种下树苗后才出现 |
+| 费伍德森林 | Arathandris Silversky（4103–4112 药膏系列） | 老版本的任务，TDB 里也没有 |
+| 安戈洛 | Un'Goro Examinant（24694） | TDB 里也没有 |
+
+guid 范围：生物 9202215–9207893，物体 9200539–9201619；每个区的 TDB guid 对照都在 `audit/zone_gap_<区>_20261126_guidmap.json`。
