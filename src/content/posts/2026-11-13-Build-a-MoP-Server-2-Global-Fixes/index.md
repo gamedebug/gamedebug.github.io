@@ -2511,3 +2511,53 @@ Nolan 的任务之前已经全部直接写成完成，所以他只需要能过�
 | 安戈洛 | Un'Goro Examinant（24694） | TDB 里也没有 |
 
 guid 范围：生物 9202215–9207893，物体 9200539–9201619；每个区的 TDB guid 对照都在 `audit/zone_gap_<区>_20261126_guidmap.json`。
+
+### 2.21 看不见的 NPC 和用不了的任务物品：全库审计（60 级以上）
+
+2026-11-26，审计的最后一档。这一档的任务大多在外域、诺森德、大地变迁地区和潘达利亚。先用 `tools/obtain.py` 筛掉接不到的任务（没有发布人，或发布人没有刷新点），剩下的按 NPC 逐个看。0 人在线时重启生效，没有逐个验证。
+
+<details>
+<summary>任务隐身：19 个 NPC</summary>
+
+| 地点 | NPC | 修法 |
+|---|---|---|
+| 暴风城王宫 | Anduin Wrynn（1747） | 去掉光环 82804 |
+| 暴风城港口 | Fargo Flintlocke（44806） | 去掉光环 93307 |
+| 瓦斯琪尔 闪光平原 | Fiasco Sizzlegrin（40918） | 去掉光环 83080 |
+| 奥丹姆 | Sullah（48203） | 去掉光环 82358 |
+| 海加尔山 诺达希尔 | Thrall（54313） | 去掉光环 60921 |
+| 翡翠林 | High Elder Cloudfall（54914），侦察兵 Shademaster Kiryn / Shokia / Riko（55646–55648） | 去掉光环 |
+| 四风谷 | Li Li（56138，两个农庄各一个） | 去掉光环 94224 |
+| 时光之穴 | Alurmi（57864） | 去掉光环 49414 |
+| 昆莱山 东、西歇脚处 | Rivett Clutchpop、Shademaster Kiryn、Sully McLeary、Mishka（59448–59451） | 去掉光环 84667 |
+| 瓦斯琪尔 海藻森林 Seafarer's Tomb（5051） | Erunak Stonespeaker（36915）、Mack Fearsen（40983）、46 个 Drowning Soldier（39663） | 客户端里就有对应的侦测：接了 14482 Call of Duty 后给 75974 "Kelp Forest Quest Invisibility Detection Erunak"（一直有效）；做 25281 Pay It Forward 时给 77823 "See Drowning Soldiers"（只限联盟） |
+| 暮光高地（5584） | The Hammer of Twilight（46717） | 光环 87266 同时管锤子的外观，不能去掉。改成接了 27784 后给 81010 "Detect: Quest Invis Zone 6" |
+| 龙骨荒野 天谴之门 | Highlord Bolvar Fordragon（27872） | 照 TDB 补 46999 的 8 条 `spell_area`（4169–4172 区域，联盟 12499 / 部落 12500 交任务前可见），种族掩码换成我们的 |
+
+前面那批"去掉光环"的都只有一个刷新点，附近也没有同名的其他版本，去掉不会出现两个同样的人站在一起。
+
+没修：Talonpriest 三兄弟（斯克提斯）本来就要喝 Elixir of Shadows 才看得见，是正常设计；Caladis Brightspear 两个刷新点只有一个隐身，另一个看得见；Panther Cub、An Windfur、潘达利亚的 Anduin Wrynn 这几个任务的发布人或交付人没有刷新点。
+
+</details>
+
+<details>
+<summary>施法焦点：8 个任务</summary>
+
+| 地图 | 任务 | 修法 |
+|---|---|---|
+| 虚空风暴 | 10173 The Archmage's Staff | 照 TDB 刷新点放 Arklon Brazier（184143） |
+| 卡拉赞 | 9824 Arcane Disturbances | 计数标记（18161、18162）和 SAI 本来就有，每个标记上放一个焦点（224025，10 码） |
+| 龙骨荒野 | 12277 Leave Nothing to Chance | 爆炸计数已经有 C++ 脚本，在上下两个矿井口的标记上放 Wintergarde Mine Entrance（188711） |
+| 翡翠林 | 29966 Burning Down the House | Alliance Camp 标记上放 Alliance Campfire（209913） |
+| 翡翠林 | 31709 Lingering Doubt | 焦点 1783 哪个库都没有模板，自建 910104，放在 3 个 Sha Bunny 上；Sha Bunny 3 补上被打中给计数的 SAI 和目标条件 |
+| 昆莱山 | 30614 Oil Stop | 两个 Yaungol Oil Derrick 上放焦点（我们库里现成的 230146，20 码） |
+| 恐惧废土 | 31200 Fumigation | 5 栋建筑各放一个 Sra'vess Structure（213312）。5 个计数标记只刷了 2 个，另外 3 个（63706、63713、63714）按地图标记补上刷新点、SAI 和目标条件 |
+| 锦绣谷 | 31948 Nana's Vote II: The Sacred Springs | 在地图标记处放 Golden Falls（215727，20 码） |
+
+文件 `sql-custom/2026_11_26_12_spell_focus_60_plus_part1.sql`、`_13_..._part2.sql`。高度取自地形（`tools/height.py`，误差 3–6 码，焦点范围有 10–20 码）或者取自焦点下面的标记，22 个新刷新点都过了位置检查。另外，184143 和 188711 的模型编号 1287 在 5.4.8 客户端里不存在，服务器会直接不加载，所以改成焦点通用的隐形模型 327。12981 Hot and Cold 是误报：它的焦点由计数生物刷出来时自己召唤。
+
+</details>
+
+**没修，先放着（缺的是脚本，不是焦点）：** 10806 Showdown（召唤 Goc 的事件 14525 不存在）、27135 Something that Burns、30504 / 31319 Emergency Response（Cho's Fireworks）、29939 Boom Bait、29936 Instant Messaging、29637 The Rumpus、30331 The Mile-High Grub、31705 Needle Me Not；还有 29718、29732、29856 这几个正式服里进区域就自动接的任务，我们这边没有东西会触发它们。都是 70–90 级的内容，等练到那里再逐个重做。
+
+到这里，审计清单从 20 级到 90 级都过了一遍。
